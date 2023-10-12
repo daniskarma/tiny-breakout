@@ -7,10 +7,9 @@
 -- version: 0.1
 -- script:  lua
 
---TODO:
- 	-- fix collision overlap
-  -- paddle sprite
-		
+-- TODO:
+	-- add corner collision
+  	-- paddle sprite	
 		
 
 function BOOT()
@@ -61,8 +60,7 @@ function gameBOOT()
 			rect(self.x,self.y,self.w,self.h,self.c)
 		end	
 	}
-	pad:init(30,120,30,4,0.4,12)
-	
+	pad:init(30,120,30,4,0.4,12)	
 	
 	brick_c={4,6,2,9}
 	brick={}	
@@ -90,8 +88,8 @@ function gameBOOT()
 		{1,1,1,1,1,1,1,1,1,1,1,1,1,1},
 		{1,1,0,0,0,0,1,1,1,1,1,1,1,1},
 		{1,1,0,1,0,0,1,1,1,1,1,1,1,1},
-		{1,1,0,1,1,1,1,1,1,1,1,1,1,1},
-		{1,2,1,1,1,1,1,1,1,1,1,1,1,1},
+		{1,1,0,1,1,1,1,1,2,2,2,1,1,1},
+		{1,2,1,1,1,1,1,1,2,2,2,1,1,1},
 		{2,2,2,2,2,2,2,2,2,2,2,2,2,2}
 	}
 	bricks = {}	
@@ -108,34 +106,30 @@ function gameBOOT()
 	end		
 	lives=3
 	points=0
-	timeleft=60*60
+	timeleft=360*60
 	
 	gameGo()
 end
 
 function gameGo()
-	ball:init(pad.x+pad.w/2,pad.y-3,2,0,0,11)
 	is_launchball=false
+	ball:init(pad.x+pad.w/2,pad.y-3,2,0,0,11)	
 end
 
 function game()
-	--function vars
+	-- function vars
 	is_btnpress=false
 
-	cls()
-	--ball
-	ball.x=ball.x+ball.dx
-	ball.y=ball.y+ball.dy
+	cls()	
 		
-	--ball launch
-	
-	if not is_launchball and btn(4) then
+	-- ball launch	
+	if not is_launchball and btnp(4) then
 		ball.dx=1
 		ball.dy=-1
 		is_launchball=true
 	end
 	
-	--collision ball walls
+	-- collision ball walls
 	if ball.x>wall.x1-ball.r-2 or ball.x<wall.x0+ball.r+2 then
 		ball.dx=-ball.dx
 		sfx(0)
@@ -149,97 +143,96 @@ function game()
 		sfx(0)
 	end
 		
- --paddle	
- if btn(2) then --left
- 	if math.abs(pad.dx) < pad.sp then
-  	pad.dx=pad.dx-pad.ac
-  end
-  is_btnpress=true
- end
- if btn(3) then --right
- 	if math.abs(pad.dx) < pad.sp then
-  	pad.dx=pad.dx+pad.ac
-  end
-  is_btnpress=true
- end
- if not is_btnpress then --friction
- 	pad.dx= pad.dx/1.5
- end
- if math.abs(pad.dx)<0.01 then
-  pad.dx=0
- end --kill speed
- pad.x=pad.x+pad.dx --move paddle
+	-- PADDLE MOVE
+	if btn(2) then -- left
+		if math.abs(pad.dx) < pad.sp then
+		pad.dx=pad.dx-pad.ac
+	end
+	is_btnpress=true
+	end
+	if btn(3) then -- right
+		if math.abs(pad.dx) < pad.sp then
+		pad.dx=pad.dx+pad.ac
+	end
+	is_btnpress=true
+	end
+	if not is_btnpress then -- friction
+		pad.dx=pad.dx/1.5
+	end
+	if math.abs(pad.dx)<0.01 then
+		pad.dx=0
+	end -- kill speed
+	pad.x=pad.x+pad.dx --move paddle
 	pad.x=math.floor(pad.x+0.5)--smooth movement
-	--ball move with pad
+
+	-- ball move with pad
 	if not is_launchball then
 		ball.x=pad.x+pad.w/2
 		ball.y=pad.y-3
 	end	
 	
-	--collision paddle walls
- if pad.x<wall.x0+1 then pad.x=wall.x0+1 end
- if pad.x+pad.w >wall.x1-1 then pad.x=wall.x1-pad.w-1 end
- 
- --collision ball-paddle
-	local colision=colBallPad(ball,pad)
-	if colision ~= 0 then sfx(0,"D-5") end
-	
- 
- --collision brick ball
- for i, br in ipairs(bricks) do
- 	if br.v then
-	 	local colision=colCircRect(ball,br)
-			if colision ~= 0 then
-			 sfx(0,"D-7")
-				points = points +1
-				if br.t >1 then 
-					br.t = br.t -1
-					br.c = brick_c[br.t]
-				elseif br.t==1 then
-					br.v=false
-				end
-		 end			
+	-- collision paddle walls
+	if pad.x<wall.x0+1 then
+		pad.x=wall.x0+1
+	end
+	if pad.x+pad.w >wall.x1-1 then
+		pad.x=wall.x1-pad.w-1 
+	end
+			 
+	-- collision brick ball
+	for i, br in ipairs(bricks) do
+		if br.v then
+			colBallBrick(ball,br)				
 		end
- end
- 
- --TIME
- 
- if is_launchball then
- 	timeleft=timeleft-1
- end
- 
- --END
- if ball.y > 136 then
-  lives=lives-1
-  sfx(1)
- 	if lives < 0 then mode = 0 end
-  gameGo()
- end
- 
- if timeleft < 0 then
- 	mode = 0
- end
- 
- --DRAW
-	--walls
-	rectb(wall.x0,wall.y0,wall.w,wall.h,12)
+	end
 	
+
+	-- BALL MOVE
+	if ball.dx > 3 then -- speed limit
+		ball.dx= 3
+	elseif ball.dx < -3 then 
+		ball.dx= -3
+	end
+	
+
+	ball.x=ball.x+ball.dx
+	ball.y=ball.y+ball.dy
+
+	-- collision ball-paddle
+	colBallPad(ball,pad)	
+
+	-- TIME
+	if is_launchball then
+		timeleft=timeleft-1
+	end	
+
+	-- END
+	if ball.y > 136 then
+		lives=lives-1
+		sfx(1)
+		if lives < 0 then mode = 0 end
+		gameGo()
+	end
+
+	if timeleft < 0 then
+		mode = 0
+	end
+ 
+ 	-- DRAW	
+	rectb(wall.x0,wall.y0,wall.w,wall.h,12) -- walls	
 	ball:draw()
 	pad:draw()
  
- for i, br in ipairs(bricks) do
- 	br:draw()
- end
-   
+	for i, br in ipairs(bricks) do
+		br:draw()
+	end  
  
- --UI
- print("LIVES: "..lives,6,1,12)
- print("TIME: "..math.floor(timeleft/60),60,1,12)
- print("POINTS: "..points,120,1,12)
+	-- UI
+	print("LIVES: "..lives,6,1,12)
+	print("TIME: "..math.floor(timeleft/60),60,1,12)
+	print("POINTS: "..points,120,1,12)
 
---debug
-
-
+-- debug
 --	print(pad.y-ball.y,12,10,2)
 --	print(bricks[2].x,12,18,2)
 end
@@ -254,57 +247,66 @@ function colCircRect(ball, box)
 	local maxdist_x = box.w/2
 	local maxdist_y = box.h/2
 
-	if dist_x <= maxdist_x+(ball.r) and dist_y <= maxdist_y+ball.r then
-	 	
+	if dist_x <= maxdist_x+(ball.r) and dist_y <= maxdist_y+ball.r then	 	
 		if dist_x >= maxdist_x then
-			if ball.dx > 0 then
-				ball.x = ball.x - ball.dx
-				ball.dx = -ball.dx
-				return 1 --col left
-			elseif ball.dx < 0 then
-				ball.x = ball.x - ball.dx
-				ball.dx = -ball.dx
-				return 2 --col right
+			if ball.dx > 0 then				
+				return 1 -- col left
+			elseif ball.dx < 0 then				
+				return 2 -- col right
 			end
 		elseif dist_y >= maxdist_y then
-			if ball.dy > 0 then
-				ball.y = ball.y - ball.dy
-				ball.dy = -ball.dy
-				return 3 --col up
-			elseif ball.dy < 0 then
-				ball.y = ball.y - ball.dy
-				ball.dy = -ball.dy
+			if ball.dy > 0 then				
+				return 3 -- col up
+			elseif ball.dy < 0 then				
 				return 4 -- col down
 			end
-		end
-		
+		end		
 	else	
 		return 0 -- sin colision		
 	end
 end
 
-function colBallPad(ball,box)
-	local box_cx=box.x+(box.w/2)
-	local box_cy=box.y+(box.h/2)
-	
-	local dist_x=box_cx-ball.x
-	local dist_y=math.abs(box_cy-ball.y)
-		
-	local maxdist_x = box.w/2
-	local maxdist_y = box.h/2
-	
-	local reldist_x=dist_x/maxdist_x
+function colBallBrick(ball, br)
+	local col = colCircRect(ball, br)
+	if col == 0 then return end
+	if col == 1 then -- col left
+		ball.x = ball.x - ball.dx
+		ball.dx = -ball.dx
+	elseif col == 2 then -- col right
+		ball.x = ball.x - ball.dx
+		ball.dx = -ball.dx
+	elseif col == 3 then -- col up
+		ball.y = ball.y - ball.dy
+		ball.dy = -ball.dy
+	elseif col == 4 then -- col down
+		ball.y = ball.y - ball.dy
+		ball.dy = -ball.dy
+	end
+	sfx(0,"D-7")
+	points = points + 1
+	if br.t > 1 then 
+		br.t = br.t - 1
+		br.c = brick_c[br.t]
+	elseif br.t==1 then
+		br.v=false
+	end
+end
 
-	if math.abs(dist_x) <= maxdist_x+(ball.r) and dist_y <= maxdist_y+ball.r then
-	 ball.y =box.y-ball.r
-	 ball.dy=-ball.dy
-		if math.abs(ball.dx)<2.5 then
-			ball.dx=ball.dx-reldist_x+1.2
-		end
-		return 1		
-	else	
-		return 0 -- sin colision		
-	end		
+function colBallPad(ball, pad)
+	local col = colCircRect(ball, pad)	
+	if col == 0 then return end
+	local pad_cx=pad.x+(pad.w/2)
+	local dist_x=(pad_cx-ball.x)/(pad.w/2)
+	ball.dx=ball.dx-dist_x
+
+	if col == 1 or col == 2 then -- left right
+		ball.dy=-math.abs(ball.dy)
+	end
+	if col == 3 then -- left right up
+		ball.y=pad.y-ball.r
+		ball.dy=-math.abs(ball.dy)
+	end
+	sfx(0,"D-5")	
 end
 
 function startMenu()
@@ -332,7 +334,7 @@ end
 
 function TIC()
 	if mode == 1 then startMenu()
-	elseif mode == 2 then	game()
+	elseif mode == 2 then game()
 	elseif mode == 0 then gameOver()
 	end
 	
