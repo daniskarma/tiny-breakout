@@ -13,6 +13,7 @@
 		
 
 function BOOT()
+	poke(0x3FFB,1) -- hide cursor
 	cls()
 	gameBOOT()
 	mode=2
@@ -62,7 +63,7 @@ function gameBOOT()
 	}
 	pad:init(30,120,30,4,0.4,12)	
 	
-	brick_c={4,6,2,9}
+	brick_c={{2,3,4},{7,6,5},{8,9,10},{14,13,12}}
 	brick={}	
 	function brick:new(x,y,t)
 		local newbrick = {}
@@ -78,23 +79,35 @@ function gameBOOT()
 		return newbrick		
 	end
 	function brick:draw()
-		if self.v then
-			rect(self.x,self.y,self.w,self.h,self.c)
+		if self.v then			
+			rect(self.x,self.y,self.w,self.h,self.c[3])
+			rect(self.x+1,self.y+1,self.w-2,self.h-2,self.c[2])
+			line(self.x+1,self.y+self.h-1,self.x+self.w-1,self.y+self.h-1,self.c[1])
+			line(self.x+self.w-1,self.y+1,self.x+self.w-1,self.y+self.h-1,self.c[1])
 		end
 	end
 	
 	layout={
-		{1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-		{1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-		{1,1,0,0,0,0,1,1,1,1,1,1,1,1},
-		{1,1,0,1,0,0,1,1,1,1,1,1,1,1},
-		{1,1,0,1,1,1,1,1,2,2,2,1,1,1},
-		{1,2,1,1,1,1,1,1,2,2,2,1,1,1},
-		{2,2,2,2,2,2,2,2,2,2,2,2,2,2}
+		{2,2,2,2,2,2,2,2,2,2,2,2,2,2},
+		{2,2,2,2,2,2,2,2,2,2,2,2,2,2},
+		{2,2,2,2,2,2,2,2,2,2,2,2,2,2},
+		{1,2,1,2,1,2,1,2,1,2,1,2,1,2},
+		{2,1,2,1,2,1,2,1,2,1,2,1,2,1},
+		{1,2,1,2,1,2,1,2,1,2,1,2,1,2},
+		{2,1,2,1,2,1,2,1,2,1,2,1,2,1},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{1,1,0,0,0,0,0,0,0,0,0,0,1,1},
+		{2,1,0,0,0,0,0,0,0,0,0,0,1,2},
+		{2,1,0,0,0,0,4,4,0,0,0,0,1,2},
+		{2,1,0,0,0,0,4,4,0,0,0,0,1,2},
+		{1,1,0,0,0,0,0,0,0,0,0,0,1,1},		
+		{0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{1,1,1,1,1,1,1,1,1,1,1,1,1,1}	
+		
 	}
 	bricks = {}	
 	for i=1,14 do
-		for j = 1,7 do
+		for j = 1,15 do
 			if layout[j][i] > 0 then
 				local newbrick=brick:new(
 					wall.x0+2+i*16-16,
@@ -103,10 +116,13 @@ function gameBOOT()
 				table.insert(bricks,newbrick)
 			end
 		end
-	end		
+	end
+
 	lives=3
 	points=0
 	timeleft=360*60
+
+	coltime = time()
 	
 	gameGo()
 end
@@ -181,8 +197,8 @@ function game()
 			 
 	-- collision brick ball
 	for i, br in ipairs(bricks) do
-		if br.v then
-			colBallBrick(ball,br)				
+		if br.v then			
+			colBallBrick(ball,br)						
 		end
 	end
 	
@@ -233,7 +249,8 @@ function game()
 	print("POINTS: "..points,120,1,12)
 
 -- debug
---	print(pad.y-ball.y,12,10,2)
+	--rect(10,8,40,10,12)
+	--print("",12,10,2)
 --	print(bricks[2].x,12,18,2)
 end
 
@@ -241,23 +258,23 @@ function colCircRect(ball, box)
 	local box_cx=box.x+(box.w/2)
 	local box_cy=box.y+(box.h/2)
 	
-	local dist_x=math.abs(box_cx-ball.x)
-	local dist_y=math.abs(box_cy-ball.y)
+	local dist_x=box_cx-ball.x
+	local dist_y=box_cy-ball.y
 	
 	local maxdist_x = box.w/2
 	local maxdist_y = box.h/2
 
-	if dist_x <= maxdist_x+(ball.r) and dist_y <= maxdist_y+ball.r then	 	
-		if dist_x >= maxdist_x then
-			if ball.dx > 0 then				
+	if math.abs(dist_x) <= maxdist_x+(ball.r) and math.abs(dist_y) <= maxdist_y+ball.r then	 	
+		if math.abs(dist_x) >= maxdist_x then
+			if dist_x > 0 then				
 				return 1 -- col left
-			elseif ball.dx < 0 then				
+			elseif dist_x < 0 then				
 				return 2 -- col right
 			end
-		elseif dist_y >= maxdist_y then
-			if ball.dy > 0 then				
+		elseif math.abs(dist_y) >= maxdist_y then
+			if dist_y > 0 then				
 				return 3 -- col up
-			elseif ball.dy < 0 then				
+			elseif dist_y < 0 then				
 				return 4 -- col down
 			end
 		end		
@@ -267,21 +284,25 @@ function colCircRect(ball, box)
 end
 
 function colBallBrick(ball, br)
-	local col = colCircRect(ball, br)
-	if col == 0 then return end
-	if col == 1 then -- col left
-		ball.x = ball.x - ball.dx
+	local col = colCircRect(ball, br)	
+	if col == 0 then return end	
+	if col == 1 then -- col left		
 		ball.dx = -ball.dx
-	elseif col == 2 then -- col right
-		ball.x = ball.x - ball.dx
+		ball.x = br.x-ball.r
+	elseif col == 2 then -- col right	
 		ball.dx = -ball.dx
-	elseif col == 3 then -- col up
-		ball.y = ball.y - ball.dy
+		ball.x = br.x+br.w+ball.r
+	elseif col == 3 then -- col up		
 		ball.dy = -ball.dy
-	elseif col == 4 then -- col down
-		ball.y = ball.y - ball.dy
+		ball.y = br.y-ball.r
+	elseif col == 4 then -- col down	
 		ball.dy = -ball.dy
+		ball.y = br.y+br.h+ball.r
 	end
+
+	if time()-coltime < 30 then return end
+	coltime = time()
+
 	sfx(0,"D-7")
 	points = points + 1
 	if br.t > 1 then 
