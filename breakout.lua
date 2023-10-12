@@ -8,12 +8,12 @@
 -- script:  lua
 
 -- TODO:
-	-- add corner collision
+	-- FIX BBALL BRICK COLLISIONS
   	-- paddle sprite	
 		
 
 function BOOT()
-	poke(0x3FFB,1) -- hide cursor
+	-- poke(0x7FC3F,1,1) -- hide cursor
 	cls()
 	gameBOOT()
 	mode=2
@@ -30,7 +30,7 @@ function gameBOOT()
 			self.h =self.y1-self.y0
 		end	
 	}
-	wall:init(6,233,8,136)
+	wall:init(15,222,8,136)
 
 	ball={
 		init=function(self,x,y,r,dx,dy,c)
@@ -41,8 +41,8 @@ function gameBOOT()
 			self.dy=dy		
 			self.c =c
 		end,
-		draw=function(self)
-			circ(self.x,self.y,self.r,self.c)
+		draw=function(self)			
+			circ(self.x,self.y,self.r,self.c)			
 		end	
 	}	
 
@@ -51,19 +51,21 @@ function gameBOOT()
 			self.x =x
 			self.y =y
 			self.w =w
-			self.h =4
+			self.h =5
 			self.sp=sp
 			self.ac=ac
-			self.c =c
 			self.dx=0			
 		end,
 		draw=function(self)
-			rect(self.x,self.y,self.w,self.h,self.c)
+			spr(1, self.x-1, self.y, 0, 1, 0)
+			spr(1, self.x+self.w-7, self.y, 0, 1, 1)
+			rect(self.x+7,self.y,self.w-14,self.h,12)
+			line(self.x+4,self.y+self.h-1,self.x+self.w-5,self.y+self.h-1,11)
 		end	
 	}
-	pad:init(30,120,30,4,0.4,12)	
+	pad:init(30,120,30,4,0.4)	
 	
-	brick_c={{2,3,4},{7,6,5},{8,9,10},{14,13,12}}
+	brick_c={{2,3,4},{7,6,5},{8,9,10},{1,2,3},{14,13,12}}
 	brick={}	
 	function brick:new(x,y,t)
 		local newbrick = {}
@@ -71,7 +73,7 @@ function gameBOOT()
 		self.__index=self
 		newbrick.x=x
 		newbrick.y=y
-		newbrick.w=15
+		newbrick.w=16
 		newbrick.h=5
 		newbrick.c=brick_c[t]
 		newbrick.t=t
@@ -79,38 +81,40 @@ function gameBOOT()
 		return newbrick		
 	end
 	function brick:draw()
-		if self.v then			
-			rect(self.x,self.y,self.w,self.h,self.c[3])
-			rect(self.x+1,self.y+1,self.w-2,self.h-2,self.c[2])
-			line(self.x+1,self.y+self.h-1,self.x+self.w-1,self.y+self.h-1,self.c[1])
-			line(self.x+self.w-1,self.y+1,self.x+self.w-1,self.y+self.h-1,self.c[1])
+		if self.v then
+			if self.t < 6 then			
+				rect(self.x,self.y,self.w,self.h,self.c[3])
+				rect(self.x+1,self.y+1,self.w-2,self.h-2,self.c[2])
+				line(self.x+1,self.y+self.h-1,self.x+self.w-1,self.y+self.h-1,self.c[1])
+				line(self.x+self.w-1,self.y+1,self.x+self.w-1,self.y+self.h-1,self.c[1])	
+			end		
 		end
 	end
 	
 	layout={
-		{2,2,2,2,2,2,2,2,2,2,2,2,2,2},
-		{2,2,2,2,2,2,2,2,2,2,2,2,2,2},
-		{2,2,2,2,2,2,2,2,2,2,2,2,2,2},
-		{1,2,1,2,1,2,1,2,1,2,1,2,1,2},
-		{2,1,2,1,2,1,2,1,2,1,2,1,2,1},
-		{1,2,1,2,1,2,1,2,1,2,1,2,1,2},
-		{2,1,2,1,2,1,2,1,2,1,2,1,2,1},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{1,1,0,0,0,0,0,0,0,0,0,0,1,1},
-		{2,1,0,0,0,0,0,0,0,0,0,0,1,2},
-		{2,1,0,0,0,0,4,4,0,0,0,0,1,2},
-		{2,1,0,0,0,0,4,4,0,0,0,0,1,2},
-		{1,1,0,0,0,0,0,0,0,0,0,0,1,1},		
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{1,1,1,1,1,1,1,1,1,1,1,1,1,1}	
+		{2,2,2,2,2,2,2,2,2,2,2,2},
+		{2,2,2,2,2,2,2,2,2,2,2,2},
+		{2,2,2,2,3,4,4,4,3,2,2,2},
+		{1,2,1,2,0,0,0,0,0,2,1,2},
+		{2,3,3,3,0,0,0,0,0,3,3,1},
+		{0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,5,0,0,0,0,0},
+		{0,0,0,0,0,5,5,0,0,0,0,0},
+		{0,0,0,0,0,5,0,0,0,0,0,0},
+		{0,0,0,0,0,5,5,0,0,0,0,0},
+		{0,0,0,0,0,5,5,0,0,0,0,0},
+		{0,0,0,0,0,5,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0},		
+		{0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0}	
 		
 	}
 	bricks = {}	
-	for i=1,14 do
+	for i=1,12 do
 		for j = 1,15 do
 			if layout[j][i] > 0 then
 				local newbrick=brick:new(
-					wall.x0+2+i*16-16,
+					wall.x0+2+i*17-17,
 					wall.y0+2+j*6-6,
 					layout[j][i])
 				table.insert(bricks,newbrick)
@@ -244,9 +248,9 @@ function game()
 	end  
  
 	-- UI
-	print("LIVES: "..lives,6,1,12)
-	print("TIME: "..math.floor(timeleft/60),60,1,12)
-	print("POINTS: "..points,120,1,12)
+	print("LIVES: "..lives,wall.x0,1,12)
+	print("TIME: "..math.floor(timeleft/60),wall.x0+50,1,12)
+	print("POINTS: "..points,wall.x0+110,1,12)
 
 -- debug
 	--rect(10,8,40,10,12)
@@ -286,6 +290,10 @@ end
 function colBallBrick(ball, br)
 	local col = colCircRect(ball, br)	
 	if col == 0 then return end	
+	if col ~= 0 then
+		ball.x = ball.x - ball.dx
+		ball.y = ball.y - ball.dy
+	end
 	if col == 1 then -- col left		
 		ball.dx = -ball.dx
 		ball.x = br.x-ball.r
@@ -305,7 +313,7 @@ function colBallBrick(ball, br)
 
 	sfx(0,"D-7")
 	points = points + 1
-	if br.t > 1 then 
+	if br.t > 1  and br.t < 5 then 
 		br.t = br.t - 1
 		br.c = brick_c[br.t]
 	elseif br.t==1 then
@@ -361,7 +369,9 @@ function TIC()
 	
 end
 -- <TILES>
--- 001:0eeeeeeeeeddddddeddddddd0eeeeeee00000000000000000000000000000000
+-- 001:0022dccc0222dccc0222dccc0822dccc0088eccc000000000000000000000000
+-- 002:cccd2200cccd2220cccd2220cccd2280ccce8800000000000000000000000000
+-- 017:00000000000cc00000cccc000ccccdc00cccddc000cddc00000cc00000000000
 -- </TILES>
 
 -- <WAVES>
