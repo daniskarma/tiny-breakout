@@ -26,11 +26,11 @@ function gameBOOT()
 			self.x1=x1
 			self.y0=y0
 			self.y1=y1		
-			self.w =self.x1-self.x0
-			self.h =self.y1-self.y0
+			self.w =self.x1-self.x0+1
+			self.h =self.y1-self.y0+1
 		end	
 	}
-	wall:init(15,222,8,136)
+	wall:init(17,223,8,136)
 
 	ball={
 		init=function(self,x,y,r,dx,dy,c)
@@ -60,7 +60,7 @@ function gameBOOT()
 			spr(1, self.x-1, self.y, 0, 1, 0)
 			spr(1, self.x+self.w-7, self.y, 0, 1, 1)
 			rect(self.x+7,self.y,self.w-14,self.h,12)
-			line(self.x+4,self.y+self.h-1,self.x+self.w-5,self.y+self.h-1,11)
+			line(self.x+4,self.y+self.h-1,self.x+self.w-5,self.y+self.h-1,11)						
 		end	
 	}
 	pad:init(30,120,30,4,0.4)	
@@ -91,6 +91,24 @@ function gameBOOT()
 		end
 	end
 	
+	layout1={
+		{0,0,0,0,0,0,0,0,0,0,0,0},	
+		{0,0,0,0,0,0,0,0,0,0,0,0},	
+		{0,0,0,0,0,0,0,0,0,0,0,0},		
+		{0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0},	
+		{0,0,0,0,0,0,0,0,0,0,0,0},	
+		{0,0,0,0,0,0,0,0,0,0,0,0},		
+		{0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0},	
+		{0,0,0,0,0,0,0,0,0,0,0,0},	
+		{0,0,0,0,0,0,0,0,0,0,0,0},		
+		{0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0},		
+		{0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0}		
+	}
+
 	layout={
 		{2,2,2,2,2,2,2,2,2,2,2,2},
 		{2,2,2,2,2,2,2,2,2,2,2,2},
@@ -106,9 +124,9 @@ function gameBOOT()
 		{0,0,0,0,0,5,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0},		
 		{0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0}	
-		
+		{0,0,0,0,0,0,0,0,0,0,0,0}		
 	}
+
 	bricks = {}	
 	for i=1,12 do
 		for j = 1,15 do
@@ -140,7 +158,7 @@ function game()
 	-- function vars
 	is_btnpress=false
 
-	cls()	
+	cls(15)	
 		
 	-- ball launch	
 	if not is_launchball and btnp(4) then
@@ -148,20 +166,36 @@ function game()
 		ball.dy=-1
 		is_launchball=true
 	end
+
+	
+	-- BALL MOVE
+	if ball.dx > 3 then -- speed limit
+		ball.dx= 3
+	elseif ball.dx < -3 then 
+		ball.dx= -3
+	end	
+
+	
+
+	ball.x=ball.x+ball.dx
+	ball.y=ball.y+ball.dy
 	
 	-- collision ball walls
-	if ball.x>wall.x1-ball.r-2 or ball.x<wall.x0+ball.r+2 then
-		ball.dx=-ball.dx
+	if ball.x>wall.x1-ball.r  then -- right
+		ball.x = wall.x1-ball.r-1
+		ball.dx=-math.abs(ball.dx)
 		sfx(0)
 	end	
-	if ball.y<wall.y0+ball.r+1 then
-		ball.dy=-ball.dy
+	if ball.x<wall.x0+ball.r then -- left
+		ball.x = wall.x0+ball.r+1
+		ball.dx=math.abs(ball.dx)
 		sfx(0)
 	end
-	if ball.y>wall.y1+ball.r+4 then
-		ball.dy=-ball.dy
+	if ball.y<wall.y0+ball.r then -- up
+		ball.y = wall.y0+ball.r+1
+		ball.dy=math.abs(ball.dy)
 		sfx(0)
-	end
+	end	
 		
 	-- PADDLE MOVE
 	if btn(2) then -- left
@@ -190,13 +224,13 @@ function game()
 		ball.x=pad.x+pad.w/2
 		ball.y=pad.y-3
 	end	
-	
+		
 	-- collision paddle walls
 	if pad.x<wall.x0+1 then
 		pad.x=wall.x0+1
 	end
-	if pad.x+pad.w >wall.x1-1 then
-		pad.x=wall.x1-pad.w-1 
+	if pad.x+pad.w >wall.x1 then
+		pad.x=wall.x1-pad.w 
 	end
 			 
 	-- collision brick ball
@@ -204,19 +238,7 @@ function game()
 		if br.v then			
 			colBallBrick(ball,br)						
 		end
-	end
-	
-
-	-- BALL MOVE
-	if ball.dx > 3 then -- speed limit
-		ball.dx= 3
-	elseif ball.dx < -3 then 
-		ball.dx= -3
-	end
-	
-
-	ball.x=ball.x+ball.dx
-	ball.y=ball.y+ball.dy
+	end	
 
 	-- collision ball-paddle
 	colBallPad(ball,pad)	
@@ -238,7 +260,7 @@ function game()
 		mode = 0
 	end
  
- 	-- DRAW	
+ 	-- DRAW		
 	rectb(wall.x0,wall.y0,wall.w,wall.h,12) -- walls	
 	ball:draw()
 	pad:draw()
@@ -252,10 +274,11 @@ function game()
 	print("TIME: "..math.floor(timeleft/60),wall.x0+50,1,12)
 	print("POINTS: "..points,wall.x0+110,1,12)
 
--- debug
+	-- debug
+	-- rect(ball.x,ball.y,1,1,2)
 	--rect(10,8,40,10,12)
 	--print("",12,10,2)
---	print(bricks[2].x,12,18,2)
+	--print(bricks[2].x,12,18,2)
 end
 
 function colCircRect(ball, box)
@@ -311,11 +334,11 @@ function colBallBrick(ball, br)
 	if time()-coltime < 30 then return end
 	coltime = time()
 
-	sfx(0,"D-7")
-	points = points + 1
+	sfx(0,"D-7")	
 	if br.t > 1  and br.t < 5 then 
 		br.t = br.t - 1
 		br.c = brick_c[br.t]
+		points = points + 1
 	elseif br.t==1 then
 		br.v=false
 	end
