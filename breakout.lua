@@ -8,7 +8,7 @@
 -- script:  lua
 
 -- TODO:
-	-- FIX BBALL BRICK COLLISIONS
+	-- FIX BALL BRICK COLLISIONS
   	-- paddle sprite	
 		
 
@@ -65,7 +65,7 @@ function gameBOOT()
 	}
 	pad:init(30,120,30,4,0.4)	
 	
-	brick_c={{2,3,4},{7,6,5},{8,9,10},{1,2,3},{14,13,12}}
+	brick_c={{7,6,5},{8,9,10},{2,3,4},{1,2,3},{14,13,12}}
 	brick={}	
 	function brick:new(x,y,t)
 		local newbrick = {}
@@ -86,7 +86,9 @@ function gameBOOT()
 				rect(self.x,self.y,self.w,self.h,self.c[3])
 				rect(self.x+1,self.y+1,self.w-2,self.h-2,self.c[2])
 				line(self.x+1,self.y+self.h-1,self.x+self.w-1,self.y+self.h-1,self.c[1])
-				line(self.x+self.w-1,self.y+1,self.x+self.w-1,self.y+self.h-1,self.c[1])	
+				line(self.x+self.w-1,self.y+1,self.x+self.w-1,self.y+self.h-1,self.c[1])
+				rect(self.x+self.w-1,self.y,1,1,self.c[2])
+				rect(self.x,self.y+self.h-1,1,1,self.c[2])	
 			end		
 		end
 	end
@@ -132,8 +134,8 @@ function gameBOOT()
 		for j = 1,15 do
 			if layout[j][i] > 0 then
 				local newbrick=brick:new(
-					wall.x0+2+i*17-17,
-					wall.y0+2+j*6-6,
+					wall.x0+2+i*16-16,
+					wall.y0+2+j*5-5,
 					layout[j][i])
 				table.insert(bricks,newbrick)
 			end
@@ -166,16 +168,13 @@ function game()
 		ball.dy=-1
 		is_launchball=true
 	end
-
 	
 	-- BALL MOVE
 	if ball.dx > 3 then -- speed limit
 		ball.dx= 3
 	elseif ball.dx < -3 then 
 		ball.dx= -3
-	end	
-
-	
+	end		
 
 	ball.x=ball.x+ball.dx
 	ball.y=ball.y+ball.dy
@@ -303,6 +302,16 @@ function colCircRect(ball, box)
 				return 3 -- col up
 			elseif dist_y < 0 then				
 				return 4 -- col down
+			end	
+		else -- corner
+			if dist_x > 0 and dist_y > 0 then 
+				return 5 -- up left
+			elseif dist_x < 0 and dist_y > 0 then 
+				return 6 -- up right
+			elseif dist_x < 0 and dist_y < 0 then 
+				return 7 -- down right
+			elseif dist_x > 0 and dist_y < 0 then 
+				return 8 -- down left
 			end
 		end		
 	else	
@@ -312,23 +321,39 @@ end
 
 function colBallBrick(ball, br)
 	local col = colCircRect(ball, br)	
-	if col == 0 then return end	
-	if col ~= 0 then
-		ball.x = ball.x - ball.dx
-		ball.y = ball.y - ball.dy
-	end
-	if col == 1 then -- col left		
+	if col == 0 then return end		
+	if col == 1 then -- left		
+		ball.x = br.x-ball.r-1
 		ball.dx = -ball.dx
-		ball.x = br.x-ball.r
-	elseif col == 2 then -- col right	
-		ball.dx = -ball.dx
+	elseif col == 2 then -- right	
 		ball.x = br.x+br.w+ball.r
-	elseif col == 3 then -- col up		
-		ball.dy = -ball.dy
-		ball.y = br.y-ball.r
-	elseif col == 4 then -- col down	
-		ball.dy = -ball.dy
+		ball.dx = -ball.dx
+	elseif col == 3 then -- up
+		ball.y = br.y-ball.r-1		
+		ball.dy = -ball.dy		
+	elseif col == 4 then -- down		
 		ball.y = br.y+br.h+ball.r
+		ball.dy = -ball.dy
+	elseif col == 5 then -- up left		
+		ball.y = br.y-ball.r-1
+		ball.x = br.x-ball.r-1
+		ball.dx = -ball.dx
+		ball.dy = -ball.dy
+	elseif col == 6 then -- up right
+		ball.y = br.y-ball.r-1
+		ball.x = br.x+br.w+ball.r
+		ball.dx = -ball.dx
+		ball.dy = -ball.dy
+	elseif col == 7 then -- down right
+		ball.y = br.y+br.h+ball.r
+		ball.x = br.x+br.w+ball.r
+		ball.dx = -ball.dx
+		ball.dy = -ball.dy
+	elseif col == 8 then -- down left
+		ball.y = br.y+br.h+ball.r
+		ball.x = br.x-ball.r-1
+		ball.dx = -ball.dx
+		ball.dy = -ball.dy
 	end
 
 	if time()-coltime < 30 then return end
