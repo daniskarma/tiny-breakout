@@ -30,7 +30,7 @@ function gameBOOT()
 			self.h =self.y1-self.y0+1
 		end	
 	}
-	wall:init(17,223,8,136)
+	wall:init(29,212,8,136)
 
 	ball={
 		init=function(self,x,y,r,dx,dy,c)
@@ -63,7 +63,7 @@ function gameBOOT()
 			line(self.x+4,self.y+self.h-1,self.x+self.w-5,self.y+self.h-1,11)						
 		end	
 	}
-	pad:init(30,120,30,4,0.4)	
+	pad:init(44,125,30,4,0.4)	
 	
 	brick_c={{7,6,5},{8,9,10},{2,3,4},{1,2,3},{14,13,12}}
 	brick={}	
@@ -73,7 +73,7 @@ function gameBOOT()
 		self.__index=self
 		newbrick.x=x
 		newbrick.y=y
-		newbrick.w=16
+		newbrick.w=14
 		newbrick.h=5
 		newbrick.c=brick_c[t]
 		newbrick.t=t
@@ -112,30 +112,30 @@ function gameBOOT()
 	}
 
 	layout={
-		{2,2,2,2,2,2,2,2,2,2,2,2},
-		{2,2,2,2,2,2,2,2,2,2,2,2},
-		{2,2,2,2,3,4,4,4,3,2,2,2},
-		{1,2,1,2,0,0,0,0,0,2,1,2},
-		{2,3,3,3,0,0,0,0,0,3,3,1},
-		{0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,5,0,0,0,0,0},
-		{0,0,0,0,0,5,5,0,0,0,0,0},
-		{0,0,0,0,0,5,0,0,0,0,0,0},
-		{0,0,0,0,0,5,5,0,0,0,0,0},
-		{0,0,0,0,0,5,5,0,0,0,0,0},
-		{0,0,0,0,0,5,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0},		
-		{0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0}		
+		{2,2,2,2,2,2,2,2,2,2,2,2,2},
+		{2,2,2,2,2,2,2,2,2,2,2,2,2},
+		{2,2,2,2,3,4,4,4,3,2,2,2,2},
+		{1,2,1,2,0,0,0,0,0,0,2,1,2},
+		{2,3,3,3,0,0,0,0,0,0,3,3,1},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,5,5,5,0,0,0,0,0},
+		{0,0,0,0,0,5,0,5,0,0,0,0,0},
+		{0,0,0,0,0,5,5,5,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0}	
 	}
 
 	bricks = {}	
-	for i=1,12 do
+	for i=1,13 do
 		for j = 1,15 do
 			if layout[j][i] > 0 then
 				local newbrick=brick:new(
-					wall.x0+2+i*16-16,
-					wall.y0+2+j*5-5,
+					wall.x0+1+i*14-14,
+					wall.y0+1+j*5-5,
 					layout[j][i])
 				table.insert(bricks,newbrick)
 			end
@@ -146,7 +146,10 @@ function gameBOOT()
 	points=0
 	timeleft=360*60
 
-	coltime = time()
+	ball_maxdx = 2
+	ball_maxdy = 2	
+	ball_startdx = 1.2
+	ball_startdy = 1.2
 	
 	gameGo()
 end
@@ -159,21 +162,22 @@ end
 function game()
 	-- function vars
 	is_btnpress=false
+	is_collided=false
 
 	cls(15)	
 		
 	-- ball launch	
 	if not is_launchball and btnp(4) then
-		ball.dx=1
-		ball.dy=-1
+		ball.dx=ball_startdx
+		ball.dy=-ball_startdy
 		is_launchball=true
 	end
 	
 	-- BALL MOVE
-	if ball.dx > 3 then -- speed limit
-		ball.dx= 3
-	elseif ball.dx < -3 then 
-		ball.dx= -3
+	if ball.dx > ball_maxdx then -- speed limit
+		ball.dx= ball_maxdx
+	elseif ball.dx < -ball_maxdx then 
+		ball.dx= -ball_maxdx
 	end		
 
 	ball.x=ball.x+ball.dx
@@ -234,6 +238,7 @@ function game()
 			 
 	-- collision brick ball
 	for i, br in ipairs(bricks) do
+		if is_collided then break end
 		if br.v then			
 			colBallBrick(ball,br)						
 		end
@@ -290,7 +295,7 @@ function colCircRect(ball, box)
 	local maxdist_x = box.w/2
 	local maxdist_y = box.h/2
 
-	if math.abs(dist_x) <= maxdist_x+(ball.r) and math.abs(dist_y) <= maxdist_y+ball.r then	 	
+	if math.abs(dist_x) < maxdist_x+(ball.r) and math.abs(dist_y) < maxdist_y+ball.r then	 	
 		if math.abs(dist_x) >= maxdist_x then
 			if dist_x > 0 then				
 				return 1 -- col left
@@ -303,16 +308,16 @@ function colCircRect(ball, box)
 			elseif dist_y < 0 then				
 				return 4 -- col down
 			end	
-		else -- corner
-			if dist_x > 0 and dist_y > 0 then 
-				return 5 -- up left
-			elseif dist_x < 0 and dist_y > 0 then 
-				return 6 -- up right
-			elseif dist_x < 0 and dist_y < 0 then 
-				return 7 -- down right
-			elseif dist_x > 0 and dist_y < 0 then 
-				return 8 -- down left
-			end
+		-- else -- corner
+		-- 	if dist_x > 0 and dist_y > 0 then 
+		-- 		return 5 -- up left
+		-- 	elseif dist_x < 0 and dist_y > 0 then 
+		-- 		return 6 -- up right
+		-- 	elseif dist_x < 0 and dist_y < 0 then 
+		-- 		return 7 -- down right
+		-- 	elseif dist_x > 0 and dist_y < 0 then 
+		-- 		return 8 -- down left
+		-- 	end
 		end		
 	else	
 		return 0 -- sin colision		
@@ -320,44 +325,43 @@ function colCircRect(ball, box)
 end
 
 function colBallBrick(ball, br)
-	local col = colCircRect(ball, br)	
+	if is_collided then return end
+	local col = colCircRect(ball, br)
 	if col == 0 then return end		
 	if col == 1 then -- left		
 		ball.x = br.x-ball.r-1
-		ball.dx = -ball.dx
+		ball.dx = -math.abs(ball.dx)
 	elseif col == 2 then -- right	
 		ball.x = br.x+br.w+ball.r
-		ball.dx = -ball.dx
+		ball.dx = math.abs(ball.dx)
 	elseif col == 3 then -- up
 		ball.y = br.y-ball.r-1		
-		ball.dy = -ball.dy		
+		ball.dy = -math.abs(ball.dy)		
 	elseif col == 4 then -- down		
 		ball.y = br.y+br.h+ball.r
-		ball.dy = -ball.dy
-	elseif col == 5 then -- up left		
-		ball.y = br.y-ball.r-1
-		ball.x = br.x-ball.r-1
-		ball.dx = -ball.dx
-		ball.dy = -ball.dy
-	elseif col == 6 then -- up right
-		ball.y = br.y-ball.r-1
-		ball.x = br.x+br.w+ball.r
-		ball.dx = -ball.dx
-		ball.dy = -ball.dy
-	elseif col == 7 then -- down right
-		ball.y = br.y+br.h+ball.r
-		ball.x = br.x+br.w+ball.r
-		ball.dx = -ball.dx
-		ball.dy = -ball.dy
-	elseif col == 8 then -- down left
-		ball.y = br.y+br.h+ball.r
-		ball.x = br.x-ball.r-1
-		ball.dx = -ball.dx
-		ball.dy = -ball.dy
+		ball.dy = math.abs(ball.dy)
+	-- elseif col == 5 then -- up left		
+	-- 	ball.y = br.y-ball.r-1
+	-- 	ball.x = br.x-ball.r-1
+	-- 	ball.dx = -ball.dx
+	-- 	ball.dy = -ball.dy
+	-- elseif col == 6 then -- up right
+	-- 	ball.y = br.y-ball.r-1
+	-- 	ball.x = br.x+br.w+ball.r
+	-- 	ball.dx = -ball.dx
+	-- 	ball.dy = -ball.dy
+	-- elseif col == 7 then -- down right
+	-- 	ball.y = br.y+br.h+ball.r
+	-- 	ball.x = br.x+br.w+ball.r
+	-- 	ball.dx = -ball.dx
+	-- 	ball.dy = -ball.dy
+	-- elseif col == 8 then -- down left
+	-- 	ball.y = br.y+br.h+ball.r
+	-- 	ball.x = br.x-ball.r-1
+	-- 	ball.dx = -ball.dx
+	-- 	ball.dy = -ball.dy
 	end
-
-	if time()-coltime < 30 then return end
-	coltime = time()
+	is_collided=true	
 
 	sfx(0,"D-7")	
 	if br.t > 1  and br.t < 5 then 
@@ -371,18 +375,20 @@ end
 
 function colBallPad(ball, pad)
 	local col = colCircRect(ball, pad)	
-	if col == 0 then return end
+	if col == 0 or col == 4 then return end
 	local pad_cx=pad.x+(pad.w/2)
+	local pad_cy=pad.y+(pad.h/2)
 	local dist_x=(pad_cx-ball.x)/(pad.w/2)
 	ball.dx=ball.dx-dist_x
 
-	if col == 1 or col == 2 then -- left right
+	if ball.y <= pad_cy then		
+		ball.y = pad.y-ball.r
 		ball.dy=-math.abs(ball.dy)
+	else
+		ball.y = pad.y+pad.h+ball.r
+		ball.dy=math.abs(ball.dy)
 	end
-	if col == 3 then -- left right up
-		ball.y=pad.y-ball.r
-		ball.dy=-math.abs(ball.dy)
-	end
+
 	sfx(0,"D-5")	
 end
 
