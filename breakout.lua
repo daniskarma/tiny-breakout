@@ -63,7 +63,7 @@ function gameBOOT()
 			line(self.x+4,self.y+self.h-1,self.x+self.w-5,self.y+self.h-1,11)						
 		end	
 	}
-	pad:init(44,125,30,4,0.4)	
+	pad:init(42,125,30,4,0.4)	
 	
 	brick_c={{7,6,5},{8,9,10},{2,3,4},{1,2,3},{14,13,12}}
 	brick={}	
@@ -118,7 +118,7 @@ function gameBOOT()
 		{1,2,1,2,0,0,0,0,0,0,2,1,2},
 		{2,3,3,3,0,0,0,0,0,0,3,3,1},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{1,1,1,1,1,1,1,1,1,1,1,1,1},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,5,5,5,0,0,0,0,0},
 		{0,0,0,0,0,5,0,5,0,0,0,0,0},
@@ -146,10 +146,10 @@ function gameBOOT()
 	points=0
 	timeleft=360*60
 
-	ball_maxdx = 2
+	ball_maxdx = 3
 	ball_maxdy = 2	
-	ball_startdx = 1.2
-	ball_startdy = 1.2
+	ball_startdx = 1.3
+	ball_startdy = 1.3
 	
 	gameGo()
 end
