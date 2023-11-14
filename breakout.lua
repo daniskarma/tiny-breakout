@@ -63,11 +63,11 @@ function gameBOOT()
 			line(self.x+4,self.y+self.h-1,self.x+self.w-5,self.y+self.h-1,11)						
 		end	
 	}
-	pad:init(42,125,30,4,0.4)	
+	pad:init(58,125,30,4,0.4)	
 	
 	brick_c={{7,6,5},{8,9,10},{2,3,4},{1,2,3},{14,13,12}}
 	brick={}	
-	function brick:new(x,y,t)
+	function brick:new(x,y,t,id)
 		local newbrick = {}
 		setmetatable(newbrick, self)
 		self.__index=self
@@ -78,6 +78,7 @@ function gameBOOT()
 		newbrick.c=brick_c[t]
 		newbrick.t=t
 		newbrick.v=true
+		newbrick.id=id
 		return newbrick		
 	end
 	function brick:draw()
@@ -119,14 +120,14 @@ function gameBOOT()
 		{2,3,3,3,0,0,0,0,0,0,3,3,1},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{1,1,1,1,1,1,1,1,1,1,1,1,1},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,5,5,5,0,0,0,0,0},
-		{0,0,0,0,0,5,0,5,0,0,0,0,0},
-		{0,0,0,0,0,5,5,5,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0}	
+		{0,0,0,0,0,0,0,0,0,0,0,0,5},
+		{0,0,0,0,0,5,5,5,0,0,0,0,5},
+		{0,0,0,0,0,5,0,5,0,0,0,0,5},
+		{0,0,0,0,0,5,5,5,0,0,0,0,5},
+		{0,0,0,0,0,0,0,0,0,0,0,0,5},
+		{0,0,0,0,0,0,0,0,0,0,0,0,5},	
+		{0,0,0,0,0,0,0,0,0,0,0,0,5},
+		{0,0,0,0,0,0,0,0,0,0,0,0,5}	
 	}
 
 	bricks = {}	
@@ -136,7 +137,8 @@ function gameBOOT()
 				local newbrick=brick:new(
 					wall.x0+1+i*14-14,
 					wall.y0+1+j*5-5,
-					layout[j][i])
+					layout[j][i],
+					{i,j}})
 				table.insert(bricks,newbrick)
 			end
 		end
@@ -148,8 +150,8 @@ function gameBOOT()
 
 	ball_maxdx = 3
 	ball_maxdy = 2	
-	ball_startdx = 1.3
-	ball_startdy = 1.3
+	ball_startdx = 1.4
+	ball_startdy = 1.4
 	
 	gameGo()
 end
@@ -286,8 +288,8 @@ function game()
 end
 
 function colCircRect(ball, box)
-	local box_cx=box.x+(box.w/2)
-	local box_cy=box.y+(box.h/2)
+	local box_cx=box.x+((box.w-1)/2)
+	local box_cy=box.y+((box.h-1)/2)
 	
 	local dist_x=box_cx-ball.x
 	local dist_y=box_cy-ball.y
@@ -295,19 +297,28 @@ function colCircRect(ball, box)
 	local maxdist_x = box.w/2
 	local maxdist_y = box.h/2
 
-	if math.abs(dist_x) < maxdist_x+(ball.r) and math.abs(dist_y) < maxdist_y+ball.r then	 	
-		if math.abs(dist_x) >= maxdist_x then
-			if dist_x > 0 then				
-				return 1 -- col left
-			elseif dist_x < 0 then				
-				return 2 -- col right
-			end
-		elseif math.abs(dist_y) >= maxdist_y then
-			if dist_y > 0 then				
-				return 3 -- col up
-			elseif dist_y < 0 then				
-				return 4 -- col down
-			end	
+	if math.abs(dist_x) < maxdist_x+(ball.r) and math.abs(dist_y) < maxdist_y+ball.r then	
+		if ball.dx == 0 then
+			if ball.dy < 0 then return 4 -- col down
+			else return 3 -- col up		
+		elseif ball.dy == 0 then
+			if ball.dx > 0 then return 1 -- col left
+			else return 2 -- col right
+		elseif
+
+
+		-- if math.abs(dist_y) < maxdist_y then
+		-- 	if dist_x > 0 then				
+		-- 		return 1 -- col left
+		-- 	elseif dist_x < 0 then				
+		-- 		return 2 -- col right
+		-- 	end
+		-- elseif math.abs(dist_x) < maxdist_y then
+		-- 	if dist_y > 0 then				
+		-- 		return 3 -- col up
+		-- 	elseif dist_y < 0 then				
+		-- 		return 4 -- col down
+		-- 	end	
 		-- else -- corner
 		-- 	if dist_x > 0 and dist_y > 0 then 
 		-- 		return 5 -- up left
@@ -318,48 +329,41 @@ function colCircRect(ball, box)
 		-- 	elseif dist_x > 0 and dist_y < 0 then 
 		-- 		return 8 -- down left
 		-- 	end
-		end		
+		-- end		
 	else	
 		return 0 -- sin colision		
 	end
 end
+
 
 function colBallBrick(ball, br)
 	if is_collided then return end
 	local col = colCircRect(ball, br)
 	if col == 0 then return end		
 	if col == 1 then -- left		
-		ball.x = br.x-ball.r-1
+		ball.x = br.x-ball.r
 		ball.dx = -math.abs(ball.dx)
 	elseif col == 2 then -- right	
 		ball.x = br.x+br.w+ball.r
 		ball.dx = math.abs(ball.dx)
 	elseif col == 3 then -- up
-		ball.y = br.y-ball.r-1		
+		ball.y = br.y-ball.r		
 		ball.dy = -math.abs(ball.dy)		
 	elseif col == 4 then -- down		
 		ball.y = br.y+br.h+ball.r
 		ball.dy = math.abs(ball.dy)
-	-- elseif col == 5 then -- up left		
-	-- 	ball.y = br.y-ball.r-1
-	-- 	ball.x = br.x-ball.r-1
-	-- 	ball.dx = -ball.dx
-	-- 	ball.dy = -ball.dy
-	-- elseif col == 6 then -- up right
-	-- 	ball.y = br.y-ball.r-1
-	-- 	ball.x = br.x+br.w+ball.r
-	-- 	ball.dx = -ball.dx
-	-- 	ball.dy = -ball.dy
-	-- elseif col == 7 then -- down right
-	-- 	ball.y = br.y+br.h+ball.r
-	-- 	ball.x = br.x+br.w+ball.r
-	-- 	ball.dx = -ball.dx
-	-- 	ball.dy = -ball.dy
-	-- elseif col == 8 then -- down left
-	-- 	ball.y = br.y+br.h+ball.r
-	-- 	ball.x = br.x-ball.r-1
-	-- 	ball.dx = -ball.dx
-	-- 	ball.dy = -ball.dy
+	elseif col == 5 then -- up left		
+		ball.y = br.y-ball.r		
+		ball.dy = -math.abs(ball.dy)
+	elseif col == 6 then -- up right
+		ball.y = br.y-ball.r		
+		ball.dy = -math.abs(ball.dy)
+	elseif col == 7 then -- down right
+		ball.y = br.y+br.h+ball.r
+		ball.dy = math.abs(ball.dy)	
+	elseif col == 8 then -- down left
+		ball.y = br.y+br.h+ball.r
+		ball.dy = math.abs(ball.dy)
 	end
 	is_collided=true	
 
@@ -372,6 +376,8 @@ function colBallBrick(ball, br)
 		br.v=false
 	end
 end
+
+
 
 function colBallPad(ball, pad)
 	local col = colCircRect(ball, pad)	
