@@ -138,7 +138,7 @@ function gameBOOT()
 					wall.x0+1+i*14-14,
 					wall.y0+1+j*5-5,
 					layout[j][i],
-					{i,j}})
+					{i,j})
 				table.insert(bricks,newbrick)
 			end
 		end
@@ -298,38 +298,29 @@ function colCircRect(ball, box)
 	local maxdist_y = box.h/2
 
 	if math.abs(dist_x) < maxdist_x+(ball.r) and math.abs(dist_y) < maxdist_y+ball.r then	
-		if ball.dx == 0 then
-			if ball.dy < 0 then return 4 -- col down
-			else return 3 -- col up		
-		elseif ball.dy == 0 then
-			if ball.dx > 0 then return 1 -- col left
-			else return 2 -- col right
-		elseif
-
-
-		-- if math.abs(dist_y) < maxdist_y then
-		-- 	if dist_x > 0 then				
-		-- 		return 1 -- col left
-		-- 	elseif dist_x < 0 then				
-		-- 		return 2 -- col right
-		-- 	end
-		-- elseif math.abs(dist_x) < maxdist_y then
-		-- 	if dist_y > 0 then				
-		-- 		return 3 -- col up
-		-- 	elseif dist_y < 0 then				
-		-- 		return 4 -- col down
-		-- 	end	
-		-- else -- corner
-		-- 	if dist_x > 0 and dist_y > 0 then 
-		-- 		return 5 -- up left
-		-- 	elseif dist_x < 0 and dist_y > 0 then 
-		-- 		return 6 -- up right
-		-- 	elseif dist_x < 0 and dist_y < 0 then 
-		-- 		return 7 -- down right
-		-- 	elseif dist_x > 0 and dist_y < 0 then 
-		-- 		return 8 -- down left
-		-- 	end
-		-- end		
+		if math.abs(dist_y) < maxdist_y then
+			if dist_x > 0 then				
+				return 1 -- col left
+			elseif dist_x < 0 then				
+				return 2 -- col right
+			end
+		elseif math.abs(dist_x) < maxdist_y then
+			if dist_y > 0 then				
+				return 3 -- col up
+			elseif dist_y < 0 then				
+				return 4 -- col down
+			end	
+		else -- corner
+			if dist_x > 0 and dist_y > 0 then 
+				return 5 -- up left
+			elseif dist_x < 0 and dist_y > 0 then 
+				return 6 -- up right
+			elseif dist_x < 0 and dist_y < 0 then 
+				return 7 -- down right
+			elseif dist_x > 0 and dist_y < 0 then 
+				return 8 -- down left
+			end
+		end		
 	else	
 		return 0 -- sin colision		
 	end
