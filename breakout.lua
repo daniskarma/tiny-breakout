@@ -7,6 +7,12 @@
 -- version: 0.1
 -- script:  lua
 
+-- BUGLIST
+-- A veces en las esquinas hace colisión rara. ¿Mirar de comprobar estado de bloques adjacentes para solucionar?
+		-- bug1 = al chocar con esquina en muro de adyacentes no rebota en la dirección debida
+		-- bug2 = al chocar con una esquina se teletransporta al otro lado del ladrillo
+
+-- TODO
 		
 
 function BOOT()
@@ -87,26 +93,29 @@ function gameBOOT()
 				line(self.x+self.w-1,self.y+1,self.x+self.w-1,self.y+self.h-1,self.c[1])
 				rect(self.x+self.w-1,self.y,1,1,self.c[2])
 				rect(self.x,self.y+self.h-1,1,1,self.c[2])	
+			elseif self.t == 6 then
+				spr(3, self.x, self.y, 15)
+				spr(4, self.x+8, self.y, 15)		
 			end		
 		end
 	end
 	
 	layout1={
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0},		
-		{0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0},		
-		{0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0},		
-		{0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0},		
-		{0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0}		
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0}	
 	}
 
 	layout1={
@@ -128,20 +137,20 @@ function gameBOOT()
 	}
 
 	layout={
+		{5,4,4,4,4,4,4,4,4,4,4,4,5},	
+		{5,0,0,0,0,0,0,0,0,0,0,0,5},
+		{5,0,0,0,0,0,0,0,0,0,0,0,5},		
 		{5,0,0,0,0,0,0,0,0,0,0,0,5},	
-		{5,4,4,4,4,4,4,4,4,4,4,4,5},
+		{5,0,0,4,4,4,4,4,4,4,4,4,5},
 		{5,0,0,0,0,0,0,0,0,0,0,0,5},		
 		{5,0,0,0,0,0,0,0,0,0,0,0,5},	
 		{5,0,0,0,0,0,0,0,0,0,0,0,5},
-		{5,3,3,3,3,3,3,3,3,3,3,3,5},		
+		{5,0,0,1,3,3,3,3,3,3,3,3,5},		
 		{5,0,0,0,0,0,0,0,0,0,0,0,5},	
 		{5,0,0,0,0,0,0,0,0,0,0,0,5},
-		{5,2,2,2,2,2,2,2,2,2,2,2,5},		
-		{5,0,0,0,0,0,0,0,0,0,0,0,5},	
 		{5,0,0,0,0,0,0,0,0,0,0,0,5},
-		{5,1,1,1,1,1,1,1,1,1,1,1,5},	
-		{5,0,0,0,0,0,0,0,0,0,0,0,5},	
-		{5,0,0,0,0,0,0,0,0,0,0,0,5},
+		{5,4,4,4,4,0,6,0,4,1,0,0,5},	
+		{5,0,0,0,0,0,0,0,0,0,0,0,5},		
 		{5,0,0,0,0,0,0,0,0,0,0,0,5}	
 	}
 
@@ -315,12 +324,13 @@ function colCircRect(ball, box)
 	if math.abs(dist_x) > maxdist_x+(ball.r) or math.abs(dist_y) > maxdist_y+ball.r then return 0 end -- no col
 	if ball.dx == 0 and ball.dy > 0 then return 3 end -- col up
 	if ball.dx == 0 and ball.dy < 0 then return 4 end -- col down
+
 	if ball.dx > 0 and ball.dy > 0 then -- up left
 		if ball.x-ball.dx >= box.x then return 3 end -- col up
 		if ball.y-ball.dy >= box.y then return 1 end -- col left
 		local p1 = ball.dx/ball.dy
-		local p2 = (ball.x-ball.dx-box.x)/(ball.y-ball.dy-box.y)
-		if p1 >= p2 then return 4 -- col up
+		local p2 = (box.x-ball.x-ball.dx)/(box.y-ball.y-ball.dy)
+		if p1 >= p2 then return 3 -- col up
 		else return 1 -- col left
 		end
 	end
@@ -396,6 +406,9 @@ function colBallBrick(ball, br)
 		br.c = brick_c[br.t]		
 	elseif br.t==1 then
 		br.v=false
+	elseif br.t==6 then
+		br.v=false
+		points = points + 4
 	end
 end
 
@@ -450,12 +463,13 @@ function TIC()
 	end
 	
 end
--- BUGLIST
--- A veces en las esquinas hace colisión rara. ¿Mirar de comprobar estado de bloques adjacentes para solucionar?
+
 
 -- <TILES>
 -- 001:0022dccc0222dccc0222dccc0822dccc0088eccc000000000000000000000000
 -- 002:cccd2200cccd2220cccd2220cccd2280ccce8800000000000000000000000000
+-- 003:fddddddafdeeeeabfdeeeabcfdeeeeabfe00000affffffffffffffffffffffff
+-- 004:adddddefbaeeee0fcbaeee0fbaeeee0fa000000fffffffffffffffffffffffff
 -- 017:00000000000cc00000cccc000ccccdc00cccddc000cddc00000cc00000000000
 -- </TILES>
 
