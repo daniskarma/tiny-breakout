@@ -297,34 +297,50 @@ function colCircRect(ball, box)
 	local maxdist_x = box.w/2
 	local maxdist_y = box.h/2
 
-	if math.abs(dist_x) < maxdist_x+(ball.r) and math.abs(dist_y) < maxdist_y+ball.r then	
-		if math.abs(dist_y) < maxdist_y then
-			if dist_x > 0 then				
-				return 1 -- col left
-			elseif dist_x < 0 then				
-				return 2 -- col right
-			end
-		elseif math.abs(dist_x) < maxdist_y then
-			if dist_y > 0 then				
-				return 3 -- col up
-			elseif dist_y < 0 then				
-				return 4 -- col down
-			end	
-		else -- corner
-			if dist_x > 0 and dist_y > 0 then 
-				return 5 -- up left
-			elseif dist_x < 0 and dist_y > 0 then 
-				return 6 -- up right
-			elseif dist_x < 0 and dist_y < 0 then 
-				return 7 -- down right
-			elseif dist_x > 0 and dist_y < 0 then 
-				return 8 -- down left
-			end
-		end		
-	else	
-		return 0 -- sin colision		
+	if math.abs(dist_x) > maxdist_x+(ball.r) or math.abs(dist_y) > maxdist_y+ball.r then return 0 end -- no col
+	if ball.dx == 0 and ball.dy > 0 then return 3 end -- col up
+	if ball.dx == 0 and ball.dy < 0 then return 4 end -- col down
+	if ball.dx > 0 and ball.dy > 0 then -- up left
+		if ball.x-ball.dx >= box.x then return 3 end -- col up
+		if ball.y-ball.dy >= box.y then return 1 end -- col left
+		local p1 = ball.dx/ball.dy
+		local p2 = (ball.x-ball.dx-box.x)/(ball.y-ball.dy-box.y)
+		if p1 >= p2 then return 4 -- col up
+		else return 1 -- col left
+		end
 	end
+	if ball.dx > 0 and ball.dy < 0 then -- down left
+		if ball.x-ball.dx >= box.x then return 4 end -- col down
+		if ball.y-ball.dy <= box.y+box.h then return 1 end -- col left
+		local p1 = ball.dx/ball.dy
+		local p2 = (box.x-ball.x-ball.dx)/(box.y+box.h-ball.y-ball.dy)
+		if p1 >= p2 then return 4 -- col down
+		else return 1  -- col left
+		end
+	end
+	if ball.dx < 0 and ball.dy < 0 then -- down right
+		if ball.x-ball.dx <= box.x+box.w then return 4 end -- col down
+		if ball.y-ball.dy <= box.y+box.h then return 2 end -- col right
+		local p1 = ball.dx/ball.dy
+		local p2 = (ball.x-ball.dx-box.x+box.w)/(ball.y-ball.dy-box.y+box.h)
+		if p1 >= p2 then return 4 -- col down
+		else return 2 -- col right
+		end
+	end
+
+	if ball.dx < 0 and ball.dy > 0 then -- up right
+		if ball.x-ball.dx <= box.x+box.w then return 3 end -- col up
+		if ball.y-ball.dy >= box.y then return 2 end -- col right
+		local p1 = ball.dx/ball.dy
+		local p2 = (ball.x-ball.dx-box.x+box.w)/(ball.y-ball.dy-box.y)
+		if p1 >= p2 then return 3 -- col up
+		else return 2  -- col right
+		end
+	end
+
+	return 0
 end
+
 
 
 function colBallBrick(ball, br)
