@@ -435,6 +435,9 @@ function TIC()
 	end
 	
 end
+-- BUGLIST
+-- A veces en las esquinas hace colisión rara. ¿Mirar de comprobar estado de bloques adjacentes para solucionar?
+
 -- <TILES>
 -- 001:0022dccc0222dccc0222dccc0822dccc0088eccc000000000000000000000000
 -- 002:cccd2200cccd2220cccd2220cccd2280ccce8800000000000000000000000000
