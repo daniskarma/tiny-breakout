@@ -136,21 +136,21 @@ function gameBOOT()
 	}
 
 	layout={
-		{5,4,4,4,4,4,4,4,4,4,4,4,5},	
+		{5,5,5,5,5,5,5,5,5,5,5,5,5},	
+		{5,0,0,0,0,0,0,0,0,0,0,0,5},
+		{5,0,0,5,5,2,2,2,5,5,0,0,5},		
+		{5,0,0,0,5,0,0,0,5,0,0,0,5},	
+		{5,0,0,0,5,0,6,0,5,0,0,0,5},
+		{5,0,0,0,5,0,0,0,5,0,0,0,5},		
+		{5,0,0,0,5,5,5,5,5,0,0,0,5},	
 		{5,0,0,0,0,0,0,0,0,0,0,0,5},
 		{5,0,0,0,0,0,0,0,0,0,0,0,5},		
 		{5,0,0,0,0,0,0,0,0,0,0,0,5},	
-		{5,0,0,4,4,4,4,4,4,4,4,4,5},
-		{5,0,0,0,0,0,0,0,0,0,0,0,5},		
+		{5,0,0,5,5,5,5,5,5,5,5,5,5},
+		{5,0,0,0,0,0,0,0,0,0,0,0,5},
 		{5,0,0,0,0,0,0,0,0,0,0,0,5},	
-		{5,0,0,0,0,0,0,0,0,0,0,0,5},
-		{5,0,0,1,3,3,3,3,3,3,3,3,5},		
-		{5,0,0,0,0,0,0,0,0,0,0,0,5},	
-		{5,0,0,0,0,0,0,0,0,0,0,0,5},
-		{5,0,0,0,0,0,0,0,0,0,0,0,5},
-		{5,4,4,4,4,0,6,0,4,1,0,0,5},	
 		{5,0,0,0,0,0,0,0,0,0,0,0,5},		
-		{5,0,0,0,0,0,0,0,0,0,0,0,5}	
+		{5,5,5,5,5,5,5,5,5,5,0,0,5}	
 	}
 
 	bricks = {}	
@@ -383,18 +383,18 @@ function colBallBrick(ball, br)
 	elseif col == 4 then -- down		
 		ball.y = br.y+br.h+ball.r
 		ball.dy = math.abs(ball.dy)
-	elseif col == 5 then -- up left		
-		ball.y = br.y-ball.r		
-		ball.dy = -math.abs(ball.dy)
-	elseif col == 6 then -- up right
-		ball.y = br.y-ball.r		
-		ball.dy = -math.abs(ball.dy)
-	elseif col == 7 then -- down right
-		ball.y = br.y+br.h+ball.r
-		ball.dy = math.abs(ball.dy)	
-	elseif col == 8 then -- down left
-		ball.y = br.y+br.h+ball.r
-		ball.dy = math.abs(ball.dy)
+	-- elseif col == 5 then -- up left		
+	-- 	ball.y = br.y-ball.r		
+	-- 	ball.dy = -math.abs(ball.dy)
+	-- elseif col == 6 then -- up right
+	-- 	ball.y = br.y-ball.r		
+	-- 	ball.dy = -math.abs(ball.dy)
+	-- elseif col == 7 then -- down right
+	-- 	ball.y = br.y+br.h+ball.r
+	-- 	ball.dy = math.abs(ball.dy)	
+	-- elseif col == 8 then -- down left
+	-- 	ball.y = br.y+br.h+ball.r
+	-- 	ball.dy = math.abs(ball.dy)
 	end
 	is_collided=true	
 
