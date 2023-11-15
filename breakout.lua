@@ -10,7 +10,6 @@
 -- BUGLIST
 -- A veces en las esquinas hace colisión rara. ¿Mirar de comprobar estado de bloques adjacentes para solucionar?
 		-- bug1 = al chocar con esquina en muro de adyacentes no rebota en la dirección debida
-		-- bug2 = al chocar con una esquina se teletransporta al otro lado del ladrillo
 
 -- TODO
 		
