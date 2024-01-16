@@ -77,9 +77,14 @@ function gameBOOT()
 		newbrick.y=y
 		newbrick.w=14
 		newbrick.h=5
-		newbrick.c=brick_c[t]
+		newbrick.c=brick_c[t]		
 		newbrick.t=t
-		newbrick.v=true
+		if newbrick.t > 0 then
+			newbrick.v=true
+		else
+			newbrick.v=false
+		end
+
 		newbrick.id=id
 		return newbrick		
 	end
@@ -154,16 +159,16 @@ function gameBOOT()
 	}
 
 	bricks = {}	
-	for i=1,13 do
-		for j = 1,15 do
-			if layout[j][i] > 0 then
+	for i=1,15 do
+		for j = 1,13 do
+			--if layout[i][j] > 0 then
 				local newbrick=brick:new(
-					wall.x0+1+i*14-14,
-					wall.y0+1+j*5-5,
-					layout[j][i],
+					wall.x0+1+j*14-14,
+					wall.y0+1+i*5-5,
+					layout[i][j],
 					{i,j})
 				table.insert(bricks,newbrick)
-			end
+			--end
 		end
 	end
 
@@ -247,11 +252,7 @@ function game()
 	pad.x=pad.x+pad.dx --move paddle
 	pad.x=math.floor(pad.x+0.5)--smooth movement
 
-	-- ball move with pad
-	if not is_launchball then
-		ball.x=pad.x+pad.w/2
-		ball.y=pad.y-3
-	end	
+	
 		
 	-- collision paddle walls
 	if pad.x<wall.x0+1 then
@@ -260,6 +261,12 @@ function game()
 	if pad.x+pad.w >wall.x1 then
 		pad.x=wall.x1-pad.w 
 	end
+
+	-- ball move with pad
+	if not is_launchball then
+		ball.x=pad.x+pad.w/2
+		ball.y=pad.y-3
+	end	
 			 
 	-- collision brick ball
 	for i, br in ipairs(bricks) do
@@ -291,11 +298,14 @@ function game()
  
  	-- DRAW		
 	rectb(wall.x0,wall.y0,wall.w,wall.h,12) -- walls	
+
 	ball:draw()
-	pad:draw()
+	pad:draw()	
  
 	for i, br in ipairs(bricks) do
-		br:draw()
+		if bricks[i].v then
+			br:draw()
+		end
 	end  
  
 	-- UI
@@ -306,7 +316,7 @@ function game()
 	-- debug
 	-- rect(ball.x,ball.y,1,1,2)
 	--rect(10,8,40,10,12)
-	--print("",12,10,2)
+	-- print(checkBrickBorder(bricks[195], dir),12,10,2)
 	--print(bricks[2].x,12,18,2)
 end
 
@@ -365,36 +375,54 @@ function colCircRect(ball, box)
 	return 0
 end
 
+-- returns true if theres a block in the place of the suppose collision
+function checkBrickBorder(br, dir)
+	col = br.id[2]
+	row = br.id[1]
+	n = (row - 1) * 13 + col -- bricks[n]
 
+	-- dir: 1 left, 2 right, 3 up, 4 down
+	if dir == 1 then
+		if col == 1 then return true end
+		if bricks[n-1].v == true then return true end
+
+	elseif dir == 2 then
+		if col == 13 then return true end
+		if bricks[n+1].v == true then return true end
+
+	elseif dir == 3 then
+		if row == 1 then return true end
+		if bricks[n-13].v == true then return true end
+
+	elseif dir == 4 then
+		if row == 15 then return false end
+		if bricks[n+13].v == true then return true end
+	end
+
+	return false
+end
 
 function colBallBrick(ball, br)
 	if is_collided then return end
 	local col = colCircRect(ball, br)
 	if col == 0 then return end		
-	if col == 1 then -- left		
+	if col == 1 then -- left
+		if checkBrickBorder(br, 1) then return 0 end
 		ball.x = br.x-ball.r
 		ball.dx = -math.abs(ball.dx)
-	elseif col == 2 then -- right	
+	elseif col == 2 then -- right
+		if checkBrickBorder(br, 2) then return 0 end	
 		ball.x = br.x+br.w+ball.r
 		ball.dx = math.abs(ball.dx)
 	elseif col == 3 then -- up
+		if checkBrickBorder(br, 3) then return 0 end
 		ball.y = br.y-ball.r		
 		ball.dy = -math.abs(ball.dy)		
-	elseif col == 4 then -- down		
+	elseif col == 4 then -- down
+		if checkBrickBorder(br, 4) then return 0 end	
 		ball.y = br.y+br.h+ball.r
 		ball.dy = math.abs(ball.dy)
-	-- elseif col == 5 then -- up left		
-	-- 	ball.y = br.y-ball.r		
-	-- 	ball.dy = -math.abs(ball.dy)
-	-- elseif col == 6 then -- up right
-	-- 	ball.y = br.y-ball.r		
-	-- 	ball.dy = -math.abs(ball.dy)
-	-- elseif col == 7 then -- down right
-	-- 	ball.y = br.y+br.h+ball.r
-	-- 	ball.dy = math.abs(ball.dy)	
-	-- elseif col == 8 then -- down left
-	-- 	ball.y = br.y+br.h+ball.r
-	-- 	ball.dy = math.abs(ball.dy)
+
 	end
 	is_collided=true	
 
