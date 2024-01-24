@@ -8,8 +8,7 @@
 -- script:  lua
 
 -- BUGLIST
--- A veces en las esquinas hace colisión rara. ¿Mirar de comprobar estado de bloques adjacentes para solucionar?
-		-- bug1 = al chocar con esquina en muro de adyacentes no rebota en la dirección debida
+	-- ball overlap a little in left ball
 
 -- TODO
 		
@@ -122,7 +121,7 @@ function gameBOOT()
 		{0,0,0,0,0,0,0,0,0,0,0,0,0}	
 	}
 
-	layout1={
+	layout={
 		{2,2,2,2,2,2,2,2,2,2,2,2,2},
 		{2,2,2,2,2,2,2,2,2,2,2,2,2},
 		{2,2,2,2,3,4,4,4,3,2,2,2,2},
@@ -140,7 +139,7 @@ function gameBOOT()
 		{0,0,0,0,0,0,0,0,0,0,0,0,5}	
 	}
 
-	layout={
+	layout1={
 		{5,5,5,5,5,5,5,5,5,5,5,5,5},	
 		{5,0,0,0,0,0,0,0,0,0,0,0,5},
 		{5,0,0,5,5,2,2,2,5,5,0,0,5},		
@@ -483,11 +482,32 @@ function gameOver()
 	rectb(0,0,240,136,12)
 end
 
+
+local FPS={value =0,frames =0,lastTime=-1000}
+
+function FPS:getValue()
+  if (time()-self.lastTime <= 1000) then
+    self.frames=self.frames+1
+  else 
+    self.value=self.frames
+    self.frames=0
+    self.lastTime=time()
+  end
+  return self.value
+end
+
+function PrintShadow(message,x,y,color,gap,size,smallmode)
+ print(message,x,y,0,gap,size,smallmode)
+ print(message,x,y-1,color,gap,size,smallmode)
+end
+
 function TIC()
 	if mode == 1 then startMenu()
 	elseif mode == 2 then game()
 	elseif mode == 0 then gameOver()
 	end
+
+	PrintShadow("FPS: "..FPS:getValue(),3,129,12,nil,1,1)
 	
 end
 
