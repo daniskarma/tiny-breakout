@@ -14,14 +14,219 @@
 	--performance is very bad, need improvement (seems to be checkbrickborder)
 		
 
-function BOOT()
-	-- poke(0x7FC3F,1,1) -- hide cursor
-	cls()
-	gameBOOT()
-	mode=2
+
+-- modes
+M={
+	BOOT=0,
+	TITLE=1,    -- title screen	
+	PLAY=2,	
+	GAMEOVER=3,	
+}
+
+-- Player
+
+Player={
+	lives=3,
+	points=0,
+}
+
+-- Stage
+Stage={	
+	initTime=360*60, -- max stage time
+	time=360*60, --current stage time
+	ball={
+		maxdx = 2,
+		maxdy = 1.5,
+		startdx = 1.4,
+		startdy = 1.4,
+	}
+}
+
+-- game state
+Game={
+	-- mode
+	m=M.BOOT,	
+}
+
+function SetMode(m)
+	Game.m=m
 end
 
-function gameBOOT()
+function TIC()
+	TICF[Game.m]()
+	--PrintShadow("FPS: "..FPS:getValue(),3,129,12,nil,1,1)	
+end
+
+
+function Boot()
+	-- poke(0x7FC3F,1,1) -- hide cursor	
+	SetMode(M.TITLE)
+end
+
+function TitleTic()
+	cls()
+	print("press A to start",70,50,4)
+	if btn(4) then
+		StageInit()	
+		SetMode(M.PLAY)
+ 	end
+	
+	rectb(0,0,240,136,12)
+end
+
+
+function PlayTic()
+	-- function vars
+	is_btnpress=false
+	is_collided=false
+
+	cls(15)	
+		
+	-- ball launch	
+	if not is_launchball and btnp(4) then
+		ball.dx=Stage.ball.startdx
+		ball.dy=-Stage.ball.startdy
+		is_launchball=true
+	end
+	
+	-- BALL MOVE
+	if ball.dx > Stage.ball.maxdx then -- speed limit
+		ball.dx=Stage.ball.maxdx
+	elseif ball.dx < -Stage.ball.maxdx then 
+		ball.dx= -Stage.ball.maxdx
+	end		
+
+	ball.x=ball.x+ball.dx
+	ball.y=ball.y+ball.dy
+	
+	-- collision ball walls
+	if ball.x>wall.x1-ball.r  then -- right
+		ball.x = wall.x1-ball.r-1
+		ball.dx=-math.abs(ball.dx)
+		sfx(0)
+	end	
+	if ball.x<wall.x0+ball.r then -- left
+		ball.x = wall.x0+ball.r+1
+		ball.dx=math.abs(ball.dx)
+		sfx(0)
+	end
+	if ball.y<wall.y0+ball.r then -- up
+		ball.y = wall.y0+ball.r+1
+		ball.dy=math.abs(ball.dy)
+		sfx(0)
+	end	
+		
+	-- PADDLE MOVE
+	if btn(2) then -- left
+		if math.abs(pad.dx) < pad.sp then
+		pad.dx=pad.dx-pad.ac
+	end
+	is_btnpress=true
+	end
+	if btn(3) then -- right
+		if math.abs(pad.dx) < pad.sp then
+		pad.dx=pad.dx+pad.ac
+	end
+	is_btnpress=true
+	end
+	if not is_btnpress then -- friction
+		pad.dx=pad.dx/1.5
+	end
+	if math.abs(pad.dx)<0.01 then
+		pad.dx=0
+	end -- kill speed
+	pad.x=pad.x+pad.dx --move paddle
+	pad.x=math.floor(pad.x+0.5)--smooth movement
+
+	
+		
+	-- collision paddle walls
+	if pad.x<wall.x0+1 then
+		pad.x=wall.x0+1
+	end
+	if pad.x+pad.w >wall.x1 then
+		pad.x=wall.x1-pad.w 
+	end
+
+	-- ball move with pad
+	if not is_launchball then
+		ball.x=pad.x+pad.w/2
+		ball.y=pad.y-3
+	end	
+			 
+	-- collision brick ball
+	for i, br in ipairs(bricks) do
+		if is_collided then break end
+		if br.v then			
+			colBallBrick(ball,br)						
+		end
+	end	
+
+	-- collision ball-paddle
+	colBallPad(ball,pad)	
+
+	-- TIME
+	if is_launchball then
+		Stage.time=Stage.time-1
+	end	
+
+	-- END
+	if ball.y > 136 then
+		Player.lives=Player.lives-1
+		sfx(1)
+		if Player.lives < 0 then SetMode(M.TITLE) end
+		gameGo()
+	end
+
+	if Stage.time < 0 then
+		SetMode(M.TITLE)
+	end
+ 
+ 	-- DRAW		
+	rectb(wall.x0,wall.y0,wall.w,wall.h,12) -- walls	
+
+	ball:draw()
+	pad:draw()	
+ 
+	for i, br in ipairs(bricks) do
+		if bricks[i].v then
+			br:draw()
+		end
+	end  
+ 
+	-- UI
+	print("LIVES: "..Player.lives,wall.x0,1,12)
+	print("TIME: "..math.floor(Stage.time/60),wall.x0+50,1,12)
+	print("POINTS: "..Player.points,wall.x0+110,1,12)
+
+	-- debug
+	-- rect(ball.x,ball.y,1,1,2)
+	--rect(10,8,40,10,12)
+	-- print(checkBrickBorder(bricks[195], dir),12,10,2)
+	--print(bricks[2].x,12,18,2)
+end
+
+function gameOver()
+	cls()
+	print("GAME OVER",90,20,4)
+	print("press A to start",70,50,4)
+	if btn(4) then
+		gameBOOT()
+	 	SetMode(M.PLAY)
+	end
+	
+	rectb(0,0,240,136,12)
+end
+
+
+TICF={
+	[M.BOOT]=Boot,
+	[M.TITLE]=TitleTic,	
+	[M.PLAY]=PlayTic,	
+	[M.GAMEOVER]=GameOverTic,	
+}
+
+function StageInit()
 	wall={
 		init=function(self,x0,x1,y0,y1)
 			self.x0=x0
@@ -172,14 +377,7 @@ function gameBOOT()
 		end
 	end
 
-	lives=3
-	points=0
-	timeleft=360*60
-
-	ball_maxdx = 2
-	ball_maxdy = 1.5	
-	ball_startdx = 1.4
-	ball_startdy = 1.4
+	
 	
 	gameGo()
 end
@@ -189,136 +387,9 @@ function gameGo()
 	ball:init(pad.x+pad.w/2,pad.y-3,2,0,0,11)	
 end
 
-function game()
-	-- function vars
-	is_btnpress=false
-	is_collided=false
 
-	cls(15)	
-		
-	-- ball launch	
-	if not is_launchball and btnp(4) then
-		ball.dx=ball_startdx
-		ball.dy=-ball_startdy
-		is_launchball=true
-	end
-	
-	-- BALL MOVE
-	if ball.dx > ball_maxdx then -- speed limit
-		ball.dx=ball_maxdx
-	elseif ball.dx < -ball_maxdx then 
-		ball.dx= -ball_maxdx
-	end		
 
-	ball.x=ball.x+ball.dx
-	ball.y=ball.y+ball.dy
-	
-	-- collision ball walls
-	if ball.x>wall.x1-ball.r  then -- right
-		ball.x = wall.x1-ball.r-1
-		ball.dx=-math.abs(ball.dx)
-		sfx(0)
-	end	
-	if ball.x<wall.x0+ball.r then -- left
-		ball.x = wall.x0+ball.r+1
-		ball.dx=math.abs(ball.dx)
-		sfx(0)
-	end
-	if ball.y<wall.y0+ball.r then -- up
-		ball.y = wall.y0+ball.r+1
-		ball.dy=math.abs(ball.dy)
-		sfx(0)
-	end	
-		
-	-- PADDLE MOVE
-	if btn(2) then -- left
-		if math.abs(pad.dx) < pad.sp then
-		pad.dx=pad.dx-pad.ac
-	end
-	is_btnpress=true
-	end
-	if btn(3) then -- right
-		if math.abs(pad.dx) < pad.sp then
-		pad.dx=pad.dx+pad.ac
-	end
-	is_btnpress=true
-	end
-	if not is_btnpress then -- friction
-		pad.dx=pad.dx/1.5
-	end
-	if math.abs(pad.dx)<0.01 then
-		pad.dx=0
-	end -- kill speed
-	pad.x=pad.x+pad.dx --move paddle
-	pad.x=math.floor(pad.x+0.5)--smooth movement
-
-	
-		
-	-- collision paddle walls
-	if pad.x<wall.x0+1 then
-		pad.x=wall.x0+1
-	end
-	if pad.x+pad.w >wall.x1 then
-		pad.x=wall.x1-pad.w 
-	end
-
-	-- ball move with pad
-	if not is_launchball then
-		ball.x=pad.x+pad.w/2
-		ball.y=pad.y-3
-	end	
-			 
-	-- collision brick ball
-	for i, br in ipairs(bricks) do
-		if is_collided then break end
-		if br.v then			
-			colBallBrick(ball,br)						
-		end
-	end	
-
-	-- collision ball-paddle
-	colBallPad(ball,pad)	
-
-	-- TIME
-	if is_launchball then
-		timeleft=timeleft-1
-	end	
-
-	-- END
-	if ball.y > 136 then
-		lives=lives-1
-		sfx(1)
-		if lives < 0 then mode = 0 end
-		gameGo()
-	end
-
-	if timeleft < 0 then
-		mode = 0
-	end
- 
- 	-- DRAW		
-	rectb(wall.x0,wall.y0,wall.w,wall.h,12) -- walls	
-
-	ball:draw()
-	pad:draw()	
- 
-	for i, br in ipairs(bricks) do
-		if bricks[i].v then
-			br:draw()
-		end
-	end  
- 
-	-- UI
-	print("LIVES: "..lives,wall.x0,1,12)
-	print("TIME: "..math.floor(timeleft/60),wall.x0+50,1,12)
-	print("POINTS: "..points,wall.x0+110,1,12)
-
-	-- debug
-	-- rect(ball.x,ball.y,1,1,2)
-	--rect(10,8,40,10,12)
-	-- print(checkBrickBorder(bricks[195], dir),12,10,2)
-	--print(bricks[2].x,12,18,2)
-end
+-- PHYSICS
 
 function colCircRect(ball, box)
 	local box_cx=box.x+((box.w-1)/2)
@@ -427,7 +498,7 @@ function colBallBrick(ball, br)
 	is_collided=true	
 
 	sfx(0,"D-7")
-	points = points + 1	
+	Player.points = Player.points + 1	
 	if br.t > 1  and br.t < 5 then 
 		br.t = br.t - 1
 		br.c = brick_c[br.t]		
@@ -435,11 +506,9 @@ function colBallBrick(ball, br)
 		br.v=false
 	elseif br.t==6 then
 		br.v=false
-		points = points + 4
+		Player.points = Player.points + 4
 	end
 end
-
-
 
 function colBallPad(ball, pad)
 	local col = colCircRect(ball, pad)	
@@ -460,28 +529,7 @@ function colBallPad(ball, pad)
 	sfx(0,"D-5")	
 end
 
-function startMenu()
-	cls()
-	print("press A to start",70,50,4)
-	if btn(4) then
-		gameBOOT()
-	 mode=2
- end
-	
-	rectb(0,0,240,136,12)
-end
 
-function gameOver()
-	cls()
-	print("GAME OVER",90,20,4)
-	print("press A to start",70,50,4)
-	if btn(4) then
-		gameBOOT()
-	 mode=2
-	 end
-	
-	rectb(0,0,240,136,12)
-end
 
 
 local FPS={value =0,frames =0,lastTime=-1000}
@@ -502,15 +550,8 @@ function PrintShadow(message,x,y,color,gap,size,smallmode)
  print(message,x,y-1,color,gap,size,smallmode)
 end
 
-function TIC()
-	if mode == 1 then startMenu()
-	elseif mode == 2 then game()
-	elseif mode == 0 then gameOver()
-	end
 
-	PrintShadow("FPS: "..FPS:getValue(),3,129,12,nil,1,1)
-	
-end
+
 
 
 -- <TILES>
