@@ -11,6 +11,7 @@
 	-- ball overlap a little in left ball
 
 -- TODO
+	--performance is very bad, need improvement (seems to be checkbrickborder)
 		
 
 function BOOT()
@@ -175,8 +176,8 @@ function gameBOOT()
 	points=0
 	timeleft=360*60
 
-	ball_maxdx = 3
-	ball_maxdy = 2	
+	ball_maxdx = 2
+	ball_maxdy = 1.5	
 	ball_startdx = 1.4
 	ball_startdy = 1.4
 	
@@ -204,7 +205,7 @@ function game()
 	
 	-- BALL MOVE
 	if ball.dx > ball_maxdx then -- speed limit
-		ball.dx= ball_maxdx
+		ball.dx=ball_maxdx
 	elseif ball.dx < -ball_maxdx then 
 		ball.dx= -ball_maxdx
 	end		
