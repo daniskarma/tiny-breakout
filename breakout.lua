@@ -11,7 +11,8 @@
 	-- ball overlap a little in left ball
 
 -- TODO
-	--performance is very bad, need improvement (seems to be checkbrickborder)
+	-- performance seems fixed with rewrite (test it more and continue rewrite)
+	-- averiguar el orden en el que deben estar las declaraciones
 		
 
 
@@ -52,9 +53,22 @@ function SetMode(m)
 	Game.m=m
 end
 
+local FPS={value =0,frames =0,lastTime=-1000} -- cuidado al moverlo
+
+function FPS:getValue()
+  if (time()-self.lastTime <= 1000) then
+    self.frames=self.frames+1
+  else 
+    self.value=self.frames
+    self.frames=0
+    self.lastTime=time()
+  end
+  return self.value
+end
+
 function TIC()
 	TICF[Game.m]()
-	--PrintShadow("FPS: "..FPS:getValue(),3,129,12,nil,1,1)	
+	PrintShadow("FPS: "..FPS:getValue(),3,129,12,nil,1,1)	
 end
 
 
@@ -532,18 +546,7 @@ end
 
 
 
-local FPS={value =0,frames =0,lastTime=-1000}
 
-function FPS:getValue()
-  if (time()-self.lastTime <= 1000) then
-    self.frames=self.frames+1
-  else 
-    self.value=self.frames
-    self.frames=0
-    self.lastTime=time()
-  end
-  return self.value
-end
 
 function PrintShadow(message,x,y,color,gap,size,smallmode)
  print(message,x,y,0,gap,size,smallmode)
