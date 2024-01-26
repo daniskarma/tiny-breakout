@@ -8,13 +8,31 @@
 -- script:  lua
 
 -- BUGLIST
-	-- ball overlap a little in left ball
+	-- ball overlap a little in the bricks
 
 -- TODO
 	-- performance seems fixed with rewrite (test it more and continue rewrite)
 	-- averiguar el orden en el que deben estar las declaraciones
+	-- move all physics to one place
+	-- look if I shall move objects deffinitions elsewhere
 		
-
+local testlayout={
+	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+	{0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+	{0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+	{0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+	{0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+	{0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0,0,0,0,0,0,0}	
+}
 
 -- modes
 M={
@@ -24,23 +42,85 @@ M={
 	GAMEOVER=3,	
 }
 
--- Player
+-- Difficulty
+DIFF={
+	EASY=1,
+	MEDIUM=1.25,
+	HARD=1.5,
+}
 
+-- Player
 Player={
 	lives=3,
 	points=0,
 }
 
 -- Stage
-Stage={	
-	initTime=360*60, -- max stage time
-	time=360*60, --current stage time
+DEFAULT_STAGE={
+	n=0,		
+	time=200*60, --current stage time
 	ball={
-		maxdx = 2,
-		maxdy = 1.5,
-		startdx = 1.4,
-		startdy = 1.4,
+		maxdx=2,
+		maxdy=1.5,
+		startdx=1.4,
+		startdy=1.4,
 	}
+}
+STAGE={}
+function setStage(diff, level)
+	STAGE=DeepCopy(DEFAULT_STAGE)
+	STAGE.time=STAGE.time-600*diff
+	STAGE.ball.maxdx=STAGE.ball.maxdx*diff
+	STAGE.ball.maxdy=STAGE.ball.maxdy*diff
+	STAGE.ball.startdx=STAGE.ball.startdx*diff
+	STAGE.ball.startdy=STAGE.ball.startdy*diff
+	STAGE.n=level
+end
+
+-- Levels
+LVL = {
+	{
+	n=1,
+	diff=DIFF.EASY,
+	map={
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		{5,1,1,1,1,1,1,1,1,1,1,1,1},
+		{5,0,0,0,0,0,0,0,0,0,0,0,0},	
+		{5,0,0,0,0,0,0,0,0,0,0,0,0},	
+		{5,0,0,0,0,0,0,0,0,0,0,0,0},
+		{5,0,0,0,2,2,2,2,2,2,2,0,0},
+		{5,0,0,0,0,0,6,0,0,0,0,0,0},	
+		{5,0,0,0,0,0,0,0,0,0,0,0,0},
+		{5,0,0,0,0,0,0,0,3,3,3,5,5},	
+		{5,0,0,0,0,0,0,0,0,0,0,0,5},	
+		{5,0,0,0,0,0,0,0,0,0,0,0,5},
+		{5,0,0,0,0,0,0,0,0,0,0,0,5},
+		{5,0,0,0,0,0,0,0,0,0,0,0,5},	
+		{5,0,0,0,0,0,0,0,0,0,0,0,5},
+		{5,0,0,0,0,0,0,0,0,0,0,0,5}		
+	}
+	},
+	{
+	n=2,
+	diff=DIFF.EASY,
+	map={
+		{0,0,0,6,0,0,0,0,0,6,0,0,0},	
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{1,1,1,1,1,1,1,1,1,1,1,1,1},
+		{1,1,1,1,1,1,1,1,1,1,1,1,1},	
+		{1,1,1,1,1,1,1,1,1,1,1,1,1},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0}		
+		}
+	},
 }
 
 -- game state
@@ -53,7 +133,7 @@ function SetMode(m)
 	Game.m=m
 end
 
-local FPS={value =0,frames =0,lastTime=-1000} -- cuidado al moverlo
+local FPS={value=0,frames=0,lastTime=-1000} -- cuidado al moverlo
 
 function FPS:getValue()
   if (time()-self.lastTime <= 1000) then
@@ -79,9 +159,9 @@ end
 
 function TitleTic()
 	cls()
-	print("press A to start",70,50,4)
+	print("press Z to start",70,50,4)
 	if btn(4) then
-		StageInit()	
+		StageInit(1)	
 		SetMode(M.PLAY)
  	end
 	
@@ -98,16 +178,16 @@ function PlayTic()
 		
 	-- ball launch	
 	if not is_launchball and btnp(4) then
-		ball.dx=Stage.ball.startdx
-		ball.dy=-Stage.ball.startdy
+		ball.dx=STAGE.ball.startdx
+		ball.dy=-STAGE.ball.startdy
 		is_launchball=true
 	end
 	
 	-- BALL MOVE
-	if ball.dx > Stage.ball.maxdx then -- speed limit
-		ball.dx=Stage.ball.maxdx
-	elseif ball.dx < -Stage.ball.maxdx then 
-		ball.dx= -Stage.ball.maxdx
+	if ball.dx > STAGE.ball.maxdx then -- speed limit
+		ball.dx=STAGE.ball.maxdx
+	elseif ball.dx < -STAGE.ball.maxdx then 
+		ball.dx= -STAGE.ball.maxdx
 	end		
 
 	ball.x=ball.x+ball.dx
@@ -119,7 +199,7 @@ function PlayTic()
 		ball.dx=-math.abs(ball.dx)
 		sfx(0)
 	end	
-	if ball.x<wall.x0+ball.r then -- left
+	if ball.x<wall.x0+ball.r+1 then -- left
 		ball.x = wall.x0+ball.r+1
 		ball.dx=math.abs(ball.dx)
 		sfx(0)
@@ -151,8 +231,6 @@ function PlayTic()
 	end -- kill speed
 	pad.x=pad.x+pad.dx --move paddle
 	pad.x=math.floor(pad.x+0.5)--smooth movement
-
-	
 		
 	-- collision paddle walls
 	if pad.x<wall.x0+1 then
@@ -181,18 +259,29 @@ function PlayTic()
 
 	-- TIME
 	if is_launchball then
-		Stage.time=Stage.time-1
+		STAGE.time=STAGE.time-1
 	end	
 
-	-- END
+	-- LEVEL WIN
+	local enemy_lives = 0
+	for i, br in ipairs(bricks) do		
+		if br.t==6 and br.v then			
+			enemy_lives=enemy_lives+1				
+		end
+	end
+	if enemy_lives == 0 then		
+		StageInit(STAGE.n+1)
+	end
+
+	-- GAMEOVER
 	if ball.y > 136 then
 		Player.lives=Player.lives-1
 		sfx(1)
 		if Player.lives < 0 then SetMode(M.TITLE) end
-		gameGo()
+		GameGo()
 	end
 
-	if Stage.time < 0 then
+	if STAGE.time < 0 then
 		SetMode(M.TITLE)
 	end
  
@@ -210,7 +299,7 @@ function PlayTic()
  
 	-- UI
 	print("LIVES: "..Player.lives,wall.x0,1,12)
-	print("TIME: "..math.floor(Stage.time/60),wall.x0+50,1,12)
+	print("TIME: "..math.floor(STAGE.time/60),wall.x0+50,1,12)
 	print("POINTS: "..Player.points,wall.x0+110,1,12)
 
 	-- debug
@@ -240,7 +329,8 @@ TICF={
 	[M.GAMEOVER]=GameOverTic,	
 }
 
-function StageInit()
+function StageInit(level)
+	setStage(LVL[level].diff,LVL[level].n)
 	wall={
 		init=function(self,x0,x1,y0,y1)
 			self.x0=x0
@@ -286,7 +376,7 @@ function StageInit()
 	}
 	pad:init(58,125,30,4,0.4)	
 	
-	brick_c={{7,6,5},{8,9,10},{2,3,4},{1,2,3},{14,13,12}}
+	brick_c={{7,6,5},{8,9,10},{2,3,4},{1,2,3},{14,13,12}} --brick colors
 	brick={}	
 	function brick:new(x,y,t,id)
 		local newbrick = {}
@@ -317,86 +407,29 @@ function StageInit()
 				rect(self.x+self.w-1,self.y,1,1,self.c[2])
 				rect(self.x,self.y+self.h-1,1,1,self.c[2])	
 			elseif self.t == 6 then
-				spr(3, self.x, self.y, 15)
-				spr(4, self.x+8, self.y, 15)		
+				spr(3, self.x-1, self.y, 15)
+				spr(4, self.x+7, self.y, 15)		
 			end		
 		end
 	end
-	
-	layout1={
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0}	
-	}
-
-	layout={
-		{2,2,2,2,2,2,2,2,2,2,2,2,2},
-		{2,2,2,2,2,2,2,2,2,2,2,2,2},
-		{2,2,2,2,3,4,4,4,3,2,2,2,2},
-		{1,2,1,2,0,0,0,0,0,0,2,1,2},
-		{2,3,3,3,0,0,0,0,0,0,3,3,1},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{1,1,1,1,1,1,1,1,1,1,1,1,1},
-		{0,0,0,0,0,0,0,0,0,0,0,0,5},
-		{0,0,0,0,0,5,5,5,0,0,0,0,5},
-		{0,0,0,0,0,5,0,5,0,0,0,0,5},
-		{0,0,0,0,0,5,5,5,0,0,0,0,5},
-		{0,0,0,0,0,0,0,0,0,0,0,0,5},
-		{0,0,0,0,0,0,0,0,0,0,0,0,5},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,5},
-		{0,0,0,0,0,0,0,0,0,0,0,0,5}	
-	}
-
-	layout1={
-		{5,5,5,5,5,5,5,5,5,5,5,5,5},	
-		{5,0,0,0,0,0,0,0,0,0,0,0,5},
-		{5,0,0,5,5,2,2,2,5,5,0,0,5},		
-		{5,0,0,0,5,0,0,0,5,0,0,0,5},	
-		{5,0,0,0,5,0,6,0,5,0,0,0,5},
-		{5,0,0,0,5,0,0,0,5,0,0,0,5},		
-		{5,0,0,0,5,5,5,5,5,0,0,0,5},	
-		{5,0,0,0,0,0,0,0,0,0,0,0,5},
-		{5,0,0,0,0,0,0,0,0,0,0,0,5},		
-		{5,0,0,0,0,0,0,0,0,0,0,0,5},	
-		{5,0,0,5,5,5,5,5,5,5,5,5,5},
-		{5,0,0,0,0,0,0,0,0,0,0,0,5},
-		{5,0,0,0,0,0,0,0,0,0,0,0,5},	
-		{5,0,0,0,0,0,0,0,0,0,0,0,5},		
-		{5,5,5,5,5,5,5,5,5,5,0,0,5}	
-	}
 
 	bricks = {}	
 	for i=1,15 do
-		for j = 1,13 do
-			--if layout[i][j] > 0 then
-				local newbrick=brick:new(
-					wall.x0+1+j*14-14,
-					wall.y0+1+i*5-5,
-					layout[i][j],
-					{i,j})
-				table.insert(bricks,newbrick)
-			--end
+		for j = 1,13 do			
+			local newbrick=brick:new(
+				wall.x0+1+j*14-14,
+				wall.y0+1+i*5-5,
+				LVL[level].map[i][j],
+				{i,j})
+			table.insert(bricks,newbrick)			
 		end
 	end
-
 	
 	
-	gameGo()
+	GameGo()
 end
 
-function gameGo()
+function GameGo()
 	is_launchball=false
 	ball:init(pad.x+pad.w/2,pad.y-3,2,0,0,11)	
 end
@@ -543,10 +576,23 @@ function colBallPad(ball, pad)
 	sfx(0,"D-5")	
 end
 
+-- util
+function DeepCopy(t)
+	if type(t)~="table" then return t end
+	local r={}
+	for k,v in pairs(t) do
+	 if type(v)=="table" then
+	  r[k]=DeepCopy(v)
+	 else
+	  r[k]=v
+	 end
+	end
+	return r
+   end
 
 
 
-
+-- FPS show
 
 function PrintShadow(message,x,y,color,gap,size,smallmode)
  print(message,x,y,0,gap,size,smallmode)
