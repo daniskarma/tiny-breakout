@@ -55,6 +55,7 @@ Player={
 	points=0,
 }
 
+
 -- Stage
 DEFAULT_STAGE={
 	n=0,		
@@ -77,13 +78,96 @@ function setStage(diff, level)
 	STAGE.n=level
 end
 
+-- ELEMENTS
+
+wall={
+	init=function(self,x0,x1,y0,y1)
+		self.x0=x0
+		self.x1=x1
+		self.y0=y0
+		self.y1=y1		
+		self.w =self.x1-self.x0+1
+		self.h =self.y1-self.y0+1
+	end	
+}
+
+ball={
+	init=function(self,x,y,r,dx,dy,c)
+		self.x =x
+		self.y =y
+		self.r =r
+		self.dx=dx
+		self.dy=dy		
+		self.c =c
+	end,
+	draw=function(self)			
+		circ(self.x,self.y,self.r,self.c)			
+	end	
+}	
+
+pad={
+	init=function(self,x,y,w,sp,ac,c)
+		self.x =x
+		self.y =y
+		self.w =w
+		self.h =5
+		self.sp=sp
+		self.ac=ac
+		self.dx=0			
+	end,
+	draw=function(self)
+		spr(1, self.x-1, self.y, 0, 1, 0)
+		spr(1, self.x+self.w-7, self.y, 0, 1, 1)
+		rect(self.x+7,self.y,self.w-14,self.h,12)
+		line(self.x+4,self.y+self.h-1,self.x+self.w-5,self.y+self.h-1,11)						
+	end	
+}
+
+brick_c={{7,6,5},{8,9,10},{2,3,4},{1,2,3},{14,13,12}} --brick colors
+brick={}	
+function brick:new(x,y,t,id)
+	local newbrick = {}
+	setmetatable(newbrick, self)
+	self.__index=self
+	newbrick.x=x
+	newbrick.y=y
+	newbrick.w=14
+	newbrick.h=5
+	newbrick.c=brick_c[t]		
+	newbrick.t=t
+	if newbrick.t > 0 then
+		newbrick.v=true
+	else
+		newbrick.v=false
+	end
+
+	newbrick.id=id
+	return newbrick		
+end
+function brick:draw()
+	if self.v then
+		if self.t < 6 then			
+			rect(self.x,self.y,self.w,self.h,self.c[3])
+			rect(self.x+1,self.y+1,self.w-2,self.h-2,self.c[2])
+			line(self.x+1,self.y+self.h-1,self.x+self.w-1,self.y+self.h-1,self.c[1])
+			line(self.x+self.w-1,self.y+1,self.x+self.w-1,self.y+self.h-1,self.c[1])
+			rect(self.x+self.w-1,self.y,1,1,self.c[2])
+			rect(self.x,self.y+self.h-1,1,1,self.c[2])	
+		elseif self.t == 6 then
+			spr(3, self.x-1, self.y, 15)
+			spr(4, self.x+7, self.y, 15)		
+		end		
+	end
+end
+
 -- Levels
 LVL = {
 	{
 	n=1,
+	title="How did you get here?",
 	diff=DIFF.EASY,
 	map={
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		{0,0,0,0,0,0,0,0,0,0,0,0,6},	
 		{5,1,1,1,1,1,1,1,1,1,1,1,1},
 		{5,0,0,0,0,0,0,0,0,0,0,0,0},	
 		{5,0,0,0,0,0,0,0,0,0,0,0,0},	
@@ -102,6 +186,7 @@ LVL = {
 	},
 	{
 	n=2,
+	title="Get out of my body!",
 	diff=DIFF.EASY,
 	map={
 		{0,0,0,6,0,0,0,0,0,6,0,0,0},	
@@ -171,8 +256,8 @@ end
 
 function PlayTic()
 	-- function vars
-	is_btnpress=false
-	is_collided=false
+	local is_btnpress=false
+	local is_collided=false
 
 	cls(15)	
 		
@@ -250,7 +335,7 @@ function PlayTic()
 	for i, br in ipairs(bricks) do
 		if is_collided then break end
 		if br.v then			
-			colBallBrick(ball,br)						
+			is_collided=colBallBrick(ball,br)				
 		end
 	end	
 
@@ -278,7 +363,7 @@ function PlayTic()
 		Player.lives=Player.lives-1
 		sfx(1)
 		if Player.lives < 0 then SetMode(M.TITLE) end
-		GameGo()
+		PrepareBall()
 	end
 
 	if STAGE.time < 0 then
@@ -309,6 +394,7 @@ function PlayTic()
 	--print(bricks[2].x,12,18,2)
 end
 
+
 function gameOver()
 	cls()
 	print("GAME OVER",90,20,4)
@@ -330,88 +416,9 @@ TICF={
 }
 
 function StageInit(level)
-	setStage(LVL[level].diff,LVL[level].n)
-	wall={
-		init=function(self,x0,x1,y0,y1)
-			self.x0=x0
-			self.x1=x1
-			self.y0=y0
-			self.y1=y1		
-			self.w =self.x1-self.x0+1
-			self.h =self.y1-self.y0+1
-		end	
-	}
-	wall:init(29,212,8,136)
-
-	ball={
-		init=function(self,x,y,r,dx,dy,c)
-			self.x =x
-			self.y =y
-			self.r =r
-			self.dx=dx
-			self.dy=dy		
-			self.c =c
-		end,
-		draw=function(self)			
-			circ(self.x,self.y,self.r,self.c)			
-		end	
-	}	
-
-	pad={
-		init=function(self,x,y,w,sp,ac,c)
-			self.x =x
-			self.y =y
-			self.w =w
-			self.h =5
-			self.sp=sp
-			self.ac=ac
-			self.dx=0			
-		end,
-		draw=function(self)
-			spr(1, self.x-1, self.y, 0, 1, 0)
-			spr(1, self.x+self.w-7, self.y, 0, 1, 1)
-			rect(self.x+7,self.y,self.w-14,self.h,12)
-			line(self.x+4,self.y+self.h-1,self.x+self.w-5,self.y+self.h-1,11)						
-		end	
-	}
+	setStage(LVL[level].diff,LVL[level].n)	
+	wall:init(29,212,8,136)	
 	pad:init(58,125,30,4,0.4)	
-	
-	brick_c={{7,6,5},{8,9,10},{2,3,4},{1,2,3},{14,13,12}} --brick colors
-	brick={}	
-	function brick:new(x,y,t,id)
-		local newbrick = {}
-		setmetatable(newbrick, self)
-		self.__index=self
-		newbrick.x=x
-		newbrick.y=y
-		newbrick.w=14
-		newbrick.h=5
-		newbrick.c=brick_c[t]		
-		newbrick.t=t
-		if newbrick.t > 0 then
-			newbrick.v=true
-		else
-			newbrick.v=false
-		end
-
-		newbrick.id=id
-		return newbrick		
-	end
-	function brick:draw()
-		if self.v then
-			if self.t < 6 then			
-				rect(self.x,self.y,self.w,self.h,self.c[3])
-				rect(self.x+1,self.y+1,self.w-2,self.h-2,self.c[2])
-				line(self.x+1,self.y+self.h-1,self.x+self.w-1,self.y+self.h-1,self.c[1])
-				line(self.x+self.w-1,self.y+1,self.x+self.w-1,self.y+self.h-1,self.c[1])
-				rect(self.x+self.w-1,self.y,1,1,self.c[2])
-				rect(self.x,self.y+self.h-1,1,1,self.c[2])	
-			elseif self.t == 6 then
-				spr(3, self.x-1, self.y, 15)
-				spr(4, self.x+7, self.y, 15)		
-			end		
-		end
-	end
 
 	bricks = {}	
 	for i=1,15 do
@@ -423,13 +430,12 @@ function StageInit(level)
 				{i,j})
 			table.insert(bricks,newbrick)			
 		end
-	end
+	end	
 	
-	
-	GameGo()
+	PrepareBall()
 end
 
-function GameGo()
+function PrepareBall()
 	is_launchball=false
 	ball:init(pad.x+pad.w/2,pad.y-3,2,0,0,11)	
 end
@@ -520,29 +526,27 @@ function checkBrickBorder(br, dir)
 	return false
 end
 
-function colBallBrick(ball, br)
-	if is_collided then return end
+function colBallBrick(ball, br)	
 	local col = colCircRect(ball, br)
-	if col == 0 then return end		
+	if col == 0 then return false end		
 	if col == 1 then -- left
-		if checkBrickBorder(br, 1) then return 0 end
+		if checkBrickBorder(br, 1) then return false end
 		ball.x = br.x-ball.r
 		ball.dx = -math.abs(ball.dx)
 	elseif col == 2 then -- right
-		if checkBrickBorder(br, 2) then return 0 end	
+		if checkBrickBorder(br, 2) then return false end	
 		ball.x = br.x+br.w+ball.r
 		ball.dx = math.abs(ball.dx)
 	elseif col == 3 then -- up
-		if checkBrickBorder(br, 3) then return 0 end
+		if checkBrickBorder(br, 3) then return false end
 		ball.y = br.y-ball.r		
 		ball.dy = -math.abs(ball.dy)		
 	elseif col == 4 then -- down
-		if checkBrickBorder(br, 4) then return 0 end	
+		if checkBrickBorder(br, 4) then return false end	
 		ball.y = br.y+br.h+ball.r
 		ball.dy = math.abs(ball.dy)
-
 	end
-	is_collided=true	
+		
 
 	sfx(0,"D-7")
 	Player.points = Player.points + 1	
@@ -555,6 +559,7 @@ function colBallBrick(ball, br)
 		br.v=false
 		Player.points = Player.points + 4
 	end
+	return true
 end
 
 function colBallPad(ball, pad)
