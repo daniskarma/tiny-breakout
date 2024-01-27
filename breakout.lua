@@ -14,7 +14,8 @@
 	-- performance seems fixed with rewrite (test it more and continue rewrite)
 	-- averiguar el orden en el que deben estar las declaraciones
 	-- move all physics to one place
-	-- look if I shall move objects deffinitions elsewhere
+	-- check if enemy_lives is efficient or is better to move it ot STAGE table
+	-- crear indicador de a donde se va a disparar la bola
 		
 local testlayout={
 	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
@@ -65,7 +66,9 @@ DEFAULT_STAGE={
 		maxdy=1.5,
 		startdx=1.4,
 		startdy=1.4,
-	}
+	},	
+	won_time=60,
+	energy_bricks=0,
 }
 STAGE={}
 function setStage(diff, level)
@@ -76,6 +79,7 @@ function setStage(diff, level)
 	STAGE.ball.startdx=STAGE.ball.startdx*diff
 	STAGE.ball.startdy=STAGE.ball.startdy*diff
 	STAGE.n=level
+	STAGE.won_time=30
 end
 
 -- ELEMENTS
@@ -115,12 +119,19 @@ pad={
 		self.ac=ac
 		self.dx=0			
 	end,
+	start_direction=1,	
 	draw=function(self)
 		spr(1, self.x-1, self.y, 0, 1, 0)
 		spr(1, self.x+self.w-7, self.y, 0, 1, 1)
 		rect(self.x+7,self.y,self.w-14,self.h,12)
-		line(self.x+4,self.y+self.h-1,self.x+self.w-5,self.y+self.h-1,11)						
-	end	
+		line(self.x+4,self.y+self.h-1,self.x+self.w-5,self.y+self.h-1,11)		
+	end,
+	draw_dir=function(self, a)
+		local delay1 = (time()/100)%8
+		local delay2 = ((time()+400)/100)%8		
+		pix(self.x+(self.w/2)+(4*self.start_direction)+(delay1*self.start_direction),self.y-7-delay1,11)
+		pix(self.x+(self.w/2)+(4*self.start_direction)+(delay2*self.start_direction),self.y-7-delay2,11)					
+	end
 }
 
 brick_c={{7,6,5},{8,9,10},{2,3,4},{1,2,3},{14,13,12}} --brick colors
@@ -167,7 +178,7 @@ LVL = {
 	title="How did you get here?",
 	diff=DIFF.EASY,
 	map={
-		{0,0,0,0,0,0,0,0,0,0,0,0,6},	
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
 		{5,1,1,1,1,1,1,1,1,1,1,1,1},
 		{5,0,0,0,0,0,0,0,0,0,0,0,0},	
 		{5,0,0,0,0,0,0,0,0,0,0,0,0},	
@@ -257,13 +268,11 @@ end
 function PlayTic()
 	-- function vars
 	local is_btnpress=false
-	local is_collided=false
-
-	cls(15)	
+	local is_collided=false	
 		
 	-- ball launch	
 	if not is_launchball and btnp(4) then
-		ball.dx=STAGE.ball.startdx
+		ball.dx=STAGE.ball.startdx*pad.start_direction
 		ball.dy=-STAGE.ball.startdy
 		is_launchball=true
 	end
@@ -299,12 +308,14 @@ function PlayTic()
 	if btn(2) then -- left
 		if math.abs(pad.dx) < pad.sp then
 		pad.dx=pad.dx-pad.ac
+		pad.start_direction=-1
 	end
 	is_btnpress=true
 	end
 	if btn(3) then -- right
 		if math.abs(pad.dx) < pad.sp then
 		pad.dx=pad.dx+pad.ac
+		pad.start_direction=1
 	end
 	is_btnpress=true
 	end
@@ -328,7 +339,7 @@ function PlayTic()
 	-- ball move with pad
 	if not is_launchball then
 		ball.x=pad.x+pad.w/2
-		ball.y=pad.y-3
+		ball.y=pad.y-3		
 	end	
 			 
 	-- collision brick ball
@@ -343,21 +354,17 @@ function PlayTic()
 	colBallPad(ball,pad)	
 
 	-- TIME
-	if is_launchball then
+	if is_launchball and STAGE.energy_bricks > 0 then
 		STAGE.time=STAGE.time-1
 	end	
 
-	-- LEVEL WIN
-	local enemy_lives = 0
-	for i, br in ipairs(bricks) do		
-		if br.t==6 and br.v then			
-			enemy_lives=enemy_lives+1				
-		end
+	-- LEVEL WIN	
+	if STAGE.energy_bricks == 0 then		
+		STAGE.won_time=STAGE.won_time-1
 	end
-	if enemy_lives == 0 then		
+	if STAGE.won_time < 0 then
 		StageInit(STAGE.n+1)
 	end
-
 	-- GAMEOVER
 	if ball.y > 136 then
 		Player.lives=Player.lives-1
@@ -370,11 +377,15 @@ function PlayTic()
 		SetMode(M.TITLE)
 	end
  
- 	-- DRAW		
+ 	-- DRAW
+	cls(15)			
 	rectb(wall.x0,wall.y0,wall.w,wall.h,12) -- walls	
 
 	ball:draw()
-	pad:draw()	
+	pad:draw()
+	if not is_launchball then		
+		pad:draw_dir()
+	end	
  
 	for i, br in ipairs(bricks) do
 		if bricks[i].v then
@@ -432,13 +443,22 @@ function StageInit(level)
 		end
 	end	
 	
+	-- stablish STAGE energy bricks
+	for i, br in ipairs(bricks) do		
+		if br.t==6 and br.v then			
+			STAGE.energy_bricks=STAGE.energy_bricks+1				
+		end
+	end
+
 	PrepareBall()
-end
+end	
+
 
 function PrepareBall()
 	is_launchball=false
 	ball:init(pad.x+pad.w/2,pad.y-3,2,0,0,11)	
 end
+
 
 
 
@@ -557,7 +577,9 @@ function colBallBrick(ball, br)
 		br.v=false
 	elseif br.t==6 then
 		br.v=false
-		Player.points = Player.points + 4
+		Player.points=Player.points + 4
+		STAGE.energy_bricks=STAGE.energy_bricks-1
+		BreakEnergy()
 	end
 	return true
 end
@@ -579,6 +601,12 @@ function colBallPad(ball, pad)
 	end
 
 	sfx(0,"D-5")	
+end
+
+-- effects
+
+function BreakEnergy()
+	return
 end
 
 -- util
