@@ -15,7 +15,7 @@
 	-- averiguar el orden en el que deben estar las declaraciones
 	-- move all physics to one place
 	-- check if enemy_lives is efficient or is better to move it ot STAGE table
-	-- crear indicador de a donde se va a disparar la bola
+	-- check if table parts is efficient as a global and creating and destroying values
 		
 local testlayout={
 	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
@@ -34,6 +34,10 @@ local testlayout={
 	{0,0,0,0,0,0,0,0,0,0,0,0,0},
 	{0,0,0,0,0,0,0,0,0,0,0,0,0}	
 }
+
+-- temp
+parts={}
+rnd=math.random
 
 -- modes
 M={
@@ -66,7 +70,7 @@ DEFAULT_STAGE={
 		maxdy=1.5,
 		startdx=1.4,
 		startdy=1.4,
-	},	
+	},
 	won_time=60,
 	energy_bricks=0,
 }
@@ -129,8 +133,8 @@ pad={
 	draw_dir=function(self, a)
 		local delay1 = (time()/100)%8
 		local delay2 = ((time()+400)/100)%8		
-		pix(self.x+(self.w/2)+(4*self.start_direction)+(delay1*self.start_direction),self.y-7-delay1,11)
-		pix(self.x+(self.w/2)+(4*self.start_direction)+(delay2*self.start_direction),self.y-7-delay2,11)					
+		pix(self.x+(self.w/2)+(4*self.start_direction)+(delay1*self.start_direction),self.y-7-delay1,12)
+		pix(self.x+(self.w/2)+(4*self.start_direction)+(delay2*self.start_direction),self.y-7-delay2,12)					
 	end
 }
 
@@ -178,7 +182,7 @@ LVL = {
 	title="How did you get here?",
 	diff=DIFF.EASY,
 	map={
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		{0,0,0,0,0,0,0,0,0,0,0,0,6},	
 		{5,1,1,1,1,1,1,1,1,1,1,1,1},
 		{5,0,0,0,0,0,0,0,0,0,0,0,0},	
 		{5,0,0,0,0,0,0,0,0,0,0,0,0},	
@@ -284,8 +288,10 @@ function PlayTic()
 		ball.dx= -STAGE.ball.maxdx
 	end		
 
-	ball.x=ball.x+ball.dx
-	ball.y=ball.y+ball.dy
+	if STAGE.won_time == 30 then -- pauses ball when won
+		ball.x=ball.x+ball.dx
+		ball.y=ball.y+ball.dy
+	end
 	
 	-- collision ball walls
 	if ball.x>wall.x1-ball.r  then -- right
@@ -377,7 +383,7 @@ function PlayTic()
 		SetMode(M.TITLE)
 	end
  
- 	-- DRAW
+ 	---- DRAW
 	cls(15)			
 	rectb(wall.x0,wall.y0,wall.w,wall.h,12) -- walls	
 
@@ -392,6 +398,11 @@ function PlayTic()
 			br:draw()
 		end
 	end  
+
+	
+	--UpdatePart(part)
+	DrawPart(parts)
+	UpdatePart(parts)
  
 	-- UI
 	print("LIVES: "..Player.lives,wall.x0,1,12)
@@ -453,17 +464,13 @@ function StageInit(level)
 	PrepareBall()
 end	
 
-
 function PrepareBall()
 	is_launchball=false
 	ball:init(pad.x+pad.w/2,pad.y-3,2,0,0,11)	
 end
 
 
-
-
--- PHYSICS
-
+---- PHYSICS
 function colCircRect(ball, box)
 	local box_cx=box.x+((box.w-1)/2)
 	local box_cy=box.y+((box.h-1)/2)
@@ -579,7 +586,8 @@ function colBallBrick(ball, br)
 		br.v=false
 		Player.points=Player.points + 4
 		STAGE.energy_bricks=STAGE.energy_bricks-1
-		BreakEnergy()
+		Explode(br.x,br.y)
+		
 	end
 	return true
 end
@@ -603,24 +611,66 @@ function colBallPad(ball, pad)
 	sfx(0,"D-5")	
 end
 
--- effects
+---- EFFECTS
+-- particles
 
-function BreakEnergy()
-	return
+
+function AddPart(_x,_y,_dx,_dy,_g,_c,_maxage)
+	local _p={}
+	_p.x=_x
+	_p.y=_y
+	_p.dx=_dx
+	_p.dy=_dy
+	_p.g=_g
+	_p.c=_c
+	_p.maxage=_maxage
+	_p.age=0
+	table.insert(parts,_p)
+end
+
+
+function DrawPart(parts)
+	if next(parts) ~= nil then
+		for _,p in pairs(parts) do
+			pix(p.x, p.y, p.c)
+			p.x=p.x+p.dx
+			p.y=p.y+p.dy
+			p.dy=p.dy+p.g			
+		end
+	end
+end
+
+function UpdatePart(parts)
+	if next(parts) ~= nil then
+		for _,p in pairs(parts) do
+			p.age=p.age+1
+			if p.age>p.maxage then				
+				table.remove(parts, _)
+			end
+		end
+	end
+end
+
+function Explode(x, y)
+	for i=1,10 do
+		AddPart(x+rnd()*20,y+rnd()*4,2*rnd(-1,1),-2+rnd(),0.5,12,7+rnd()*10)
+	end
+
 end
 
 -- util
+
 function DeepCopy(t)
 	if type(t)~="table" then return t end
-	local r={}
+	local _r={}
 	for k,v in pairs(t) do
 	 if type(v)=="table" then
-	  r[k]=DeepCopy(v)
+	  _r[k]=DeepCopy(v)
 	 else
-	  r[k]=v
+	  _r[k]=v
 	 end
 	end
-	return r
+	return _r
    end
 
 
