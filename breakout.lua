@@ -16,6 +16,7 @@
 	-- move all physics to one place
 	-- check if enemy_lives is efficient or is better to move it ot STAGE table
 	-- check if table parts is efficient as a global and creating and destroying values
+	-- improve particle system to give it flexibility and performance
 		
 local testlayout={
 	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
@@ -150,6 +151,7 @@ function brick:new(x,y,t,id)
 	newbrick.h=5
 	newbrick.c=brick_c[t]		
 	newbrick.t=t
+	newbrick.g=1
 	if newbrick.t > 0 then
 		newbrick.v=true
 	else
@@ -171,7 +173,12 @@ function brick:draw()
 		elseif self.t == 6 then
 			spr(3, self.x-1, self.y, 15)
 			spr(4, self.x+7, self.y, 15)		
-		end		
+		end	
+		
+	end
+	if self.g>0 then
+		rect(self.x,self.y,self.w,self.h,12)			
+		self.g=self.g-1
 	end
 end
 
@@ -185,14 +192,14 @@ LVL = {
 		{0,0,0,0,0,0,0,0,0,0,0,0,6},	
 		{5,1,1,1,1,1,1,1,1,1,1,1,1},
 		{5,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{5,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{5,0,0,0,0,0,0,0,0,0,0,0,0},
-		{5,0,0,0,2,2,2,2,2,2,2,0,0},
 		{5,0,0,0,0,0,6,0,0,0,0,0,0},	
 		{5,0,0,0,0,0,0,0,0,0,0,0,0},
+		{5,0,0,0,2,2,2,2,2,2,2,0,0},
+		{5,0,6,0,0,0,6,0,0,0,0,0,0},	
+		{5,0,0,0,0,0,0,0,0,0,6,0,0},
 		{5,0,0,0,0,0,0,0,3,3,3,5,5},	
-		{5,0,0,0,0,0,0,0,0,0,0,0,5},	
-		{5,0,0,0,0,0,0,0,0,0,0,0,5},
+		{5,0,6,6,0,0,0,0,0,0,0,0,5},	
+		{5,0,0,0,0,0,0,0,0,0,6,0,5},
 		{5,0,0,0,0,0,0,0,0,0,0,0,5},
 		{5,0,0,0,0,0,0,0,0,0,0,0,5},	
 		{5,0,0,0,0,0,0,0,0,0,0,0,5},
@@ -393,10 +400,8 @@ function PlayTic()
 		pad:draw_dir()
 	end	
  
-	for i, br in ipairs(bricks) do
-		if bricks[i].v then
-			br:draw()
-		end
+	for i, br in ipairs(bricks) do		
+		br:draw()		
 	end  
 
 	
@@ -587,7 +592,7 @@ function colBallBrick(ball, br)
 		Player.points=Player.points + 4
 		STAGE.energy_bricks=STAGE.energy_bricks-1
 		Explode(br.x,br.y)
-		
+		br.g=6		
 	end
 	return true
 end
@@ -651,11 +656,12 @@ function UpdatePart(parts)
 	end
 end
 
-function Explode(x, y)
-	for i=1,10 do
-		AddPart(x+rnd()*20,y+rnd()*4,2*rnd(-1,1),-2+rnd(),0.5,12,7+rnd()*10)
-	end
+-- particle explosion
 
+function Explode(x, y)
+	for i=1,20 do
+		AddPart(x+rnd()*20,y+rnd()*4,1+1.5*rnd(-1,1),-1.5*rnd(-1,1),0.1,12,15+rnd()*3)
+	end
 end
 
 -- util
