@@ -16,7 +16,8 @@
 	-- move all physics to one place
 	-- check if enemy_lives is efficient or is better to move it ot STAGE table
 	-- check if table parts is efficient as a global and creating and destroying values
-	-- improve particle system to give it flexibility and performance
+	-- revise separation betwen draw and update functions and placement
+	-- check ipairs usage (performance)
 		
 local testlayout={
 	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
@@ -151,7 +152,7 @@ function brick:new(x,y,t,id)
 	newbrick.h=5
 	newbrick.c=brick_c[t]		
 	newbrick.t=t
-	newbrick.g=1
+	newbrick.gw=1
 	if newbrick.t > 0 then
 		newbrick.v=true
 	else
@@ -176,11 +177,41 @@ function brick:draw()
 		end	
 		
 	end
-	if self.g>0 then
+	if self.gw>0 then
 		rect(self.x,self.y,self.w,self.h,12)			
-		self.g=self.g-1
+		self.gw=self.gw-1
 	end
 end
+
+-- POWERUPS
+pws={} --powerups array
+powerup={}
+function powerup:new(x,y,pw)
+	local newpowerup = {}
+	setmetatable(newpowerup, self)
+	self.__index=self	
+	newpowerup.x =x
+	newpowerup.y =y
+	newpowerup.r =3		
+	newpowerup.dy=0.5
+	newpowerup.dx=0	
+	newpowerup.pw=pw
+	table.insert(pws,newpowerup)
+end
+	
+function powerup:draw()	
+	spr(16+self.pw,self.x-self.r,self.y-self.r,0)			
+end	
+
+function pws:update()
+	for _,powerup in ipairs(self) do
+		powerup.y=powerup.y+powerup.dy
+		if colCircRect(powerup, pad)>0 then
+			table.remove(pws, _)
+		end		
+	end
+end	
+
 
 -- Levels
 LVL = {
@@ -198,11 +229,11 @@ LVL = {
 		{5,0,6,0,0,0,6,0,0,0,0,0,0},	
 		{5,0,0,0,0,0,0,0,0,0,6,0,0},
 		{5,0,0,0,0,0,0,0,3,3,3,5,5},	
-		{5,0,6,6,0,0,0,0,0,0,0,0,5},	
+		{5,0,0,0,0,0,0,0,0,0,0,0,5},	
 		{5,0,0,0,0,0,0,0,0,0,6,0,5},
 		{5,0,0,0,0,0,0,0,0,0,0,0,5},
-		{5,0,0,0,0,0,0,0,0,0,0,0,5},	
-		{5,0,0,0,0,0,0,0,0,0,0,0,5},
+		{5,1,0,0,0,0,0,0,0,0,0,0,5},	
+		{5,1,1,1,1,1,1,1,1,1,1,1,5},
 		{5,0,0,0,0,0,0,0,0,0,0,0,5}		
 	}
 	},
@@ -266,6 +297,8 @@ end
 
 function TitleTic()
 	cls()
+	Player.lives=3
+
 	print("press Z to start",70,50,4)
 	if btn(4) then
 		StageInit(1)	
@@ -389,6 +422,8 @@ function PlayTic()
 	if STAGE.time < 0 then
 		SetMode(M.TITLE)
 	end
+
+	
  
  	---- DRAW
 	cls(15)			
@@ -404,6 +439,12 @@ function PlayTic()
 		br:draw()		
 	end  
 
+	if next(pws) ~= nil then
+		for _,pwup in ipairs(pws) do
+			pwup:draw()			
+		end
+		pws:update()
+	end
 	
 	--UpdatePart(part)
 	DrawPart(parts)
@@ -465,7 +506,7 @@ function StageInit(level)
 			STAGE.energy_bricks=STAGE.energy_bricks+1				
 		end
 	end
-
+	
 	PrepareBall()
 end	
 
@@ -587,12 +628,13 @@ function colBallBrick(ball, br)
 		br.c = brick_c[br.t]		
 	elseif br.t==1 then
 		br.v=false
+		powerup:new(br.x+br.w/2,br.y+br.h/2,0)
 	elseif br.t==6 then
 		br.v=false
 		Player.points=Player.points + 4
 		STAGE.energy_bricks=STAGE.energy_bricks-1
 		Explode(br.x,br.y)
-		br.g=6		
+		br.gw=6		
 	end
 	return true
 end
@@ -697,7 +739,7 @@ end
 -- 002:cccd2200cccd2220cccd2220cccd2280ccce8800000000000000000000000000
 -- 003:fddddddafdeeeeabfdeeeabcfdeeeeabfe00000affffffffffffffffffffffff
 -- 004:adddddefbaeeee0fcbaeee0fbaeeee0fa000000fffffffffffffffffffffffff
--- 017:00000000000cc00000cccc000ccccdc00cccddc000cddc00000cc00000000000
+-- 016:0055500005666600566666706ccccc7066666670066667000077700000000000
 -- </TILES>
 
 -- <WAVES>
