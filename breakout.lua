@@ -18,7 +18,9 @@
 	-- check if table parts is efficient as a global and creating and destroying values
 	-- revise separation betwen draw and update functions and placement
 	-- check ipairs usage (performance)
-		
+	-- maybe move paddle physics (movements and width change) to its own function?
+
+-- temp
 local testlayout={
 	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
 	{0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -37,9 +39,12 @@ local testlayout={
 	{0,0,0,0,0,0,0,0,0,0,0,0,0}	
 }
 
--- temp
+
+ 
+math.randomseed(tstamp())
+
+--particle array
 parts={}
-rnd=math.random
 
 -- modes
 M={
@@ -58,7 +63,7 @@ DIFF={
 
 -- Player
 Player={
-	lives=3,
+	lives=10,
 	points=0,
 }
 
@@ -68,10 +73,10 @@ DEFAULT_STAGE={
 	n=0,		
 	time=200*60, --current stage time
 	ball={
-		maxdx=2,
-		maxdy=1.5,
-		startdx=1.4,
-		startdy=1.4,
+		maxdx=1.5,
+		maxdy=1,
+		startdx=1,
+		startdy=1,
 	},
 	won_time=60,
 	energy_bricks=0,
@@ -119,11 +124,12 @@ pad={
 	init=function(self,x,y,w,sp,ac,c)
 		self.x =x
 		self.y =y
-		self.w =w
+		self.w =w --30
 		self.h =5
 		self.sp=sp
-		self.ac=ac
-		self.dx=0			
+		self.ac=ac --acceleration
+		self.dx=0
+		self.tw=w --target width			
 	end,
 	start_direction=1,	
 	draw=function(self)
@@ -207,8 +213,23 @@ function pws:update()
 	for _,powerup in ipairs(self) do
 		powerup.y=powerup.y+powerup.dy
 		if colCircRect(powerup, pad)>0 then
+			if powerup.pw==0 then
+				if pad.tw < 46	then 
+					pad.tw=pad.tw+8
+				end	
+			elseif powerup.pw==1 then
+				if pad.tw > 14	then 
+					pad.tw=pad.tw-8
+				end
+			end
 			table.remove(pws, _)
 		end		
+	end
+end	
+
+function pws:clear()
+	for _,powerup in ipairs(self) do		
+		table.remove(pws, _)			
 	end
 end	
 
@@ -220,21 +241,21 @@ LVL = {
 	title="How did you get here?",
 	diff=DIFF.EASY,
 	map={
-		{0,0,0,0,0,0,0,0,0,0,0,0,6},	
-		{5,1,1,1,1,1,1,1,1,1,1,1,1},
-		{5,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{5,0,0,0,0,0,6,0,0,0,0,0,0},	
-		{5,0,0,0,0,0,0,0,0,0,0,0,0},
-		{5,0,0,0,2,2,2,2,2,2,2,0,0},
-		{5,0,6,0,0,0,6,0,0,0,0,0,0},	
-		{5,0,0,0,0,0,0,0,0,0,6,0,0},
-		{5,0,0,0,0,0,0,0,3,3,3,5,5},	
-		{5,0,0,0,0,0,0,0,0,0,0,0,5},	
-		{5,0,0,0,0,0,0,0,0,0,6,0,5},
+		{5,5,5,5,5,5,5,5,5,5,5,5,5},	
 		{5,0,0,0,0,0,0,0,0,0,0,0,5},
-		{5,1,0,0,0,0,0,0,0,0,0,0,5},	
-		{5,1,1,1,1,1,1,1,1,1,1,1,5},
-		{5,0,0,0,0,0,0,0,0,0,0,0,5}		
+		{5,0,0,6,0,6,0,6,0,6,0,0,5},	
+		{5,0,0,0,0,0,0,0,0,0,0,0,5},	
+		{5,1,1,1,1,1,1,1,1,1,1,1,5},	
+		{1,1,1,1,1,1,1,1,1,1,1,1,1},
+		{1,1,1,1,1,1,1,1,1,1,1,1,1},	
+		{1,1,1,1,1,1,1,1,1,1,1,1,1},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},		
 	}
 	},
 	{
@@ -284,23 +305,24 @@ function FPS:getValue()
   return self.value
 end
 
+
 function TIC()
 	TICF[Game.m]()
-	PrintShadow("FPS: "..FPS:getValue(),3,129,12,nil,1,1)	
+	PrintShadow("FPS: "..FPS:getValue(),3,129,12,nil,1,1)
+		
 end
 
 
 function Boot()
-	-- poke(0x7FC3F,1,1) -- hide cursor	
+	poke(0x7FC3F,1,1) -- hide cursor	
 	SetMode(M.TITLE)
 end
 
 function TitleTic()
 	cls()
-	Player.lives=3
-
 	print("press Z to start",70,50,4)
 	if btn(4) then
+		Player.lives=10
 		StageInit(1)	
 		SetMode(M.PLAY)
  	end
@@ -350,7 +372,16 @@ function PlayTic()
 		sfx(0)
 	end	
 		
-	-- PADDLE MOVE
+	-- PADDLE
+	if pad.tw < pad.w then 
+		pad.w=pad.w-2
+		pad.x=pad.x+1	
+	end
+	if pad.tw > pad.w then 
+		pad.w=pad.w+2
+		pad.x=pad.x-1			
+	end
+	-- PADDLE MOVEMENT
 	if btn(2) then -- left
 		if math.abs(pad.dx) < pad.sp then
 		pad.dx=pad.dx-pad.ac
@@ -381,6 +412,8 @@ function PlayTic()
 	if pad.x+pad.w >wall.x1 then
 		pad.x=wall.x1-pad.w 
 	end
+
+	
 
 	-- ball move with pad
 	if not is_launchball then
@@ -446,7 +479,7 @@ function PlayTic()
 		pws:update()
 	end
 	
-	--UpdatePart(part)
+	--Particles
 	DrawPart(parts)
 	UpdatePart(parts)
  
@@ -486,7 +519,9 @@ TICF={
 function StageInit(level)
 	setStage(LVL[level].diff,LVL[level].n)	
 	wall:init(29,212,8,136)	
-	pad:init(58,125,30,4,0.4)	
+	pad:init(58,125,30,4,0.4)
+	pws:clear()
+	
 
 	bricks = {}	
 	for i=1,15 do
@@ -628,7 +663,10 @@ function colBallBrick(ball, br)
 		br.c = brick_c[br.t]		
 	elseif br.t==1 then
 		br.v=false
-		powerup:new(br.x+br.w/2,br.y+br.h/2,0)
+		local pwchance = math.random(0,3)		
+		if pwchance < 2 then
+			powerup:new(br.x+br.w/2,br.y+br.h/2,pwchance)
+		end
 	elseif br.t==6 then
 		br.v=false
 		Player.points=Player.points + 4
@@ -702,7 +740,7 @@ end
 
 function Explode(x, y)
 	for i=1,20 do
-		AddPart(x+rnd()*20,y+rnd()*4,1+1.5*rnd(-1,1),-1.5*rnd(-1,1),0.1,12,15+rnd()*3)
+		AddPart(x+math.random()*20,y+math.random()*4,1+1.5*math.random(-1,1),-1.5*math.random(-1,1),0.1,12,15+math.random()*3)
 	end
 end
 
@@ -740,6 +778,7 @@ end
 -- 003:fddddddafdeeeeabfdeeeabcfdeeeeabfe00000affffffffffffffffffffffff
 -- 004:adddddefbaeeee0fcbaeee0fbaeeee0fa000000fffffffffffffffffffffffff
 -- 016:0055500005666600566666706ccccc7066666670066667000077700000000000
+-- 017:00333000032222003222228022ccc28022222280022228000088800000000000
 -- </TILES>
 
 -- <WAVES>
