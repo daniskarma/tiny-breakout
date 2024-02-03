@@ -63,7 +63,7 @@ DIFF={
 
 -- Player
 Player={
-	lives=10,
+	lives=0,
 	points=0,
 }
 
@@ -223,7 +223,10 @@ function pws:update()
 				end
 			end
 			table.remove(pws, _)
-		end		
+		end	
+		if powerup.y > 140 then
+			table.remove(pws, _)
+		end
 	end
 end	
 
@@ -322,7 +325,7 @@ function TitleTic()
 	cls()
 	print("press Z to start",70,50,4)
 	if btn(4) then
-		Player.lives=10
+		Player.lives=1
 		StageInit(1)	
 		SetMode(M.PLAY)
  	end
@@ -488,7 +491,7 @@ function PlayTic()
 	print("TIME: "..math.floor(STAGE.time/60),wall.x0+50,1,12)
 	print("POINTS: "..Player.points,wall.x0+110,1,12)
 
-	-- debug
+	-- DEBUG	
 	-- rect(ball.x,ball.y,1,1,2)
 	--rect(10,8,40,10,12)
 	-- print(checkBrickBorder(bricks[195], dir),12,10,2)
@@ -663,7 +666,7 @@ function colBallBrick(ball, br)
 		br.c = brick_c[br.t]		
 	elseif br.t==1 then
 		br.v=false
-		local pwchance = math.random(0,3)		
+		local pwchance = math.random(0,1)		
 		if pwchance < 2 then
 			powerup:new(br.x+br.w/2,br.y+br.h/2,pwchance)
 		end
@@ -779,6 +782,7 @@ end
 -- 004:adddddefbaeeee0fcbaeee0fbaeeee0fa000000fffffffffffffffffffffffff
 -- 016:0055500005666600566666706ccccc7066666670066667000077700000000000
 -- 017:00333000032222003222228022ccc28022222280022228000088800000000000
+-- 018:0055500005666600566c66706666667066c6c670066667000077700000000000
 -- </TILES>
 
 -- <WAVES>
