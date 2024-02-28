@@ -9,6 +9,7 @@
 
 -- BUGLIST
 	-- ball overlap a little in the bricks
+	-- movement keys sometimes not responding when moving pad against wall and while keeping one direction you press the other direction
 
 -- TODO
 	-- performance seems fixed with rewrite (test it more and continue rewrite)
@@ -18,7 +19,7 @@
 	-- check if table parts is efficient as a global and creating and destroying values
 	-- revise separation betwen draw and update functions and placement
 	-- check ipairs usage (performance)
-	-- maybe move paddle physics (movements and width change) to its own function?
+	-- maybe move each object physics (movements and width change) to its own function?
 
 -- temp
 local testlayout={
@@ -106,19 +107,23 @@ wall={
 	end	
 }
 
-ball={
-	init=function(self,x,y,r,dx,dy,c)
-		self.x =x
-		self.y =y
-		self.r =r
-		self.dx=dx
-		self.dy=dy		
-		self.c =c
-	end,
-	draw=function(self)			
-		circ(self.x,self.y,self.r,self.c)			
-	end	
-}	
+ball={}
+function ball:new(x,y,r,dx,dy,c)
+	local newball= {}
+	setmetatable(newball, self)
+	self.__index=self	
+	newball.x =x
+	newball.y =y
+	newball.r =r
+	newball.dx=dx
+	newball.dy=dy		
+	newball.c =c
+	return newball
+end
+function ball:draw()			
+	circ(self.x,self.y,self.r,self.c)			
+end	
+	
 
 pad={
 	init=function(self,x,y,w,sp,ac,c)
@@ -311,8 +316,9 @@ end
 
 function TIC()
 	TICF[Game.m]()
+	--DEBUG
 	PrintShadow("FPS: "..FPS:getValue(),3,129,12,nil,1,1)
-		
+			
 end
 
 
@@ -338,43 +344,7 @@ function PlayTic()
 	-- function vars
 	local is_btnpress=false
 	local is_collided=false	
-		
-	-- ball launch	
-	if not is_launchball and btnp(4) then
-		ball.dx=STAGE.ball.startdx*pad.start_direction
-		ball.dy=-STAGE.ball.startdy
-		is_launchball=true
-	end
-	
-	-- BALL MOVE
-	if ball.dx > STAGE.ball.maxdx then -- speed limit
-		ball.dx=STAGE.ball.maxdx
-	elseif ball.dx < -STAGE.ball.maxdx then 
-		ball.dx= -STAGE.ball.maxdx
-	end		
 
-	if STAGE.won_time == 30 then -- pauses ball when won
-		ball.x=ball.x+ball.dx
-		ball.y=ball.y+ball.dy
-	end
-	
-	-- collision ball walls
-	if ball.x>wall.x1-ball.r  then -- right
-		ball.x = wall.x1-ball.r-1
-		ball.dx=-math.abs(ball.dx)
-		sfx(0)
-	end	
-	if ball.x<wall.x0+ball.r+1 then -- left
-		ball.x = wall.x0+ball.r+1
-		ball.dx=math.abs(ball.dx)
-		sfx(0)
-	end
-	if ball.y<wall.y0+ball.r then -- up
-		ball.y = wall.y0+ball.r+1
-		ball.dy=math.abs(ball.dy)
-		sfx(0)
-	end	
-		
 	-- PADDLE
 	if pad.tw < pad.w then 
 		pad.w=pad.w-2
@@ -416,24 +386,69 @@ function PlayTic()
 		pad.x=wall.x1-pad.w 
 	end
 
-	
 
-	-- ball move with pad
-	if not is_launchball then
-		ball.x=pad.x+pad.w/2
-		ball.y=pad.y-3		
-	end	
-			 
-	-- collision brick ball
-	for i, br in ipairs(bricks) do
-		if is_collided then break end
-		if br.v then			
-			is_collided=colBallBrick(ball,br)				
+	-- -- BALL -- --
+	for i, ball in ipairs(balls) do	
+
+		-- ball launch	
+		if not is_launchball and btnp(4) then
+			ball.dx=STAGE.ball.startdx*pad.start_direction
+			ball.dy=-STAGE.ball.startdy
+			is_launchball=true
 		end
-	end	
+		
+		-- BALL MOVE
+		if ball.dx > STAGE.ball.maxdx then -- speed limit
+			ball.dx=STAGE.ball.maxdx
+		elseif ball.dx < -STAGE.ball.maxdx then 
+			ball.dx= -STAGE.ball.maxdx
+		end		
 
-	-- collision ball-paddle
-	colBallPad(ball,pad)	
+		if STAGE.won_time == 30 then -- pauses ball when won
+			ball.x=ball.x+ball.dx
+			ball.y=ball.y+ball.dy
+		end
+		
+		-- collision ball walls
+		if ball.x>wall.x1-ball.r  then -- right
+			ball.x = wall.x1-ball.r-1
+			ball.dx=-math.abs(ball.dx)
+			sfx(0)
+		end	
+		if ball.x<wall.x0+ball.r+1 then -- left
+			ball.x = wall.x0+ball.r+1
+			ball.dx=math.abs(ball.dx)
+			sfx(0)
+		end
+		if ball.y<wall.y0+ball.r then -- up
+			ball.y = wall.y0+ball.r+1
+			ball.dy=math.abs(ball.dy)
+			sfx(0)
+		end	
+		
+		-- ball move with pad
+		if not is_launchball then
+			ball.x=pad.x+pad.w/2
+			ball.y=pad.y-3		
+		end	
+				
+		-- collision brick ball
+		for i, br in ipairs(bricks) do
+			if is_collided then break end
+			if br.v then			
+				is_collided=colBallBrick(ball,br)				
+			end
+		end	
+
+		-- collision ball-paddle
+		colBallPad(ball,pad)
+		
+		if ball.y > 136 then
+			table.remove(balls,i)
+		end
+
+	end
+
 
 	-- TIME
 	if is_launchball and STAGE.energy_bricks > 0 then
@@ -448,7 +463,7 @@ function PlayTic()
 		StageInit(STAGE.n+1)
 	end
 	-- GAMEOVER
-	if ball.y > 136 then
+	if #balls < 1 then
 		Player.lives=Player.lives-1
 		sfx(1)
 		if Player.lives < 0 then SetMode(M.TITLE) end
@@ -457,15 +472,16 @@ function PlayTic()
 
 	if STAGE.time < 0 then
 		SetMode(M.TITLE)
-	end
-
-	
+	end	
  
  	---- DRAW
 	cls(15)			
 	rectb(wall.x0,wall.y0,wall.w,wall.h,12) -- walls	
 
-	ball:draw()
+	for i, ball in ipairs(balls) do		
+		ball:draw()		
+	end
+	
 	pad:draw()
 	if not is_launchball then		
 		pad:draw_dir()
@@ -526,7 +542,8 @@ function StageInit(level)
 	pws:clear()
 	
 
-	bricks = {}	
+	bricks = {}
+	balls = {}	
 	for i=1,15 do
 		for j = 1,13 do			
 			local newbrick=brick:new(
@@ -550,7 +567,8 @@ end
 
 function PrepareBall()
 	is_launchball=false
-	ball:init(pad.x+pad.w/2,pad.y-3,2,0,0,11)	
+	local newball = ball:new(pad.x+pad.w/2,pad.y-3,2,0,0,11)
+	table.insert(balls, newball)		
 end
 
 
@@ -765,11 +783,18 @@ function DeepCopy(t)
 
 
 -- FPS show
-
 function PrintShadow(message,x,y,color,gap,size,smallmode)
  print(message,x,y,0,gap,size,smallmode)
  print(message,x,y-1,color,gap,size,smallmode)
 end
+
+-- Can be deleted for now
+function tablelength(T)
+	local count = 0
+	for _ in pairs(T) do count = count + 1 end
+	return count
+  end
+  
 
 
 
