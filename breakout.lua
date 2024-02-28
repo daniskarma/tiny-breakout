@@ -232,7 +232,8 @@ function pws:update()
 					for i=1,2 do 
 						local newball = ball:new(
 							balls[1].x,
-							balls[1].y,2,
+							balls[1].y,
+							balls[1].r,
 							balls[1].dx*((math.random(0, 1) == 0) and -1 or 1),
 							((math.random(0, 1) == 0) and -1 or 1),
 							11
@@ -240,6 +241,18 @@ function pws:update()
 						table.insert(balls, newball)
 					end
 				end
+			elseif powerup.pw==3 then -- POWER increase ball size
+				if balls[1].r < 4	then 
+					for _, ball in ipairs(balls) do
+						ball.r = ball.r + 1
+					end	
+				end
+			elseif powerup.pw==4 then -- POWER reduce ball size
+				if balls[1].r > 1	then 
+					for _, ball in ipairs(balls) do
+						ball.r = ball.r - 1
+					end	
+				end						
 			end
 			table.remove(pws, _)
 		end	
@@ -698,8 +711,9 @@ function colBallBrick(ball, br)
 		br.c = brick_c[br.t]		
 	elseif br.t==1 then
 		br.v=false
-		local pwchance = math.random(2,2)		
-		if pwchance < 3 then
+		local pwchance = math.random(0,10)
+		--pwchance=3 -- debug override	
+		if pwchance < 5 then
 			powerup:new(br.x+br.w/2,br.y+br.h/2,pwchance)
 		end
 	elseif br.t==6 then
@@ -822,6 +836,8 @@ function tablelength(T)
 -- 016:0055500005666600566666706ccccc7066666670066667000077700000000000
 -- 017:00333000032222003222228022ccc28022222280022228000088800000000000
 -- 018:0055500005666600566c66706666667066c6c670066667000077700000000000
+-- 019:0055500005ccc6005ccccc706ccccc706ccccc7006ccc7000077700000000000
+-- 020:003330000322220032222280222c228022222280022228000088800000000000
 -- </TILES>
 
 -- <WAVES>
