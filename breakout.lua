@@ -20,6 +20,7 @@
 	-- revise separation betwen draw and update functions and placement
 	-- check ipairs usage (performance)
 	-- maybe move each object physics (movements and width change) to its own function?
+	-- asegurar que establecemos una semilla aleatoria para los random
 
 -- temp
 local testlayout={
@@ -218,13 +219,26 @@ function pws:update()
 	for _,powerup in ipairs(self) do
 		powerup.y=powerup.y+powerup.dy
 		if colCircRect(powerup, pad)>0 then
-			if powerup.pw==0 then
+			if powerup.pw==0 then -- POWER increase pad
 				if pad.tw < 46	then 
 					pad.tw=pad.tw+8
 				end	
-			elseif powerup.pw==1 then
+			elseif powerup.pw==1 then -- POWER decrease pad
 				if pad.tw > 14	then 
 					pad.tw=pad.tw-8
+				end
+			elseif powerup.pw==2 then -- POWER give two balls
+				if #balls < 5	then
+					for i=1,2 do 
+						local newball = ball:new(
+							balls[1].x,
+							balls[1].y,2,
+							balls[1].dx*((math.random(0, 1) == 0) and -1 or 1),
+							((math.random(0, 1) == 0) and -1 or 1),
+							11
+						)
+						table.insert(balls, newball)
+					end
 				end
 			end
 			table.remove(pws, _)
@@ -684,8 +698,8 @@ function colBallBrick(ball, br)
 		br.c = brick_c[br.t]		
 	elseif br.t==1 then
 		br.v=false
-		local pwchance = math.random(0,1)		
-		if pwchance < 2 then
+		local pwchance = math.random(2,2)		
+		if pwchance < 3 then
 			powerup:new(br.x+br.w/2,br.y+br.h/2,pwchance)
 		end
 	elseif br.t==6 then
