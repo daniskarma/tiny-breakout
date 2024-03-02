@@ -10,6 +10,7 @@
 -- BUGLIST
 	-- ball overlap a little in the bricks
 	-- movement keys sometimes not responding when moving pad against wall and while keeping one direction you press the other direction
+	-- reset ball radius when loss and restart from pad
 
 -- TODO
 	-- performance seems fixed with rewrite (test it more and continue rewrite)
@@ -21,6 +22,8 @@
 	-- check ipairs usage (performance)
 	-- maybe move each object physics (movements and width change) to its own function?
 	-- asegurar que establecemos una semilla aleatoria para los random
+
+	--joystick abajo a la derecha para touch control
 
 -- temp
 local testlayout={
@@ -98,13 +101,13 @@ end
 -- ELEMENTS
 
 wall={
-	init=function(self,x0,x1,y0,y1)
+	init=function(self,x0,y0)
 		self.x0=x0
-		self.x1=x1
+		self.x1=x0 + 183
 		self.y0=y0
-		self.y1=y1		
+		self.y1=y0+127		
 		self.w =self.x1-self.x0+1
-		self.h =self.y1-self.y0+1
+		self.h =self.y1-self.y0+1		
 	end	
 }
 
@@ -239,6 +242,7 @@ function pws:update()
 							11
 						)
 						table.insert(balls, newball)
+						
 					end
 				end
 			elseif powerup.pw==3 then -- POWER increase ball size
@@ -344,13 +348,13 @@ end
 function TIC()
 	TICF[Game.m]()
 	--DEBUG
-	PrintShadow("FPS: "..FPS:getValue(),3,129,12,nil,1,1)
+	PrintShadow("FPS: "..FPS:getValue(),200,129,12,nil,1,1)
 			
 end
 
 
 function Boot()
-	poke(0x7FC3F,1,1) -- hide cursor	
+	--poke(0x7FC3F,1,1) -- hide cursor	
 	SetMode(M.TITLE)
 end
 
@@ -501,9 +505,11 @@ function PlayTic()
 		SetMode(M.TITLE)
 	end	
  
- 	---- DRAW
-	cls(15)			
-	rectb(wall.x0,wall.y0,wall.w,wall.h,12) -- walls	
+ 	---- DRAW				
+	
+	cls(13) --general background
+	rect(wall.x0,wall.y0,wall.w,wall.h,15) -- play background			
+	line(wall.x0+1,wall.y1-1,wall.x1-1,wall.y1-1,00) --shadow botton
 
 	for i, ball in ipairs(balls) do		
 		ball:draw()		
@@ -529,10 +535,7 @@ function PlayTic()
 	DrawPart(parts)
 	UpdatePart(parts)
  
-	-- UI
-	print("LIVES: "..Player.lives,wall.x0,1,12)
-	print("TIME: "..math.floor(STAGE.time/60),wall.x0+50,1,12)
-	print("POINTS: "..Player.points,wall.x0+110,1,12)
+	DrawUI()
 
 	-- DEBUG	
 	-- rect(ball.x,ball.y,1,1,2)
@@ -564,8 +567,8 @@ TICF={
 
 function StageInit(level)
 	setStage(LVL[level].diff,LVL[level].n)	
-	wall:init(29,212,8,136)	
-	pad:init(58,125,30,4,0.4)
+	wall:init(4,4)	
+	pad:init(50,120,30,4,0.4)
 	pws:clear()
 	
 
@@ -745,9 +748,44 @@ function colBallPad(ball, pad)
 	sfx(0,"D-5")	
 end
 
+---- UI
+-- Draw
+
+function DrawUI()	
+	
+	--playground bevel
+	line(wall.x0,wall.y1,wall.x1,wall.y1,12)
+	line(wall.x1,wall.y0,wall.x1,wall.y1,12)
+	line(wall.x0,wall.y0,wall.x1,wall.y0,14)
+	line(wall.x0,wall.y0,wall.x0,wall.y1,14)		
+	pix(wall.x0,wall.y1, 15)
+	pix(wall.x1,wall.y0, 15)
+	rect(0,wall.y1+1,240,136, 13) -- botton ui for hiding ball	
+	
+	--info bevel
+	local left_margin = wall.x1+4
+	local right_margin = 240-4
+
+	local info_top = 35
+	local info_botton = 80
+
+	rect(left_margin,info_top,right_margin-left_margin,info_botton-info_top, 15)
+	line(left_margin,info_botton,right_margin,info_botton,12)
+	line(right_margin,info_top,right_margin,info_botton,12)
+	line(left_margin,info_top,right_margin,info_top,00)
+	line(left_margin,info_top,left_margin,info_botton,00)	
+	pix(left_margin,info_botton, 15)
+	pix(right_margin,info_top, 15)
+	
+	print("LIVES "..string.char(10)..Player.lives,left_margin+3,info_top+3,12)
+	print("TIME "..string.char(10)..math.floor(STAGE.time/60),left_margin+3,info_top+17,12)
+	print("POINTS "..string.char(10)..Player.points,left_margin+3,info_top+31,12)
+	
+
+end
+
 ---- EFFECTS
 -- particles
-
 
 function AddPart(_x,_y,_dx,_dy,_g,_c,_maxage)
 	local _p={}
@@ -833,6 +871,7 @@ function tablelength(T)
 -- 002:cccd2200cccd2220cccd2220cccd2280ccce8800000000000000000000000000
 -- 003:fddddddafdeeeeabfdeeeabcfdeeeeabfe00000affffffffffffffffffffffff
 -- 004:adddddefbaeeee0fcbaeee0fbaeeee0fa000000fffffffffffffffffffffffff
+-- 005:0000dccd0000dccd0000dccd0000dccd0000dccd0000dccd0000dccd0000dccd
 -- 016:0055500005666600566666706ccccc7066666670066667000077700000000000
 -- 017:00333000032222003222228022ccc28022222280022228000088800000000000
 -- 018:0055500005666600566c66706666667066c6c670066667000077700000000000
@@ -852,6 +891,7 @@ function tablelength(T)
 -- <SFX>
 -- 000:4100510171019102a103c103d105e107f107f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f10041000010f000
 -- 001:3504440055037500750195009501c501c501e500f500f500f500f500f500f500f500f500f500f500f500f500f500f500f500f500f500f500f500f500360000000000
+-- 002:f0f0e0e0c0d0b0b0a0a0808070706050404030202010100000000000000010001000201040205020603080309040a060b070c070d090e0b0e0c0f0e0310000000000
 -- </SFX>
 
 -- <TRACKS>
