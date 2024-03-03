@@ -21,9 +21,11 @@
 	-- revise separation betwen draw and update functions and placement
 	-- check ipairs usage (performance)
 	-- maybe move each object physics (movements and width change) to its own function?
-	-- asegurar que establecemos una semilla aleatoria para los random
-	-- block paddle movement and ball lauch during stage load screen
-	--normalizar nombres (snake_case, upper, CamelCase...)
+	-- asegurar que establecemos una semilla aleatoria para los random	
+	-- normalizar nombres (snake_case, upper, CamelCase...)
+	-- add +1 lifep ower up and show lives as ball symbols
+	-- add tiemr to powerups
+	-- timeup should end game or take a life?
 
 	--joystick abajo a la derecha para touch control
 
@@ -58,7 +60,8 @@ M={
 	BOOT=0,
 	TITLE=1,    -- title screen	
 	PLAY=2,	
-	GAMEOVER=3,	
+	GAMEOVER=3,
+	GAMEWIN=4,	
 }
 
 -- Difficulty
@@ -73,7 +76,6 @@ Player={
 	lives=0,
 	points=0,
 }
-
 
 -- Stage
 DEFAULT_STAGE={
@@ -285,13 +287,13 @@ LVL = {
 	map={
 		{5,5,5,5,5,5,5,5,5,5,5,5,5},	
 		{5,0,0,0,0,0,0,0,0,0,0,0,5},
-		{5,0,0,6,0,6,0,6,0,6,0,0,5},	
+		{5,0,0,0,0,0,0,0,0,0,0,0,5},	
 		{5,0,0,0,0,0,0,0,0,0,0,0,5},	
 		{5,1,1,1,1,1,1,1,1,1,1,1,5},	
 		{1,1,1,1,1,1,1,1,1,1,1,1,1},
 		{1,1,1,1,1,1,1,1,1,1,1,1,1},	
 		{1,1,1,1,1,1,1,1,1,1,1,1,1},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		{0,0,0,0,0,0,6,0,0,0,0,0,0},	
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -302,16 +304,16 @@ LVL = {
 	},
 	{
 	n=2,
-	title="Get out of my body!",
+	title="You shouldn't be here!",
 	diff=DIFF.EASY,
 	map={
-		{0,0,0,6,0,0,0,0,0,6,0,0,0},	
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{1,1,1,1,1,1,1,1,1,1,1,1,1},
-		{1,1,1,1,1,1,1,1,1,1,1,1,1},	
+		{1,1,1,1,1,1,6,1,1,1,1,1,1},	
 		{1,1,1,1,1,1,1,1,1,1,1,1,1},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
@@ -373,6 +375,31 @@ function TitleTic()
 	rectb(0,0,240,136,12)
 end
 
+function GameOverTic()
+	cls()
+	printc("GAME OVER",120,40,4,true)
+	printc("press Z to start",120,50,4,true)
+	if btn(4) then
+		Player.lives=1
+		StageInit(1)	
+		SetMode(M.PLAY)
+ 	end	
+	rectb(0,0,240,136,12)
+end
+
+function GameWinTic()
+	cls()
+	printc("CONGRATULATIONS!",120,30,4,true)
+	printc("YOU WIN THE GAME!",120,40,4,true)
+	printc("press Z to start",120,50,4,true)
+	if btn(4) then
+		Player.lives=1
+		StageInit(1)	
+		SetMode(M.PLAY)
+ 	end	
+	rectb(0,0,240,136,12)
+end
+
 
 function PlayTic()
 	-- function vars
@@ -380,7 +407,7 @@ function PlayTic()
 	local is_collided=false	
 	local is_loaded=false
 
-	is_loaded = STAGE.init_time + 3000 > time()
+	is_loaded = STAGE.init_time + 2000 > time()
 
 	-- PADDLE
 	if pad.tw < pad.w then 
@@ -423,7 +450,6 @@ function PlayTic()
 	if pad.x+pad.w >wall.x1 then
 		pad.x=wall.x1-pad.w 
 	end
-
 
 	-- -- BALL -- --
 	for i, ball in ipairs(balls) do	
@@ -496,19 +522,23 @@ function PlayTic()
 		STAGE.won_time=STAGE.won_time-1
 	end
 	if STAGE.won_time < 0 then
-		StageInit(STAGE.n+1)
+		if LVL[STAGE.n+1] ~= nil then
+			StageInit(STAGE.n+1)
+		else
+			SetMode(M.GAMEWIN)
+		end
 	end
 
 	-- GAMEOVER
 	if #balls < 1 then
 		Player.lives=Player.lives-1
 		sfx(1)
-		if Player.lives < 0 then SetMode(M.TITLE) end
+		if Player.lives < 0 then SetMode(M.GAMEOVER) end
 		PrepareBall()
 	end
 
 	if STAGE.time < 0 then
-		SetMode(M.TITLE)
+		SetMode(M.GAMEOVER)
 	end	
  
  	---- DRAW	
@@ -547,9 +577,7 @@ function PlayTic()
 	
 	--Particles
 	DrawPart(parts)
-	UpdatePart(parts)
- 
-	DrawUI()
+	UpdatePart(parts)	
 
 	-- stage load screen
 	if is_loaded then			
@@ -557,6 +585,8 @@ function PlayTic()
 		printc("LEVEL: "..STAGE.n, wall.x0+(wall.x1-wall.x0)/2, 50, 12, true)
 		printc(LVL[STAGE.n].title, wall.x0+(wall.x1-wall.x0)/2, 60, 12, true)		
 	end
+
+	DrawUI()
 
 	-- DEBUG
 	--line(wall.x0+(wall.x1-wall.x0)/2, wall.y0, wall.x0+(wall.x1-wall.x0)/2, wall.y1,12)	
@@ -583,7 +613,8 @@ TICF={
 	[M.BOOT]=Boot,
 	[M.TITLE]=TitleTic,	
 	[M.PLAY]=PlayTic,	
-	[M.GAMEOVER]=GameOverTic,	
+	[M.GAMEOVER]=GameOverTic,
+	[M.GAMEWIN]=GameWinTic,	
 }
 
 function StageInit(level)
