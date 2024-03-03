@@ -378,6 +378,9 @@ function PlayTic()
 	-- function vars
 	local is_btnpress=false
 	local is_collided=false	
+	local is_loaded=false
+
+	is_loaded = STAGE.init_time + 3000 > time()
 
 	-- PADDLE
 	if pad.tw < pad.w then 
@@ -426,7 +429,7 @@ function PlayTic()
 	for i, ball in ipairs(balls) do	
 
 		-- ball launch	
-		if not is_launchball and btnp(4) then
+		if not is_launchball and btnp(4) and not is_loaded then
 			ball.dx=STAGE.ball.startdx*pad.start_direction
 			ball.dy=-STAGE.ball.startdy
 			is_launchball=true
@@ -549,7 +552,7 @@ function PlayTic()
 	DrawUI()
 
 	-- stage load screen
-	if STAGE.init_time + 30000 > time() then			
+	if is_loaded then			
 		rect(wall.x0,wall.y0,wall.w,wall.h,00) -- play background	
 		printc("LEVEL: "..STAGE.n, wall.x0+(wall.x1-wall.x0)/2, 50, 12, true)
 		printc(LVL[STAGE.n].title, wall.x0+(wall.x1-wall.x0)/2, 60, 12, true)		
@@ -861,6 +864,7 @@ function Explode(x, y)
 		AddPart(x+math.random()*20,y+math.random()*4,1+1.5*math.random(-1,1),-1.5*math.random(-1,1),0.1,12,15+math.random()*3)
 	end
 end
+
 
 -- util
 
