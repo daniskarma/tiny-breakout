@@ -22,6 +22,8 @@
 	-- check ipairs usage (performance)
 	-- maybe move each object physics (movements and width change) to its own function?
 	-- asegurar que establecemos una semilla aleatoria para los random
+	-- block paddle movement and ball lauch during stage load screen
+	--normalizar nombres (snake_case, upper, CamelCase...)
 
 	--joystick abajo a la derecha para touch control
 
@@ -96,6 +98,7 @@ function setStage(diff, level)
 	STAGE.ball.startdy=STAGE.ball.startdy*diff
 	STAGE.n=level
 	STAGE.won_time=30
+	STAGE.init_time=time()
 end
 
 -- ELEMENTS
@@ -234,10 +237,10 @@ function pws:update()
 				if #balls < 5	then
 					for i=1,2 do 
 						local newball = ball:new(
-							balls[1].x,
-							balls[1].y,
+							balls[1].x+math.random(),
+							balls[1].y+math.random(),
 							balls[1].r,
-							balls[1].dx*((math.random(0, 1) == 0) and -1 or 1),
+							balls[1].dx*((math.random(0, 1) == 0) and -1 or 1)*math.random(),
 							((math.random(0, 1) == 0) and -1 or 1),
 							11
 						)
@@ -348,6 +351,7 @@ end
 function TIC()
 	TICF[Game.m]()
 	--DEBUG
+	rect(200-2,129-2,30,9,14)
 	PrintShadow("FPS: "..FPS:getValue(),200,129,12,nil,1,1)
 			
 end
@@ -365,8 +369,7 @@ function TitleTic()
 		Player.lives=1
 		StageInit(1)	
 		SetMode(M.PLAY)
- 	end
-	
+ 	end	
 	rectb(0,0,240,136,12)
 end
 
@@ -385,6 +388,7 @@ function PlayTic()
 		pad.w=pad.w+2
 		pad.x=pad.x-1			
 	end
+
 	-- PADDLE MOVEMENT
 	if btn(2) then -- left
 		if math.abs(pad.dx) < pad.sp then
@@ -477,9 +481,7 @@ function PlayTic()
 		if ball.y > 136 then
 			table.remove(balls,i)
 		end
-
 	end
-
 
 	-- TIME
 	if is_launchball and STAGE.energy_bricks > 0 then
@@ -493,6 +495,7 @@ function PlayTic()
 	if STAGE.won_time < 0 then
 		StageInit(STAGE.n+1)
 	end
+
 	-- GAMEOVER
 	if #balls < 1 then
 		Player.lives=Player.lives-1
@@ -505,11 +508,19 @@ function PlayTic()
 		SetMode(M.TITLE)
 	end	
  
- 	---- DRAW				
-	
+ 	---- DRAW	
 	cls(13) --general background
-	rect(wall.x0,wall.y0,wall.w,wall.h,15) -- play background			
-	line(wall.x0+1,wall.y1-1,wall.x1-1,wall.y1-1,00) --shadow botton
+	rect(wall.x0,wall.y0,wall.w,wall.h,15) -- play background	
+	--shadow botton	
+	line(wall.x0+1,wall.y1-1,wall.x1-1,wall.y1-1,00)
+
+	for i=wall.x0+1,wall.x1-1 do
+		if i%2 == 0 then
+			pix(i,wall.y1-3,00)
+		else
+			pix(i,wall.y1-2,00)
+		end
+	end
 
 	for i, ball in ipairs(balls) do		
 		ball:draw()		
@@ -537,7 +548,15 @@ function PlayTic()
  
 	DrawUI()
 
-	-- DEBUG	
+	-- stage load screen
+	if STAGE.init_time + 30000 > time() then			
+		rect(wall.x0,wall.y0,wall.w,wall.h,00) -- play background	
+		printc("LEVEL: "..STAGE.n, wall.x0+(wall.x1-wall.x0)/2, 50, 12, true)
+		printc(LVL[STAGE.n].title, wall.x0+(wall.x1-wall.x0)/2, 60, 12, true)		
+	end
+
+	-- DEBUG
+	--line(wall.x0+(wall.x1-wall.x0)/2, wall.y0, wall.x0+(wall.x1-wall.x0)/2, wall.y1,12)	
 	-- rect(ball.x,ball.y,1,1,2)
 	--rect(10,8,40,10,12)
 	-- print(checkBrickBorder(bricks[195], dir),12,10,2)
@@ -552,8 +571,7 @@ function gameOver()
 	if btn(4) then
 		gameBOOT()
 	 	SetMode(M.PLAY)
-	end
-	
+	end	
 	rectb(0,0,240,136,12)
 end
 
@@ -569,8 +587,7 @@ function StageInit(level)
 	setStage(LVL[level].diff,LVL[level].n)	
 	wall:init(4,4)	
 	pad:init(50,120,30,4,0.4)
-	pws:clear()
-	
+	pws:clear()	
 
 	bricks = {}
 	balls = {}	
@@ -596,6 +613,7 @@ function StageInit(level)
 end	
 
 function PrepareBall()
+	pws:clear()
 	is_launchball=false
 	local newball = ball:new(pad.x+pad.w/2,pad.y-3,2,0,0,11)
 	table.insert(balls, newball)		
@@ -714,7 +732,7 @@ function colBallBrick(ball, br)
 		br.c = brick_c[br.t]		
 	elseif br.t==1 then
 		br.v=false
-		local pwchance = math.random(0,10)
+		local pwchance = math.random(0,7)
 		--pwchance=3 -- debug override	
 		if pwchance < 5 then
 			powerup:new(br.x+br.w/2,br.y+br.h/2,pwchance)
@@ -751,21 +769,22 @@ end
 ---- UI
 -- Draw
 
-function DrawUI()	
-	
+function DrawUI()		
 	--playground bevel
 	line(wall.x0,wall.y1,wall.x1,wall.y1,12)
 	line(wall.x1,wall.y0,wall.x1,wall.y1,12)
 	line(wall.x0,wall.y0,wall.x1,wall.y0,14)
-	line(wall.x0,wall.y0,wall.x0,wall.y1,14)		
+	line(wall.x0,wall.y0,wall.x0,wall.y1,14)
+	pix(wall.x0,wall.y0, 15)
 	pix(wall.x0,wall.y1, 15)
 	pix(wall.x1,wall.y0, 15)
 	rect(0,wall.y1+1,240,136, 13) -- botton ui for hiding ball	
 	
-	--info bevel
+	-- margins
 	local left_margin = wall.x1+4
 	local right_margin = 240-4
 
+	--info bevel
 	local info_top = 35
 	local info_botton = 80
 
@@ -780,6 +799,18 @@ function DrawUI()
 	print("LIVES "..string.char(10)..Player.lives,left_margin+3,info_top+3,12)
 	print("TIME "..string.char(10)..math.floor(STAGE.time/60),left_margin+3,info_top+17,12)
 	print("POINTS "..string.char(10)..Player.points,left_margin+3,info_top+31,12)
+
+	--boss bevel
+	local info_top = 4
+	local info_botton = 30
+
+	rect(left_margin,info_top,right_margin-left_margin,info_botton-info_top, 15)
+	line(left_margin,info_botton,right_margin,info_botton,12)
+	line(right_margin,info_top,right_margin,info_botton,12)
+	line(left_margin,info_top,right_margin,info_top,00)
+	line(left_margin,info_top,left_margin,info_botton,00)	
+	pix(left_margin,info_botton, 15)
+	pix(right_margin,info_top, 15)
 	
 
 end
@@ -844,22 +875,33 @@ function DeepCopy(t)
 	 end
 	end
 	return _r
-   end
+end
 
+-- TODO - No tiene en cuenta distintos anchos por caracter
+-- Para centrar correctamente una fuente tiene que tener fixed=true
+function printc(...)
+	local firstArg = select(1, ...)
+    local secondArg = select(2, ...)
+    local new_x = secondArg - (#firstArg / 2)*6
+    local args = {select(3, ...)}
+    table.insert(args, 1, new_x)
+    table.insert(args, 1, firstArg)
+    print(table.unpack(args))
+end
 
 
 -- FPS show
 function PrintShadow(message,x,y,color,gap,size,smallmode)
- print(message,x,y,0,gap,size,smallmode)
- print(message,x,y-1,color,gap,size,smallmode)
+	print(message,x,y,0,gap,size,smallmode)
+	print(message,x,y-1,color,gap,size,smallmode)
 end
 
--- Can be deleted for now
+-- TODO Can be deleted for now
 function tablelength(T)
 	local count = 0
 	for _ in pairs(T) do count = count + 1 end
 	return count
-  end
+end
   
 
 
@@ -877,6 +919,13 @@ function tablelength(T)
 -- 018:0055500005666600566c66706666667066c6c670066667000077700000000000
 -- 019:0055500005ccc6005ccccc706ccccc706ccccc7006ccc7000077700000000000
 -- 020:003330000322220032222280222c228022222280022228000088800000000000
+-- 032:00000000000000000c0000c00000000000000000000000000cccccc000000000
+-- 033:00000000000000000cc00cc00cf00cf000000000000000000cccccc000000000
+-- 034:00000000000000000c0000c000000000000000000c0000c000cccc0000000000
+-- 035:00000000000000000c0000c000000000000cc00000c00c0000c00c00000cc000
+-- 036:00000000000000000c0000c00000000000000000000cc00000c00c00000cc000
+-- 037:00000000000000000c0000c000000000000000000000000000cccc0000000000
+-- 038:0c0000c000c00c00000cc0000c0000c0000000000000000000cccc000c0000c0
 -- </TILES>
 
 -- <WAVES>
