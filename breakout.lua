@@ -35,6 +35,21 @@
  
 math.randomseed(tstamp())
 
+-- input constants
+
+joystick={
+	pos={
+		x=0,
+		y=0,
+		r=8
+	},
+	x=0,
+	y=0,
+	use=false,
+	color=3
+}
+joystickinuse=false
+
 BTN={ACTION="ACTION", LEFT="LEFT", RIGHT="RIGHT"}
 
 --particle array
@@ -342,8 +357,8 @@ function TIC()
 	TICF[Game.m]()
 	--DEBUG
 	--rect(200-2,129-2,30,9,14)
-	PrintShadow("FPS: "..FPS:getValue(),200,12,12,nil,1,1)
-			
+	PrintShadow("FPS: "..FPS:getValue(),200,12,12,nil,1,1)			
+	
 end
 
 
@@ -835,18 +850,62 @@ function DrawUI()
 	line(left_margin,info_top,right_margin,info_top,00)
 	line(left_margin,info_top,left_margin,info_botton,00)	
 	pix(left_margin,info_botton, 15)
-	pix(right_margin,info_top, 15)
-	
+	pix(right_margin,info_top, 15)	
+
+
+	-- TODO move to a proper location---
+	mx,my,mp,mm,mr=mouse()
+	x=215
+	y=110
+	if mr then
+		x=mx
+		y=my
+	end
+	drawjoystick(joystick,x,y)
+	updatejoystick(joystick,x,y)
+	---------------------------
 
 end
 
--- function drawjoystick(j,xo,yo)
--- 	circ(j.pos.x+xo,j.pos.y+yo,j.pos.r,15)
--- 	for i=0,1,0.1 do
--- 		circ(j.pos.x+j.x*j.pos.r*i+xo,j.pos.y+j.y*j.pos.r*i+yo,j.pos.r/(4-i),0)
--- 	end
--- 	circ(j.pos.x+j.x*j.pos.r+xo,j.pos.y+j.y*j.pos.r+yo,j.pos.r/2,j.color)
--- end
+function drawjoystick(j,xo,yo)	
+	circ(j.pos.x+xo,j.pos.y+yo,j.pos.r,15)
+	for i=0,1,0.1 do
+		circ(j.pos.x+j.x*j.pos.r*i+xo,j.pos.y+j.y*j.pos.r*i+yo,j.pos.r/(4-i),0)
+	end
+	circ(j.pos.x+j.x*j.pos.r+xo,j.pos.y+j.y*j.pos.r+yo,j.pos.r/2,j.color)
+end
+
+function updatejoystick(j,xo,yo)
+	mx,my,mp=mouse()
+	mx=mx-xo
+	my=my-yo
+	xdif=mx-j.pos.x
+	ydif=my-j.pos.y
+	if not joystickinuse and mp and (xdif^2+ydif^2)<j.pos.r^2 then
+		j.use=true
+		joystickinuse=true
+	elseif not mp then
+		j.use=false
+		joystickinuse=false
+	end
+	if j.use then
+		j.x=(mx-j.pos.x)/j.pos.r
+		j.y=(my-j.pos.y)/j.pos.r
+	else
+		j.x=j.x*0.6
+		j.y=j.y*0.6
+		if math.abs(j.x)<0.03 then j.x=0 end
+		if math.abs(j.y)<0.03 then j.y=0 end
+	end
+	
+	if j.x^2+j.y^2>1 then
+		local angle=math.atan2(j.y,j.x)
+		j.x=math.cos(angle)
+		j.y=math.sin(angle)
+	end
+end
+
+
 
 ---- EFFECTS
 -- particles
@@ -912,9 +971,9 @@ function input(option)
 		end
 		return btn(4) or peek(0xFF88)==48 or is_mouse
 	elseif option == BTN.RIGHT then
-		return peek(0xFF80)==8
+		return peek(0xFF80)==8 or joystick.x>0.5
 	elseif option == BTN.LEFT then
-		return peek(0xFF80)==4
+		return peek(0xFF80)==4 or joystick.x<-0.5
 	else
 		return false
 	end
