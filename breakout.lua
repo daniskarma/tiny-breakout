@@ -24,33 +24,18 @@
 	-- asegurar que establecemos una semilla aleatoria para los random	
 	-- normalizar nombres (snake_case, upper, CamelCase...)
 	-- add +1 lifep ower up and show lives as ball symbols
-	-- add tiemr to powerups
+	-- add timer to powerups
 	-- timeup should end game or take a life?
+
+	--PERFORMANCE: Parece algo mejor pero hay que seguir mejorandola
 
 	--joystick abajo a la derecha para touch control
 
 -- temp
-local testlayout={
-	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-	{0,0,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-	{0,0,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-	{0,0,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-	{0,0,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-	{0,0,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0}	
-}
-
-
  
 math.randomseed(tstamp())
+
+BTN={ACTION="ACTION", LEFT="LEFT", RIGHT="RIGHT"}
 
 --particle array
 parts={}
@@ -104,7 +89,6 @@ function setStage(diff, level)
 end
 
 -- ELEMENTS
-
 wall={
 	init=function(self,x0,y0)
 		self.x0=x0
@@ -131,8 +115,7 @@ function ball:new(x,y,r,dx,dy,c)
 end
 function ball:draw()			
 	circ(self.x,self.y,self.r,self.c)			
-end	
-	
+end		
 
 pad={
 	init=function(self,x,y,w,sp,ac,c)
@@ -224,18 +207,19 @@ function powerup:draw()
 end	
 
 function pws:update()
-	for _,powerup in ipairs(self) do
-		powerup.y=powerup.y+powerup.dy
-		if colCircRect(powerup, pad)>0 then
-			if powerup.pw==0 then -- POWER increase pad
+	local to_remove = {}
+	for i=#self,1,-1 do
+		self[i].y=self[i].y+self[i].dy
+		if colCircRect(self[i], pad)>0 then
+			if self[i].pw==0 then -- POWER increase pad
 				if pad.tw < 46	then 
 					pad.tw=pad.tw+8
 				end	
-			elseif powerup.pw==1 then -- POWER decrease pad
+			elseif self[i].pw==1 then -- POWER decrease pad
 				if pad.tw > 14	then 
 					pad.tw=pad.tw-8
 				end
-			elseif powerup.pw==2 then -- POWER give two balls
+			elseif self[i].pw==2 then -- POWER give two balls
 				if #balls < 5	then
 					for i=1,2 do 
 						local newball = ball:new(
@@ -250,33 +234,37 @@ function pws:update()
 						
 					end
 				end
-			elseif powerup.pw==3 then -- POWER increase ball size
+			elseif self[i].pw==3 then -- POWER increase ball size
 				if balls[1].r < 4	then 
 					for _, ball in ipairs(balls) do
 						ball.r = ball.r + 1
 					end	
 				end
-			elseif powerup.pw==4 then -- POWER reduce ball size
+			elseif self[i].pw==4 then -- POWER reduce ball size
 				if balls[1].r > 1	then 
 					for _, ball in ipairs(balls) do
 						ball.r = ball.r - 1
 					end	
 				end						
 			end
-			table.remove(pws, _)
+			table.insert(to_remove, i)
 		end	
-		if powerup.y > 140 then
-			table.remove(pws, _)
+		if self[i].y > 140 then
+			table.insert(to_remove, i)
+		end
+	end
+	if next(to_remove) ~= nil then
+		for i = #to_remove, 1, -1 do
+			table.remove(pws, to_remove[i])
 		end
 	end
 end	
 
 function pws:clear()
-	for _,powerup in ipairs(self) do		
-		table.remove(pws, _)			
+	for i=#self, 1, -1 do		
+		table.remove(pws, i)			
 	end
 end	
-
 
 -- Levels
 LVL = {
@@ -292,8 +280,8 @@ LVL = {
 		{5,1,1,1,1,1,1,1,1,1,1,1,5},	
 		{1,1,1,1,1,1,1,1,1,1,1,1,1},
 		{1,1,1,1,1,1,1,1,1,1,1,1,1},	
-		{1,1,1,1,1,1,1,1,1,1,1,1,1},
-		{0,0,0,0,0,0,6,0,0,0,0,0,0},	
+		{1,1,1,1,1,1,6,1,1,1,1,1,1},
+		{0,0,0,0,0,0,1,0,0,0,0,0,0},	
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -367,19 +355,20 @@ end
 function TitleTic()
 	cls()
 	print("press Z to start",70,50,4)
-	if btn(4) then
+	if input(BTN.ACTION) then
 		Player.lives=1
 		StageInit(1)	
 		SetMode(M.PLAY)
  	end	
 	rectb(0,0,240,136,12)
+	
 end
 
 function GameOverTic()
 	cls()
 	printc("GAME OVER",120,40,4,true)
 	printc("press Z to start",120,50,4,true)
-	if btn(4) then
+	if input(BTN.ACTION) then
 		Player.lives=1
 		StageInit(1)	
 		SetMode(M.PLAY)
@@ -392,7 +381,7 @@ function GameWinTic()
 	printc("CONGRATULATIONS!",120,30,4,true)
 	printc("YOU WIN THE GAME!",120,40,4,true)
 	printc("press Z to start",120,50,4,true)
-	if btn(4) then
+	if input(BTN.ACTION) then
 		Player.lives=1
 		StageInit(1)	
 		SetMode(M.PLAY)
@@ -407,7 +396,7 @@ function PlayTic()
 	local is_collided=false	
 	local is_loaded=false
 
-	is_loaded = STAGE.init_time + 2000 > time()
+	is_loaded = STAGE.init_time + 1000 > time()
 
 	-- PADDLE
 	if pad.tw < pad.w then 
@@ -420,14 +409,14 @@ function PlayTic()
 	end
 
 	-- PADDLE MOVEMENT
-	if btn(2) then -- left
+	if input(BTN.LEFT) then -- left
 		if math.abs(pad.dx) < pad.sp then
 		pad.dx=pad.dx-pad.ac
 		pad.start_direction=-1
 	end
 	is_btnpress=true
 	end
-	if btn(3) then -- right
+	if input(BTN.RIGHT) then -- right
 		if math.abs(pad.dx) < pad.sp then
 		pad.dx=pad.dx+pad.ac
 		pad.start_direction=1
@@ -452,62 +441,62 @@ function PlayTic()
 	end
 
 	-- -- BALL -- --
-	for i, ball in ipairs(balls) do	
+	for i=#balls, 1, -1 do	
 
 		-- ball launch	
-		if not is_launchball and btnp(4) and not is_loaded then
-			ball.dx=STAGE.ball.startdx*pad.start_direction
-			ball.dy=-STAGE.ball.startdy
+		if not is_launchball and input(BTN.ACTION) and not is_loaded then
+			balls[i].dx=STAGE.ball.startdx*pad.start_direction
+			balls[i].dy=-STAGE.ball.startdy
 			is_launchball=true
 		end
 		
 		-- BALL MOVE
-		if ball.dx > STAGE.ball.maxdx then -- speed limit
-			ball.dx=STAGE.ball.maxdx
-		elseif ball.dx < -STAGE.ball.maxdx then 
-			ball.dx= -STAGE.ball.maxdx
+		if balls[i].dx > STAGE.ball.maxdx then -- speed limit
+			balls[i].dx=STAGE.ball.maxdx
+		elseif balls[i].dx < -STAGE.ball.maxdx then 
+			balls[i].dx= -STAGE.ball.maxdx
 		end		
 
 		if STAGE.won_time == 30 then -- pauses ball when won
-			ball.x=ball.x+ball.dx
-			ball.y=ball.y+ball.dy
+			balls[i].x=balls[i].x+balls[i].dx
+			balls[i].y=balls[i].y+balls[i].dy
 		end
 		
 		-- collision ball walls
-		if ball.x>wall.x1-ball.r  then -- right
-			ball.x = wall.x1-ball.r-1
-			ball.dx=-math.abs(ball.dx)
+		if balls[i].x>wall.x1-balls[i].r  then -- right
+			balls[i].x = wall.x1-balls[i].r-1
+			balls[i].dx=-math.abs(balls[i].dx)
 			sfx(0)
 		end	
-		if ball.x<wall.x0+ball.r+1 then -- left
-			ball.x = wall.x0+ball.r+1
-			ball.dx=math.abs(ball.dx)
+		if balls[i].x<wall.x0+balls[i].r+1 then -- left
+			balls[i].x = wall.x0+balls[i].r+1
+			balls[i].dx=math.abs(balls[i].dx)
 			sfx(0)
 		end
-		if ball.y<wall.y0+ball.r then -- up
-			ball.y = wall.y0+ball.r+1
-			ball.dy=math.abs(ball.dy)
+		if balls[i].y<wall.y0+balls[i].r then -- up
+			balls[i].y = wall.y0+balls[i].r+1
+			balls[i].dy=math.abs(balls[i].dy)
 			sfx(0)
 		end	
 		
 		-- ball move with pad
 		if not is_launchball then
-			ball.x=pad.x+pad.w/2
-			ball.y=pad.y-3		
+			balls[i].x=pad.x+pad.w/2
+			balls[i].y=pad.y-3		
 		end	
 				
 		-- collision brick ball
-		for i, br in ipairs(bricks) do
+		for k=1, #bricks do
 			if is_collided then break end
-			if br.v then			
-				is_collided=colBallBrick(ball,br)				
+			if bricks[k].v then			
+				is_collided=colBallBrick(balls[i],bricks[k])				
 			end
 		end	
 
 		-- collision ball-paddle
-		colBallPad(ball,pad)
+		colBallPad(balls[i],pad)
 		
-		if ball.y > 136 then
+		if balls[i].y > 136 then
 			table.remove(balls,i)
 		end
 	end
@@ -555,8 +544,8 @@ function PlayTic()
 		end
 	end
 
-	for i, ball in ipairs(balls) do		
-		ball:draw()		
+	for i=1, #balls do		
+		balls[i]:draw()		
 	end
 	
 	pad:draw()
@@ -564,13 +553,13 @@ function PlayTic()
 		pad:draw_dir()
 	end	
  
-	for i, br in ipairs(bricks) do		
-		br:draw()		
+	for i=1, #bricks do		
+		bricks[i]:draw()		
 	end  
 
 	if next(pws) ~= nil then
-		for _,pwup in ipairs(pws) do
-			pwup:draw()			
+		for i=1, #pws do
+			pws[i]:draw()			
 		end
 		pws:update()
 	end
@@ -589,11 +578,13 @@ function PlayTic()
 	DrawUI()
 
 	-- DEBUG
+
 	--line(wall.x0+(wall.x1-wall.x0)/2, wall.y0, wall.x0+(wall.x1-wall.x0)/2, wall.y1,12)	
 	-- rect(ball.x,ball.y,1,1,2)
 	--rect(10,8,40,10,12)
 	-- print(checkBrickBorder(bricks[195], dir),12,10,2)
 	--print(bricks[2].x,12,18,2)
+	
 end
 
 
@@ -601,7 +592,7 @@ function gameOver()
 	cls()
 	print("GAME OVER",90,20,4)
 	print("press A to start",70,50,4)
-	if btn(4) then
+	if input(BTN.ACTION) then
 		gameBOOT()
 	 	SetMode(M.PLAY)
 	end	
@@ -637,8 +628,8 @@ function StageInit(level)
 	end	
 	
 	-- stablish STAGE energy bricks
-	for i, br in ipairs(bricks) do		
-		if br.t==6 and br.v then			
+	for i=1,#bricks do		
+		if bricks[i].t==6 and bricks[i].v then			
 			STAGE.energy_bricks=STAGE.energy_bricks+1				
 		end
 	end
@@ -868,11 +859,11 @@ end
 
 function DrawPart(parts)
 	if next(parts) ~= nil then
-		for _,p in pairs(parts) do
-			pix(p.x, p.y, p.c)
-			p.x=p.x+p.dx
-			p.y=p.y+p.dy
-			p.dy=p.dy+p.g			
+		for i=1, #parts do
+			pix(parts[i].x, parts[i].y, parts[i].c)
+			parts[i].x=parts[i].x+parts[i].dx
+			parts[i].y=parts[i].y+parts[i].dy
+			parts[i].dy=parts[i].dy+parts[i].g			
 		end
 	end
 end
@@ -896,6 +887,20 @@ function Explode(x, y)
 	end
 end
 
+-- INPUT
+
+function input(option)
+	if option == BTN.ACTION then
+		return btn(4) or peek(0xFF88)==48
+	elseif option == BTN.RIGHT then
+		return peek(0xFF80)==8
+	elseif option == BTN.LEFT then
+		return peek(0xFF80)==4
+	else
+		return false
+	end
+	return false
+end
 
 -- util
 
@@ -931,13 +936,7 @@ function PrintShadow(message,x,y,color,gap,size,smallmode)
 	print(message,x,y-1,color,gap,size,smallmode)
 end
 
--- TODO Can be deleted for now
-function tablelength(T)
-	local count = 0
-	for _ in pairs(T) do count = count + 1 end
-	return count
-end
-  
+
 
 
 
