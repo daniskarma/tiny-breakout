@@ -341,8 +341,8 @@ end
 function TIC()
 	TICF[Game.m]()
 	--DEBUG
-	rect(200-2,129-2,30,9,14)
-	PrintShadow("FPS: "..FPS:getValue(),200,129,12,nil,1,1)
+	--rect(200-2,129-2,30,9,14)
+	PrintShadow("FPS: "..FPS:getValue(),200,12,12,nil,1,1)
 			
 end
 
@@ -840,6 +840,14 @@ function DrawUI()
 
 end
 
+-- function drawjoystick(j,xo,yo)
+-- 	circ(j.pos.x+xo,j.pos.y+yo,j.pos.r,15)
+-- 	for i=0,1,0.1 do
+-- 		circ(j.pos.x+j.x*j.pos.r*i+xo,j.pos.y+j.y*j.pos.r*i+yo,j.pos.r/(4-i),0)
+-- 	end
+-- 	circ(j.pos.x+j.x*j.pos.r+xo,j.pos.y+j.y*j.pos.r+yo,j.pos.r/2,j.color)
+-- end
+
 ---- EFFECTS
 -- particles
 
@@ -891,7 +899,18 @@ end
 
 function input(option)
 	if option == BTN.ACTION then
-		return btn(4) or peek(0xFF88)==48
+		local mx,my,mp=mouse()
+		local is_mouse = false
+		if mp then
+			if wall.x0 ~= nil then
+				if mx > wall.x0 and mx < wall.x1 and my > wall.y0 and my < wall.y1 then
+					is_mouse = true
+				end
+			else
+				is_mouse = true
+			end
+		end
+		return btn(4) or peek(0xFF88)==48 or is_mouse
 	elseif option == BTN.RIGHT then
 		return peek(0xFF80)==8
 	elseif option == BTN.LEFT then
