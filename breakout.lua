@@ -260,7 +260,11 @@ function pws:update()
 					for _, ball in ipairs(balls) do
 						ball.r = ball.r - 1
 					end	
-				end						
+				end		
+			elseif self[i].pw==5 then -- POWER reduce ball size
+				if Player.lives<6 then
+					Player.lives=Player.lives+1
+				end
 			end
 			table.insert(to_remove, i)
 		end	
@@ -371,7 +375,7 @@ function TitleTic()
 	cls()
 	print("press Z to start",70,50,4)
 	if input(BTN.ACTION) then
-		Player.lives=1
+		Player.lives=3
 		StageInit(1)	
 		SetMode(M.PLAY)
  	end	
@@ -773,8 +777,8 @@ function colBallBrick(ball, br)
 	elseif br.t==1 then
 		br.v=false
 		local pwchance = math.random(0,7)
-		--pwchance=3 -- debug override	
-		if pwchance < 5 then
+		pwchance=5 -- debug override	
+		if pwchance < 6 then
 			powerup:new(br.x+br.w/2,br.y+br.h/2,pwchance)
 		end
 	elseif br.t==6 then
@@ -836,7 +840,10 @@ function DrawUI()
 	pix(left_margin,info_botton, 15)
 	pix(right_margin,info_top, 15)
 	
-	print("LIVES "..string.char(10)..Player.lives,left_margin+3,info_top+3,12)
+	print("LIVES ",left_margin+3,info_top+3,12)
+	for i=0,Player.lives-1 do
+		circ(left_margin+3+2+i*7,info_top+12,2,11)
+	end
 	print("TIME "..string.char(10)..math.floor(STAGE.time/60),left_margin+3,info_top+17,12)
 	print("POINTS "..string.char(10)..Player.points,left_margin+3,info_top+31,12)
 
@@ -1031,6 +1038,7 @@ end
 -- 018:0055500005666600566c66706666667066c6c670066667000077700000000000
 -- 019:0055500005ccc6005ccccc706ccccc706ccccc7006ccc7000077700000000000
 -- 020:003330000322220032222280222c228022222280022228000088800000000000
+-- 021:0055500005666600566c667066ccc670666c6670066667000077700000000000
 -- 032:00000000000000000c0000c00000000000000000000000000cccccc000000000
 -- 033:00000000000000000cc00cc00cf00cf000000000000000000cccccc000000000
 -- 034:00000000000000000c0000c000000000000000000c0000c000cccc0000000000
