@@ -26,6 +26,7 @@
 	-- add +1 lifep ower up and show lives as ball symbols
 	-- add timer to powerups
 	-- timeup should end game or take a life?
+	-- sustitute drawing button function (looks hideous) for triangle sprite
 
 	--PERFORMANCE: Parece algo mejor pero hay que seguir mejorandola
 
@@ -43,12 +44,12 @@ controller={
 		pos={
 			x=10,
 			y=0,
-			r=6,
+			r=8,
 			a=0,
 		},
 		hold=false,
 		holdtime=0,
-		press=false,
+		pressed=false,
 		color=2
 	},
 	left = {
@@ -56,12 +57,12 @@ controller={
 		pos={
 			x=-10,
 			y=0,
-			r=6,
+			r=8,
 			a=180,
 		},
 		hold=false,
 		holdtime=0,
-		press=false,
+		pressed=false,
 		color=2
 	},
 }
@@ -863,7 +864,7 @@ function DrawUI()
 	print("TIME "..string.char(10)..math.floor(STAGE.time/60),left_margin+3,info_top+17,12)
 	print("POINTS "..string.char(10)..Player.points,left_margin+3,info_top+31,12)
 
-	--boss bevel
+	--top bevel
 	local info_top = 4
 	local info_botton = 30
 
@@ -885,9 +886,7 @@ function DrawUI()
 		y=my
 	end
 	updatecontroller(controller,x,y)
-	drawcontroller(controller,x,y)
-
-	tric(100,100,8,0,12)
+	drawcontroller(controller,x,y)	
 	---------------------------
 
 end
@@ -997,9 +996,9 @@ function input(option)
 		end
 		return btn(4) or peek(0xFF88)==48 or is_mouse
 	elseif option == BTN.RIGHT then
-		return peek(0xFF80)==8 
+		return peek(0xFF80)==8 or controller.right.hold
 	elseif option == BTN.LEFT then
-		return peek(0xFF80)==4 
+		return peek(0xFF80)==4 or controller.left.hold
 	else
 		return false
 	end
