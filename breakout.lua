@@ -47,8 +47,6 @@ controller={
 			r=12,
 			a=0,
 		},
-		hold=false,
-		holdtime=0,
 		pressed=false,
 		color=2
 	},
@@ -60,8 +58,6 @@ controller={
 			r=12,
 			a=180,
 		},
-		hold=false,
-		holdtime=0,
 		pressed=false,
 		color=2
 	},
@@ -892,30 +888,22 @@ end
 
 function updatebutton(b,xo,yo)
 	mx,my,mp=mouse()
-	mx=mx-xo
-	my=my-yo
-	xdif=mx-b.pos.x
-	ydif=my-b.pos.y
-	if not joystickinuse and mp and (xdif^2+ydif^2)<b.pos.r^2 then
-		b.hold=true
-		b.holdtime=b.holdtime+1
+	
+	local t = getTriPoints(b.pos.x+xo,b.pos.y+yo,b.pos.r,b.pos.a)
+		
+	if mp and isPointInTriangle(mx, my, t.x1, t.y1, t.x2, t.y2, t.x3, t.y3) then
+		b.pressed=true		
 	else
-		b.hold=false
-		b.holdtime=0
-	end
-	if b.hold and b.holdtime==1 then
-		b.pressed=true
-	else
-		b.pressed=false
-	end
+		b.pressed=false		
+	end	
 end
 
 function drawbutton(b,xo,yo)
-	if b.hold then
-		tric(b.pos.x+xo,b.pos.y+1+yo,b.pos.r,b.color, b.pos.a)
+	if b.pressed then
+		tric(b.pos.x+xo,b.pos.y+1+yo,b.pos.r, b.pos.a,b.color)
 	else
-		tric(b.pos.x+xo,b.pos.y+1+yo,b.pos.r,15, b.pos.a)
-		tric(b.pos.x+xo,b.pos.y+yo,b.pos.r,b.color, b.pos.a)
+		tric(b.pos.x+xo,b.pos.y+1+yo,b.pos.r, b.pos.a, 15)
+		tric(b.pos.x+xo,b.pos.y+yo,b.pos.r, b.pos.a,b.color)		
 	end	
 end
 
@@ -995,9 +983,9 @@ function input(option)
 		end
 		return btn(4) or peek(0xFF88)==48 or is_mouse
 	elseif option == BTN.RIGHT then
-		return peek(0xFF80)==8 or controller.right.hold == true
+		return peek(0xFF80)==8 or controller.right.pressed == true
 	elseif option == BTN.LEFT then
-		return peek(0xFF80)==4 or controller.left.hold == true
+		return peek(0xFF80)==4 or controller.left.pressed == true
 	else
 		return false
 	end
@@ -1039,18 +1027,33 @@ function PrintShadow(message,x,y,color,gap,size,smallmode)
 end
 
 -- TODO finish
-function tric(x,y,r,c,a)
+function tric(x,y,r,a,c)	
+	local t = getTriPoints(x,y,r,a) 
+	tri(t.x1,t.y1,t.x2,t.y2,t.x3,t.y3,c)
+end
+
+function getTriPoints(x,y,r,a)
 	local a1 = math.rad(a)
 	local a2 = math.rad(a+360/3)
 	local a3 = math.rad(a+2*360/3)
-	local x1 = x + math.cos(a1) * r
-	local x2 = x + math.cos(a2) * r
-	local x3 = x + math.cos(a3) * r
-	local y1 = y + math.sin(a1) * r
-	local y2 = y + math.sin(a2) * r
-	local y3 = y + math.sin(a3) * r
-	
-	tri(x1,y1,x2,y2,x3,y3,c)
+	local triangle = {
+		x1 = x + math.cos(a1) * r,
+		x2 = x + math.cos(a2) * r,
+		x3 = x + math.cos(a3) * r,
+		y1 = y + math.sin(a1) * r,
+		y2 = y + math.sin(a2) * r,
+		y3 = y + math.sin(a3) * r,
+	}
+	return triangle
+end
+
+function isPointInTriangle(px, py, x1, y1, x2, y2, x3, y3)
+    local denom = ((y2 - y3)*(x1 - x3) + (x3 - x2)*(y1 - y3))
+    local a = ((y2 - y3)*(px - x3) + (x3 - x2)*(py - y3)) / denom
+    local b = ((y3 - y1)*(px - x3) + (x1 - x3)*(py - y3)) / denom
+    local c = 1 - a - b
+
+    return 0 <= a and a <= 1 and 0 <= b and b <= 1 and 0 <= c and c <= 1
 end
 
 
