@@ -44,7 +44,7 @@ controller={
 		pos={
 			x=10,
 			y=0,
-			r=8,
+			r=12,
 			a=0,
 		},
 		hold=false,
@@ -57,7 +57,7 @@ controller={
 		pos={
 			x=-10,
 			y=0,
-			r=8,
+			r=12,
 			a=180,
 		},
 		hold=false,
@@ -312,7 +312,7 @@ LVL = {
 		{5,5,5,5,5,5,5,5,5,5,5,5,5},	
 		{5,0,0,0,0,0,0,0,0,0,0,0,5},
 		{5,0,0,0,0,0,0,0,0,0,0,0,5},	
-		{5,0,0,0,0,0,0,0,0,0,0,0,5},	
+		{5,0,0,0,0,0,6,0,0,0,0,0,5},	
 		{5,1,1,1,1,1,1,1,1,1,1,1,5},	
 		{1,1,1,1,1,1,1,1,1,1,1,1,1},
 		{1,1,1,1,1,1,1,1,1,1,1,1,1},	
@@ -793,8 +793,7 @@ function colBallBrick(ball, br)
 		br.c = brick_c[br.t]		
 	elseif br.t==1 then
 		br.v=false
-		local pwchance = math.random(0,7)
-		pwchance=5 -- debug override	
+		local pwchance = math.random(0,14)			
 		if pwchance < 6 then
 			powerup:new(br.x+br.w/2,br.y+br.h/2,pwchance)
 		end
@@ -880,7 +879,7 @@ function DrawUI()
 	-- TODO move to a proper location---
 	mx,my,mp,mm,mr=mouse()
 	x=215
-	y=120
+	y=110
 	if mr then
 		x=mx
 		y=my
@@ -996,9 +995,9 @@ function input(option)
 		end
 		return btn(4) or peek(0xFF88)==48 or is_mouse
 	elseif option == BTN.RIGHT then
-		return peek(0xFF80)==8 or controller.right.hold
+		return peek(0xFF80)==8 or controller.right.hold == true
 	elseif option == BTN.LEFT then
-		return peek(0xFF80)==4 or controller.left.hold
+		return peek(0xFF80)==4 or controller.left.hold == true
 	else
 		return false
 	end
