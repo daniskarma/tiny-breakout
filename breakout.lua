@@ -37,18 +37,34 @@ math.randomseed(tstamp())
 
 -- input constants
 
-joystick={
-	pos={
-		x=0,
-		y=0,
-		r=8
+controller={	
+	right = {
+		type='b',
+		pos={
+			x=10,
+			y=0,
+			r=6,
+			a=0,
+		},
+		hold=false,
+		holdtime=0,
+		press=false,
+		color=2
 	},
-	x=0,
-	y=0,
-	use=false,
-	color=3
+	left = {
+		type='b',
+		pos={
+			x=-10,
+			y=0,
+			r=6,
+			a=180,
+		},
+		hold=false,
+		holdtime=0,
+		press=false,
+		color=2
+	},
 }
-joystickinuse=false
 
 BTN={ACTION="ACTION", LEFT="LEFT", RIGHT="RIGHT"}
 
@@ -863,56 +879,59 @@ function DrawUI()
 	-- TODO move to a proper location---
 	mx,my,mp,mm,mr=mouse()
 	x=215
-	y=110
+	y=120
 	if mr then
 		x=mx
 		y=my
 	end
-	drawjoystick(joystick,x,y)
-	updatejoystick(joystick,x,y)
+	updatecontroller(controller,x,y)
+	drawcontroller(controller,x,y)
+
+	tric(100,100,8,0,12)
 	---------------------------
 
 end
 
-function drawjoystick(j,xo,yo)	
-	circ(j.pos.x+xo,j.pos.y+yo,j.pos.r,15)
-	for i=0,1,0.1 do
-		circ(j.pos.x+j.x*j.pos.r*i+xo,j.pos.y+j.y*j.pos.r*i+yo,j.pos.r/(4-i),0)
-	end
-	circ(j.pos.x+j.x*j.pos.r+xo,j.pos.y+j.y*j.pos.r+yo,j.pos.r/2,j.color)
-end
-
-function updatejoystick(j,xo,yo)
+function updatebutton(b,xo,yo)
 	mx,my,mp=mouse()
 	mx=mx-xo
 	my=my-yo
-	xdif=mx-j.pos.x
-	ydif=my-j.pos.y
-	if not joystickinuse and mp and (xdif^2+ydif^2)<j.pos.r^2 then
-		j.use=true
-		joystickinuse=true
-	elseif not mp then
-		j.use=false
-		joystickinuse=false
-	end
-	if j.use then
-		j.x=(mx-j.pos.x)/j.pos.r
-		j.y=(my-j.pos.y)/j.pos.r
+	xdif=mx-b.pos.x
+	ydif=my-b.pos.y
+	if not joystickinuse and mp and (xdif^2+ydif^2)<b.pos.r^2 then
+		b.hold=true
+		b.holdtime=b.holdtime+1
 	else
-		j.x=j.x*0.6
-		j.y=j.y*0.6
-		if math.abs(j.x)<0.03 then j.x=0 end
-		if math.abs(j.y)<0.03 then j.y=0 end
+		b.hold=false
+		b.holdtime=0
 	end
-	
-	if j.x^2+j.y^2>1 then
-		local angle=math.atan2(j.y,j.x)
-		j.x=math.cos(angle)
-		j.y=math.sin(angle)
+	if b.hold and b.holdtime==1 then
+		b.pressed=true
+	else
+		b.pressed=false
 	end
 end
 
+function drawbutton(b,xo,yo)
+	if b.hold then
+		tric(b.pos.x+xo,b.pos.y+1+yo,b.pos.r,b.color, b.pos.a)
+	else
+		tric(b.pos.x+xo,b.pos.y+1+yo,b.pos.r,15, b.pos.a)
+		tric(b.pos.x+xo,b.pos.y+yo,b.pos.r,b.color, b.pos.a)
+	end	
+end
 
+function updatecontroller(con,xo,yo)
+	for k,v in pairs(con) do		
+		updatebutton(v,xo,yo)		
+	end
+end
+
+function drawcontroller(con,xo,yo)	
+	for k,v in pairs(controller) do
+		drawbutton(v,xo,yo)
+	end
+end
 
 ---- EFFECTS
 -- particles
@@ -978,9 +997,9 @@ function input(option)
 		end
 		return btn(4) or peek(0xFF88)==48 or is_mouse
 	elseif option == BTN.RIGHT then
-		return peek(0xFF80)==8 or joystick.x>0.5
+		return peek(0xFF80)==8 
 	elseif option == BTN.LEFT then
-		return peek(0xFF80)==4 or joystick.x<-0.5
+		return peek(0xFF80)==4 
 	else
 		return false
 	end
@@ -1021,7 +1040,20 @@ function PrintShadow(message,x,y,color,gap,size,smallmode)
 	print(message,x,y-1,color,gap,size,smallmode)
 end
 
-
+-- TODO finish
+function tric(x,y,r,c,a)
+	local a1 = math.rad(a)
+	local a2 = math.rad(a+360/3)
+	local a3 = math.rad(a+2*360/3)
+	local x1 = x + math.cos(a1) * r
+	local x2 = x + math.cos(a2) * r
+	local x3 = x + math.cos(a3) * r
+	local y1 = y + math.sin(a1) * r
+	local y2 = y + math.sin(a2) * r
+	local y3 = y + math.sin(a3) * r
+	
+	tri(x1,y1,x2,y2,x3,y3,c)
+end
 
 
 
