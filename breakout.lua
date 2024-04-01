@@ -1,37 +1,33 @@
 --ARKANOID
--- title:   game title
--- author:  game developer, email, etc.
--- desc:    short description
--- site:    website link
--- license: MIT License (change this to your license of choice)
+-- title:   tiny bricks
+-- author:  vacceos media
+-- desc:    tiny breakout-style game
+-- site:    
+-- license: MIT License
 -- version: 0.1
 -- script:  lua
+-- saveid: hola
 
 -- BUGLIST
-	-- ball overlap a little in the bricks
-	-- movement keys sometimes not responding when moving pad against wall and while keeping one direction you press the other direction
-	-- reset ball radius when loss and restart from pad
+
 
 -- TODO
-	-- performance seems fixed with rewrite (test it more and continue rewrite)
+
 	-- averiguar el orden en el que deben estar las declaraciones
-	-- move all physics to one place
-	-- check if enemy_lives is efficient or is better to move it ot STAGE table
-	-- check if table parts is efficient as a global and creating and destroying values
-	-- revise separation betwen draw and update functions and placement
-	-- check ipairs usage (performance)
-	-- maybe move each object physics (movements and width change) to its own function?
+	-- move all physics to one place?
+
+
 	-- asegurar que establecemos una semilla aleatoria para los random	
 	-- normalizar nombres (snake_case, upper, CamelCase...)
-	-- add +1 lifep ower up and show lives as ball symbols
+
 	-- add timer to powerups
 	-- timeup should end game or take a life?
-	-- sustitute drawing button function (looks hideous) for triangle sprite
 
-	-- CHANGE BUTTONS HITBOX, IN MOBILE IS HARD TO PRESS, MAYBE A SQUARE AND THROW A VISUAL HINT LIKE IT IS A SQUARE BUTTON
 
-	--PERFORMANCE: Parece algo mejor pero hay que seguir mejorandola
-
+	-- WEB PERFORMANCE
+	-- check ipairs usage (performance)
+		-- check if enemy_lives is efficient or is better to move it ot STAGE table
+	-- check if table parts is efficient as a global and creating and destroying values
 	
 
 
@@ -246,15 +242,19 @@ function pws:update()
 	for i=#self,1,-1 do
 		self[i].y=self[i].y+self[i].dy
 		if colCircRect(self[i], pad)>0 then
-			if self[i].pw==0 then -- POWER increase pad
+			if self[i].pw==0 then -- POWER five extra life
+				if Player.lives<6 then
+					Player.lives=Player.lives+1
+				end
+			elseif self[i].pw==1 then -- POWER increase pad
 				if pad.tw < 46	then 
 					pad.tw=pad.tw+8
 				end	
-			elseif self[i].pw==1 then -- POWER decrease pad
+			elseif self[i].pw==2 then -- POWER decrease pad
 				if pad.tw > 14	then 
 					pad.tw=pad.tw-8
 				end
-			elseif self[i].pw==2 then -- POWER give two balls
+			elseif self[i].pw==3 then -- POWER give two balls
 				if #balls < 5	then
 					for i=1,2 do 
 						local newball = ball:new(
@@ -269,22 +269,18 @@ function pws:update()
 						
 					end
 				end
-			elseif self[i].pw==3 then -- POWER increase ball size
+			elseif self[i].pw==4 then -- POWER increase ball size
 				if balls[1].r < 4	then 
 					for _, ball in ipairs(balls) do
 						ball.r = ball.r + 1
 					end	
 				end
-			elseif self[i].pw==4 then -- POWER reduce ball size
+			elseif self[i].pw==5 then -- POWER reduce ball size
 				if balls[1].r > 1	then 
 					for _, ball in ipairs(balls) do
 						ball.r = ball.r - 1
 					end	
-				end		
-			elseif self[i].pw==5 then -- POWER reduce ball size
-				if Player.lives<6 then
-					Player.lives=Player.lives+1
-				end
+				end			
 			end
 			table.insert(to_remove, i)
 		end	
@@ -395,7 +391,7 @@ function TitleTic()
 	
 	if input(BTN.ACTION) then
 		Player.points = 0
-		Player.lives = 3
+		Player.lives = 1
 		Player.hscore = pmem(1)
 		StageInit(1)	
 		SetMode(M.PLAY)
@@ -416,22 +412,7 @@ function GameOverTic()
 	cls()
 	printc("GAME OVER",121,41,14,true, 3)
 	printc("GAME OVER",120,40,12,true, 3)
-
-	printc("SCORE",120,80,12,true, 1)
-	printc(tostring(Player.points),120,90,4,true, 1)
-
-	if (time()//500%2) == 0 then 
-		printc("START",120,110,4)
-	else
-		printc("START",120,110,3)
-	end
-
-	if input(BTN.ACTION) then
-		StageInit(1)	
-		SetMode(M.TITLE)
- 	end	
-
-	rectb(0,0,240,136,12)
+	gameEndUpdate()	
 end
 
 function GameWinTic()
@@ -442,8 +423,27 @@ function GameWinTic()
 	printc("YOU WON",121,51,14,true, 2)
 	printc("YOU WON",120,50,12,true, 2)
 
-	printc("SCORE",120,80,12,true, 1)
-	printc(tostring(Player.points),120,90,4,true, 1)
+	gameEndUpdate()	
+end
+
+function gameEndUpdate()
+	-- menuda cutrez esta funcion, en general.	
+
+	if Player.points > pmem(1) then		
+		if (time()//500%2) == 0 then 
+			printc("NEW HIGH SCORE!",120,95,4)
+		else
+			printc("NEW HIGH SCORE!",120,95,3)
+		end
+		Player.hscore = Player.points		
+	end
+
+	local padding = 6 - (string.len(tostring(Player.points)))
+	print("YOUR SCORE:"..string.rep(".", padding)..tostring(Player.points),70,75,4,true, 1)
+	print("YOUR SCORE:"..string.rep(".", padding),70,75,12,true, 1)
+	local padding = 6 - (string.len(tostring(Player.hscore)))
+	print("HIGH SCORE:"..string.rep(".", padding)..tostring(Player.hscore),70,82,4,true, 1)
+	print("HIGH SCORE:"..string.rep(".", padding),70,82,12,true, 1)	
 
 	if (time()//500%2) == 0 then 
 		printc("START",120,110,4)
@@ -452,6 +452,7 @@ function GameWinTic()
 	end
 
 	if input(BTN.ACTION) then
+		pmem(1, Player.hscore)
 		StageInit(1)	
 		SetMode(M.TITLE)
  	end	
@@ -585,11 +586,7 @@ function PlayTic()
 	if STAGE.won_time < 0 then
 		if LVL[STAGE.n+1] ~= nil then
 			StageInit(STAGE.n+1)
-		else
-			if Player.points > Player.hscore then
-				Player.hscore = Player.points
-				pmem(1, Player.hscore)
-			end			
+		else					
 			SetMode(M.GAMEWIN)
 		end
 	end
@@ -833,7 +830,7 @@ function colBallBrick(ball, br)
 		br.c = brick_c[br.t]		
 	elseif br.t==1 then
 		br.v=false
-		local pwchance = math.random(0,14)			
+		local pwchance = math.random(0,14) + math.random(0,1)		
 		if pwchance < 6 then
 			powerup:new(br.x+br.w/2,br.y+br.h/2,pwchance)
 		end
@@ -1073,7 +1070,7 @@ function input(option)
 				is_mouse = true
 			end
 		end
-		return btn(4) or peek(0xFF88)==48 or is_mouse
+		return btnp(4) or is_mouse
 	elseif option == BTN.RIGHT then
 		return peek(0xFF80)==8 or controller.right.pressed == true
 	elseif option == BTN.LEFT then
@@ -1159,12 +1156,13 @@ end
 -- 003:fddddddafdeeeeabfdeeeabcfdeeeeabfe00000affffffffffffffffffffffff
 -- 004:adddddefbaeeee0fcbaeee0fbaeeee0fa000000fffffffffffffffffffffffff
 -- 005:0000dccd0000dccd0000dccd0000dccd0000dccd0000dccd0000dccd0000dccd
--- 016:0055500005666600566666706ccccc7066666670066667000077700000000000
--- 017:00333000032222003222228022ccc28022222280022228000088800000000000
--- 018:0055500005666600566c66706666667066c6c670066667000077700000000000
--- 019:0055500005ccc6005ccccc706ccccc706ccccc7006ccc7000077700000000000
--- 020:003330000322220032222280222c228022222280022228000088800000000000
--- 021:0055500005666600566c667066ccc670666c6670066667000077700000000000
+-- 016:0055500005666600566c667066ccc670666c6670066667000077700000000000
+-- 017:0055500005666600566666706ccccc7066666670066667000077700000000000
+-- 018:00333000032222003222228022ccc28022222280022228000088800000000000
+-- 019:0055500005666600566c66706666667066c6c670066667000077700000000000
+-- 020:0055500005ccc6005ccccc706ccccc706ccccc7006ccc7000077700000000000
+-- 021:003330000322220032222280222c228022222280022228000088800000000000
+-- 022:0055500005666600566c667066ccc670666c6670066667000077700000000000
 -- 049:0000000004444000044444400440444006600660066666000990099009909990
 -- 050:0000000000444400044444400440044006600660066666600999990009900990
 -- 051:0000000004444000044440040044000400660006006600060099000900990009
