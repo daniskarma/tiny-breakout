@@ -28,11 +28,13 @@
 	-- timeup should end game or take a life?
 	-- sustitute drawing button function (looks hideous) for triangle sprite
 
+	-- CHANGE BUTTONS HITBOX, IN MOBILE IS HARD TO PRESS, MAYBE A SQUARE AND THROW A VISUAL HINT LIKE IT IS A SQUARE BUTTON
+
 	--PERFORMANCE: Parece algo mejor pero hay que seguir mejorandola
 
-	--joystick abajo a la derecha para touch control
+	
 
--- temp
+
  
 math.randomseed(tstamp())
 
@@ -53,7 +55,7 @@ controller={
 	left = {
 		type='b',
 		pos={
-			x=-10,
+			x=-9,
 			y=0,
 			r=12,
 			a=180,
@@ -61,6 +63,10 @@ controller={
 		pressed=false,
 		color=2
 	},
+	pos = {
+		x=214,
+		y=110	
+	}
 }
 
 BTN={ACTION="ACTION", LEFT="LEFT", RIGHT="RIGHT"}
@@ -423,6 +429,7 @@ end
 
 
 function PlayTic()
+	updatecontroller(controller)
 	-- function vars
 	local is_btnpress=false
 	local is_collided=false	
@@ -871,27 +878,26 @@ function DrawUI()
 	pix(left_margin,info_botton, 15)
 	pix(right_margin,info_top, 15)	
 
-
-	-- TODO move to a proper location---
-	mx,my,mp,mm,mr=mouse()
-	x=215
-	y=110
-	if mr then
-		x=mx
-		y=my
-	end
-	updatecontroller(controller,x,y)
-	drawcontroller(controller,x,y)	
-	---------------------------
-
+	drawcontroller(controller,x,y)
 end
+
+
 
 function updatebutton(b,xo,yo)
 	mx,my,mp=mouse()
-	
-	local t = getTriPoints(b.pos.x+xo,b.pos.y+yo,b.pos.r,b.pos.a)
-		
-	if mp and isPointInTriangle(mx, my, t.x1, t.y1, t.x2, t.y2, t.x3, t.y3) then
+	local quiral = (b.pos.x<0 and -1) or 1
+	local x0 = xo
+	local x1 = xo
+	local y0 = yo-14
+	local y1 = yo+14
+
+	if quiral > 0 then
+		x1 = x1 + (23*quiral)
+	else
+		x0 = x0 +(23*quiral)
+	end
+
+	if mp and mx>x0 and mx<x1 and my>y0 and my<y1 then
 		b.pressed=true		
 	else
 		b.pressed=false		
@@ -899,23 +905,55 @@ function updatebutton(b,xo,yo)
 end
 
 function drawbutton(b,xo,yo)
+	local quiral = (b.pos.x<0 and -1) or 1
+	local x0 = xo
+	local x1 = xo
+	local y0 = yo-14
+	local y1 = yo+14	
+	if quiral > 0 then
+		x1 = x1 + (23*quiral)
+	else
+		x0 = x0 +(23*quiral)
+	end
+
 	if b.pressed then
+		line(x0,y1,x1,y1,12)
+		line(x1,y0,x1,y1,12)
+		line(x0,y0,x1,y0,00)
+		line(x0,y0,x0,y1,00)	
+		pix(x0,y1, 15)
+		pix(x1,y0, 15)
 		tric(b.pos.x+xo,b.pos.y+1+yo,b.pos.r, b.pos.a,b.color)
 	else
+		line(x0,y1,x1,y1,00)
+		line(x1,y0,x1,y1,00)
+		line(x0,y0,x1,y0,12)
+		line(x0,y0,x0,y1,12)	
+		pix(x0,y1, 15)
+		pix(x1,y0, 15)
 		tric(b.pos.x+xo,b.pos.y+1+yo,b.pos.r, b.pos.a, 15)
 		tric(b.pos.x+xo,b.pos.y+yo,b.pos.r, b.pos.a,b.color)		
 	end	
+	line(xo,y0,xo,y1,15)
 end
 
-function updatecontroller(con,xo,yo)
-	for k,v in pairs(con) do		
-		updatebutton(v,xo,yo)		
+function updatecontroller(con)
+	local xo = controller.pos.x
+	local yo = controller.pos.y
+	for k,v in pairs(con) do	
+		if v.type == 'b' then
+			updatebutton(v,xo,yo)
+		end
 	end
 end
 
-function drawcontroller(con,xo,yo)	
+function drawcontroller(con)
+	local xo = controller.pos.x
+	local yo = controller.pos.y
 	for k,v in pairs(controller) do
-		drawbutton(v,xo,yo)
+		if v.type == 'b' then
+			drawbutton(v,xo,yo)			
+		end
 	end
 end
 
