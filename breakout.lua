@@ -380,10 +380,7 @@ function TIC()
 	TICF[Game.m]()
 	--DEBUG
 	--rect(200-2,129-2,30,9,14)
-	PrintShadow("FPS: "..FPS:getValue(),195,8,12,nil,1,1)		
-				
-	--PrintShadow("<-: "..tostring(input(BTN.LEFT)),195,22,12,nil,1,1)			
-	
+	--PrintShadow("FPS: "..FPS:getValue(),195,8,12,nil,1,1)		
 end
 
 
@@ -394,20 +391,33 @@ end
 
 function TitleTic()
 	cls()
-	print("press Z to start",70,50,4)
+	
 	if input(BTN.ACTION) then
 		Player.lives=3
 		StageInit(1)	
 		SetMode(M.PLAY)
  	end	
+	print("TINY",45,20,12,true,1, true)
+	
+	spr(48, 30, 30, 0, 3, 0, 0, 7 ,2)	
+	if (time()//500%2) == 0 then 
+		printc("START",120,100,4)
+	else
+		printc("START",120,100,3)
+	end
 	rectb(0,0,240,136,12)
 	
 end
 
 function GameOverTic()
 	cls()
-	printc("GAME OVER",120,40,4,true)
-	printc("press Z to start",120,50,4,true)
+	printc("GAME OVER",121,41,14,true, 3)
+	printc("GAME OVER",120,40,12,true, 3)
+	if (time()//500%2) == 0 then 
+		printc("RESTART",120,100,4)
+	else
+		printc("RESTART",120,100,3)
+	end
 	if input(BTN.ACTION) then
 		Player.lives=1
 		StageInit(1)	
@@ -621,7 +631,7 @@ function PlayTic()
 	DrawUI()
 
 	-- DEBUG
-	PrintShadow(" : "..tostring(math.abs(pad.dx) < pad.sp),195,15,12,nil,1,1)
+	-- PrintShadow(" : "..tostring(math.abs(pad.dx) < pad.sp),195,15,12,nil,1,1)
 	--line(wall.x0+(wall.x1-wall.x0)/2, wall.y0, wall.x0+(wall.x1-wall.x0)/2, wall.y1,12)	
 	-- rect(ball.x,ball.y,1,1,2)
 	--rect(10,8,40,10,12)
@@ -882,6 +892,9 @@ function DrawUI()
 	pix(left_margin,info_botton, 15)
 	pix(right_margin,info_top, 15)	
 
+	-- controller label
+	print("<-move->",left_margin+3,87,14)
+
 	drawcontroller(controller,x,y)
 end
 
@@ -910,6 +923,7 @@ end
 
 function drawbutton(b,xo,yo)
 	local quiral = (b.pos.x<0 and -1) or 1
+	local is_left = b.pos.x<0
 	local x0 = xo
 	local x1 = xo
 	local y0 = yo-14
@@ -917,10 +931,15 @@ function drawbutton(b,xo,yo)
 	if quiral > 0 then
 		x1 = x1 + (23*quiral)
 	else
-		x0 = x0 +(23*quiral)
+		x0 = x0 + (23*quiral)
 	end
-
-	if b.pressed then
+	local is_down = false
+	if is_left and input(BTN.LEFT) then
+		is_down = true
+	elseif not is_left and input(BTN.RIGHT) then
+		is_down = true
+	end
+	if b.pressed or is_down then
 		line(x0,y1,x1,y1,12)
 		line(x1,y0,x1,y1,12)
 		line(x0,y0,x1,y0,00)
@@ -1055,7 +1074,8 @@ end
 function printc(...)
 	local firstArg = select(1, ...)
     local secondArg = select(2, ...)
-    local new_x = secondArg - (#firstArg / 2)*6
+	local scale = (select(6, ...)~=nil and select(6, ...) or 1)
+    local new_x = secondArg - (#firstArg / 2)*6*scale
     local args = {select(3, ...)}
     table.insert(args, 1, new_x)
     table.insert(args, 1, firstArg)
@@ -1115,13 +1135,18 @@ end
 -- 019:0055500005ccc6005ccccc706ccccc706ccccc7006ccc7000077700000000000
 -- 020:003330000322220032222280222c228022222280022228000088800000000000
 -- 021:0055500005666600566c667066ccc670666c6670066667000077700000000000
--- 032:00000000000000000c0000c00000000000000000000000000cccccc000000000
--- 033:00000000000000000cc00cc00cf00cf000000000000000000cccccc000000000
--- 034:00000000000000000c0000c000000000000000000c0000c000cccc0000000000
--- 035:00000000000000000c0000c000000000000cc00000c00c0000c00c00000cc000
--- 036:00000000000000000c0000c00000000000000000000cc00000c00c00000cc000
--- 037:00000000000000000c0000c000000000000000000000000000cccc0000000000
--- 038:0c0000c000c00c00000cc0000c0000c0000000000000000000cccc000c0000c0
+-- 049:0000000004444000044444400440444006600660066666000990099009909990
+-- 050:0000000000444400044444400440044006600660066666600999990009900990
+-- 051:0000000004444000044440040044000400660006006600060099000900990009
+-- 052:0000000044444004444440044404400460000006600000069000000999099009
+-- 053:0000000040044000400440044044400466660006666700069999900090999000
+-- 054:0000000044444000444440004000000066000000666660000999900000099000
+-- 065:0222222002222110011111100111100000000000000000000000000000000000
+-- 066:0220022002200220011001100110011000000000000000000000000000000000
+-- 067:0222200202222001011110010111100000000000000000000000000000000000
+-- 068:2222200222222002111110011111100100000000000000000000000000000000
+-- 069:2002200220022002100110011001100100000000000000000000000000000000
+-- 070:2222200022221000111110001111000000000000000000000000000000000000
 -- </TILES>
 
 -- <WAVES>
