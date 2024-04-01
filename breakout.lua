@@ -13,9 +13,6 @@
 
 -- TODO
 
-	-- averiguar el orden en el que deben estar las declaraciones
-	-- move all physics to one place?
-
 
 	-- asegurar que establecemos una semilla aleatoria para los random	
 	-- normalizar nombres (snake_case, upper, CamelCase...)
@@ -23,11 +20,11 @@
 	-- add timer to powerups
 	-- timeup should end game or take a life?
 
-
 	-- WEB PERFORMANCE
 	-- check ipairs usage (performance)
-		-- check if enemy_lives is efficient or is better to move it ot STAGE table
+	-- check if enemy_lives is efficient or is better to move it ot STAGE table
 	-- check if table parts is efficient as a global and creating and destroying values
+	-- PArece que en chrome corre bien
 	
 
 
@@ -376,8 +373,8 @@ end
 function TIC()
 	TICF[Game.m]()
 	--DEBUG
-	--rect(200-2,129-2,30,9,14)
-	--PrintShadow("FPS: "..FPS:getValue(),195,8,12,nil,1,1)		
+	rect(180-2,129-2,60,9,14)
+	PrintShadow("FPS: "..FPS:getValue(),180,129,12,nil,1,1)		
 end
 
 
@@ -681,7 +678,7 @@ TICF={
 	[M.GAMEWIN]=GameWinTic,	
 }
 
-function StageInit(level)
+function StageInit(level)	
 	setStage(LVL[level].diff,LVL[level].n)	
 	wall:init(4,4)	
 	pad:init(50,120,30,4,0.4)
@@ -714,7 +711,7 @@ function PrepareBall()
 	pws:clear()
 	is_launchball=false
 	local newball = ball:new(pad.x+pad.w/2,pad.y-3,2,0,0,11)
-	table.insert(balls, newball)		
+	table.insert(balls, newball)
 end
 
 
@@ -830,7 +827,7 @@ function colBallBrick(ball, br)
 		br.c = brick_c[br.t]		
 	elseif br.t==1 then
 		br.v=false
-		local pwchance = math.random(0,14) + math.random(0,1)		
+		local pwchance = math.random(0,13) + math.random(0,1)		
 		if pwchance < 6 then
 			powerup:new(br.x+br.w/2,br.y+br.h/2,pwchance)
 		end
@@ -928,7 +925,7 @@ end
 
 
 function updatebutton(b,xo,yo)
-	mx,my,mp=mouse()
+	local mx,my,mp=mouse()
 	local quiral = (b.pos.x<0 and -1) or 1
 	local x0 = xo
 	local x1 = xo
@@ -1096,7 +1093,7 @@ function DeepCopy(t)
 	return _r
 end
 
--- TODO - No tiene en cuenta distintos anchos por caracter
+-- No tiene en cuenta distintos anchos por caracter
 -- Para centrar correctamente una fuente tiene que tener fixed=true
 function printc(...)
 	local firstArg = select(1, ...)
@@ -1110,7 +1107,7 @@ function printc(...)
 end
 
 
--- FPS show
+-- HELPERS
 function PrintShadow(message,x,y,color,gap,size,smallmode)
 	print(message,x,y,0,gap,size,smallmode)
 	print(message,x,y-1,color,gap,size,smallmode)
@@ -1137,14 +1134,6 @@ function getTriPoints(x,y,r,a)
 	return triangle
 end
 
-function isPointInTriangle(px, py, x1, y1, x2, y2, x3, y3)
-    local denom = ((y2 - y3)*(x1 - x3) + (x3 - x2)*(y1 - y3))
-    local a = ((y2 - y3)*(px - x3) + (x3 - x2)*(py - y3)) / denom
-    local b = ((y3 - y1)*(px - x3) + (x1 - x3)*(py - y3)) / denom
-    local c = 1 - a - b
-
-    return 0 <= a and a <= 1 and 0 <= b and b <= 1 and 0 <= c and c <= 1
-end
 
 
 
