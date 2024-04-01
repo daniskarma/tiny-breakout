@@ -380,7 +380,9 @@ function TIC()
 	TICF[Game.m]()
 	--DEBUG
 	--rect(200-2,129-2,30,9,14)
-	PrintShadow("FPS: "..FPS:getValue(),200,12,12,nil,1,1)			
+	PrintShadow("FPS: "..FPS:getValue(),195,8,12,nil,1,1)		
+				
+	--PrintShadow("<-: "..tostring(input(BTN.LEFT)),195,22,12,nil,1,1)			
 	
 end
 
@@ -450,16 +452,16 @@ function PlayTic()
 	-- PADDLE MOVEMENT
 	if input(BTN.LEFT) then -- left
 		if math.abs(pad.dx) < pad.sp then
-		pad.dx=pad.dx-pad.ac
-		pad.start_direction=-1
-	end
+			pad.dx=pad.dx-pad.ac
+			pad.start_direction=-1
+		end
 	is_btnpress=true
 	end
 	if input(BTN.RIGHT) then -- right
 		if math.abs(pad.dx) < pad.sp then
-		pad.dx=pad.dx+pad.ac
-		pad.start_direction=1
-	end
+			pad.dx=pad.dx+pad.ac
+			pad.start_direction=1
+		end
 	is_btnpress=true
 	end
 	if not is_btnpress then -- friction
@@ -474,9 +476,11 @@ function PlayTic()
 	-- collision paddle walls
 	if pad.x<wall.x0+1 then
 		pad.x=wall.x0+1
+		pad.dx = 0
 	end
 	if pad.x+pad.w >wall.x1 then
 		pad.x=wall.x1-pad.w 
+		pad.dx = 0
 	end
 
 	-- -- BALL -- --
@@ -617,7 +621,7 @@ function PlayTic()
 	DrawUI()
 
 	-- DEBUG
-
+	PrintShadow(" : "..tostring(math.abs(pad.dx) < pad.sp),195,15,12,nil,1,1)
 	--line(wall.x0+(wall.x1-wall.x0)/2, wall.y0, wall.x0+(wall.x1-wall.x0)/2, wall.y1,12)	
 	-- rect(ball.x,ball.y,1,1,2)
 	--rect(10,8,40,10,12)
@@ -923,6 +927,7 @@ function drawbutton(b,xo,yo)
 		line(x0,y0,x0,y1,00)	
 		pix(x0,y1, 15)
 		pix(x1,y0, 15)
+		tric(b.pos.x+xo,b.pos.y+1+yo,b.pos.r, b.pos.a, 15)
 		tric(b.pos.x+xo,b.pos.y+1+yo,b.pos.r, b.pos.a,b.color)
 	else
 		line(x0,y1,x1,y1,00)
@@ -932,7 +937,7 @@ function drawbutton(b,xo,yo)
 		pix(x0,y1, 15)
 		pix(x1,y0, 15)
 		tric(b.pos.x+xo,b.pos.y+1+yo,b.pos.r, b.pos.a, 15)
-		tric(b.pos.x+xo,b.pos.y+yo,b.pos.r, b.pos.a,b.color)		
+		tric(b.pos.x+xo,b.pos.y+yo,b.pos.r, b.pos.a,b.color)	
 	end	
 	line(xo,y0,xo,y1,15)
 end
