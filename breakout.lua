@@ -394,7 +394,8 @@ function TitleTic()
 	cls()
 	
 	if input(BTN.ACTION) then
-		Player.lives=3
+		Player.points = 0
+		Player.lives = 3
 		Player.hscore = pmem(1)
 		StageInit(1)	
 		SetMode(M.PLAY)
@@ -415,30 +416,44 @@ function GameOverTic()
 	cls()
 	printc("GAME OVER",121,41,14,true, 3)
 	printc("GAME OVER",120,40,12,true, 3)
+
+	printc("SCORE",120,80,12,true, 1)
+	printc(tostring(Player.points),120,90,4,true, 1)
+
 	if (time()//500%2) == 0 then 
-		printc("START",120,100,4)
+		printc("START",120,110,4)
 	else
-		printc("START",120,100,3)
+		printc("START",120,110,3)
 	end
-	if input(BTN.ACTION) then	
+
+	if input(BTN.ACTION) then
+		StageInit(1)	
 		SetMode(M.TITLE)
  	end	
+
 	rectb(0,0,240,136,12)
 end
 
 function GameWinTic()
 	cls()
-	printc("CONGRATULATIONS!",120,30,4,true)
-	printc("YOU WON THE GAME!",120,40,4,true)
+	printc("CONGRATULATIONS!",121,31,14,true, 2)
+	printc("CONGRATULATIONS!",120,30,12,true, 2)
+
+	printc("YOU WON",121,51,14,true, 2)
+	printc("YOU WON",120,50,12,true, 2)
+
+	printc("SCORE",120,80,12,true, 1)
+	printc(tostring(Player.points),120,90,4,true, 1)
+
 	if (time()//500%2) == 0 then 
-		printc("START",120,100,4)
+		printc("START",120,110,4)
 	else
-		printc("START",120,100,3)
+		printc("START",120,110,3)
 	end
+
 	if input(BTN.ACTION) then
-		Player.lives=1
 		StageInit(1)	
-		SetMode(M.PLAY)
+		SetMode(M.TITLE)
  	end	
 	rectb(0,0,240,136,12)
 end
@@ -574,8 +589,7 @@ function PlayTic()
 			if Player.points > Player.hscore then
 				Player.hscore = Player.points
 				pmem(1, Player.hscore)
-			end
-			Player.points = 0
+			end			
 			SetMode(M.GAMEWIN)
 		end
 	end
@@ -1155,7 +1169,7 @@ end
 -- 050:0000000000444400044444400440044006600660066666600999990009900990
 -- 051:0000000004444000044440040044000400660006006600060099000900990009
 -- 052:0000000044444004444440044404400460000006600000069000000999099009
--- 053:0000000040044000400440044044400466660006666700069999900090999000
+-- 053:0000000040044000400440044044400466660006666600069999900090999000
 -- 054:0000000044444000444440004000000066000000666660000999900000099000
 -- 065:0222222002222110011111100111100000000000000000000000000000000000
 -- 066:0220022002200220011001100110011000000000000000000000000000000000
