@@ -94,6 +94,7 @@ DIFF={
 Player={
 	lives=0,
 	points=0,
+	hscore = 0,
 }
 
 -- Stage
@@ -314,7 +315,7 @@ LVL = {
 		{5,5,5,5,5,5,5,5,5,5,5,5,5},	
 		{5,0,0,0,0,0,0,0,0,0,0,0,5},
 		{5,0,0,0,0,0,0,0,0,0,0,0,5},	
-		{5,0,0,0,0,0,6,0,0,0,0,0,5},	
+		{5,0,0,0,0,0,2,0,0,0,0,0,5},	
 		{5,1,1,1,1,1,1,1,1,1,1,1,5},	
 		{1,1,1,1,1,1,1,1,1,1,1,1,1},
 		{1,1,1,1,1,1,1,1,1,1,1,1,1},	
@@ -394,6 +395,7 @@ function TitleTic()
 	
 	if input(BTN.ACTION) then
 		Player.lives=3
+		Player.hscore = pmem(1)
 		StageInit(1)	
 		SetMode(M.PLAY)
  	end	
@@ -414,14 +416,12 @@ function GameOverTic()
 	printc("GAME OVER",121,41,14,true, 3)
 	printc("GAME OVER",120,40,12,true, 3)
 	if (time()//500%2) == 0 then 
-		printc("RESTART",120,100,4)
+		printc("START",120,100,4)
 	else
-		printc("RESTART",120,100,3)
+		printc("START",120,100,3)
 	end
-	if input(BTN.ACTION) then
-		Player.lives=1
-		StageInit(1)	
-		SetMode(M.PLAY)
+	if input(BTN.ACTION) then	
+		SetMode(M.TITLE)
  	end	
 	rectb(0,0,240,136,12)
 end
@@ -429,8 +429,12 @@ end
 function GameWinTic()
 	cls()
 	printc("CONGRATULATIONS!",120,30,4,true)
-	printc("YOU WIN THE GAME!",120,40,4,true)
-	printc("press Z to start",120,50,4,true)
+	printc("YOU WON THE GAME!",120,40,4,true)
+	if (time()//500%2) == 0 then 
+		printc("START",120,100,4)
+	else
+		printc("START",120,100,3)
+	end
 	if input(BTN.ACTION) then
 		Player.lives=1
 		StageInit(1)	
@@ -567,6 +571,11 @@ function PlayTic()
 		if LVL[STAGE.n+1] ~= nil then
 			StageInit(STAGE.n+1)
 		else
+			if Player.points > Player.hscore then
+				Player.hscore = Player.points
+				pmem(1, Player.hscore)
+			end
+			Player.points = 0
 			SetMode(M.GAMEWIN)
 		end
 	end
@@ -875,15 +884,18 @@ function DrawUI()
 	
 	print("LIVES ",left_margin+3,info_top+3,12)
 	for i=0,Player.lives-1 do
-		circ(left_margin+3+2+i*7,info_top+12,2,11)
+		circ(left_margin+3+2+i*7,info_top+12,2,4)
 	end
-	print("TIME "..string.char(10)..math.floor(STAGE.time/60),left_margin+3,info_top+17,12)
-	print("POINTS "..string.char(10)..Player.points,left_margin+3,info_top+31,12)
+	print("TIME ",left_margin+3,info_top+17,12)
+	local time_c = 4
+	print(math.floor(STAGE.time/60),left_margin+3,info_top+24,time_c)
+
+	print("POINTS ",left_margin+3,info_top+31,12)
+	print(Player.points,left_margin+3,info_top+38,4)
 
 	--top bevel
 	local info_top = 4
 	local info_botton = 30
-
 	rect(left_margin,info_top,right_margin-left_margin,info_botton-info_top, 15)
 	line(left_margin,info_botton,right_margin,info_botton,12)
 	line(right_margin,info_top,right_margin,info_botton,12)
@@ -891,6 +903,10 @@ function DrawUI()
 	line(left_margin,info_top,left_margin,info_botton,00)	
 	pix(left_margin,info_botton, 15)
 	pix(right_margin,info_top, 15)	
+
+	print("HIGH",left_margin+3,info_top+3,12)
+	print("SCORE",left_margin+3,info_top+9,12)
+	print(Player.hscore,left_margin+3,info_top+18,4)
 
 	-- controller label
 	print("<-move->",left_margin+3,87,14)
