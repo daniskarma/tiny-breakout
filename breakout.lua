@@ -94,6 +94,8 @@ DEFAULT_STAGE={
 	},
 	won_time=60,
 	energy_bricks=0,
+	ball_size_time=0,
+	pad_size_time=0,
 }
 STAGE={}
 function setStage(diff, level)
@@ -127,7 +129,7 @@ function ball:new(x,y,r,dx,dy,c)
 	self.__index=self	
 	newball.x =x
 	newball.y =y
-	newball.r =r
+	newball.r =r -- 2
 	newball.dx=dx
 	newball.dy=dy		
 	newball.c =c
@@ -237,12 +239,14 @@ function pws:update()
 					Player.lives=Player.lives+1
 				end
 			elseif self[i].pw==1 then -- POWER increase pad
+				STAGE.pad_size_time = time()+20000
 				if pad.tw < 46	then 
-					pad.tw=pad.tw+8
+					pad.tw=pad.tw+8					
 				end	
 			elseif self[i].pw==2 then -- POWER decrease pad
+				STAGE.pad_size_time = time()+20000
 				if pad.tw > 14	then 
-					pad.tw=pad.tw-8
+					pad.tw=pad.tw-8					
 				end
 			elseif self[i].pw==3 then -- POWER give two balls
 				if #balls < 5	then
@@ -260,12 +264,14 @@ function pws:update()
 					end
 				end
 			elseif self[i].pw==4 then -- POWER increase ball size
+				STAGE.ball_size_time = time()+20000
 				if balls[1].r < 4	then 
 					for i=1, #balls do
 						balls[i].r = balls[i].r + 1
 					end	
 				end
 			elseif self[i].pw==5 then -- POWER reduce ball size
+				STAGE.ball_size_time = time()+20000
 				if balls[1].r < 4	then 
 					for i=1, #balls do
 						balls[i].r = balls[i].r - 1
@@ -533,6 +539,9 @@ function PlayTic()
 	is_loaded = STAGE.init_time + 1000 > time()
 
 	-- PADDLE
+	if STAGE.pad_size_time < time() then
+		pad.tw = 30
+	end
 	if pad.tw < pad.w then 
 		pad.w=pad.w-2
 		pad.x=pad.x+1	
@@ -577,7 +586,11 @@ function PlayTic()
 	end
 
 	-- -- BALL -- --
-	for i=#balls, 1, -1 do	
+	for i=#balls, 1, -1 do
+		-- balls size
+		if STAGE.ball_size_time < time() then
+			balls[i].r = 2
+		end
 
 		-- ball launch	
 		if not is_launchball and input(BTN.ACTION) and not is_loaded then
