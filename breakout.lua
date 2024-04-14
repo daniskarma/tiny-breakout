@@ -239,12 +239,12 @@ function pws:update()
 					Player.lives=Player.lives+1
 				end
 			elseif self[i].pw==1 then -- POWER increase pad
-				STAGE.pad_size_time = time()+20000
+				STAGE.pad_size_time = time()+30000
 				if pad.tw < 46	then 
 					pad.tw=pad.tw+8					
 				end	
 			elseif self[i].pw==2 then -- POWER decrease pad
-				STAGE.pad_size_time = time()+20000
+				STAGE.pad_size_time = time()+30000
 				if pad.tw > 14	then 
 					pad.tw=pad.tw-8					
 				end
@@ -264,14 +264,14 @@ function pws:update()
 					end
 				end
 			elseif self[i].pw==4 then -- POWER increase ball size
-				STAGE.ball_size_time = time()+20000
+				STAGE.ball_size_time = time()+30000
 				if balls[1].r < 4	then 
 					for i=1, #balls do
 						balls[i].r = balls[i].r + 1
 					end	
 				end
 			elseif self[i].pw==5 then -- POWER reduce ball size
-				STAGE.ball_size_time = time()+20000
+				STAGE.ball_size_time = time()+30000
 				if balls[1].r < 4	then 
 					for i=1, #balls do
 						balls[i].r = balls[i].r - 1
@@ -296,7 +296,7 @@ function pws:clear()
 		table.remove(pws, i)			
 	end
 end	
-
+local starting_level = 1
 -- Levels
 LVL = {
 	{
@@ -315,10 +315,12 @@ LVL = {
 		{3,3,3,3,3,3,3,3,3,3,3,3,3},
 		{2,2,2,2,2,2,2,2,2,2,2,2,2},	
 		{1,1,1,1,1,1,1,1,1,1,1,1,1},	
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},		
+		{1,1,1,1,1,1,1,1,1,1,1,1,1},		
 		}
 	},
 	{
@@ -326,6 +328,8 @@ LVL = {
 	title="Two eyes are looking.",
 	diff=DIFF.EASY,
 	map={
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -350,6 +354,8 @@ LVL = {
 	map={
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -370,6 +376,8 @@ LVL = {
 	title="Stairway to me.",
 	diff=DIFF.EASY,
 	map={
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,6},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
 		{1,1,4,4,4,4,4,4,4,4,4,4,4},
@@ -392,6 +400,8 @@ LVL = {
 	title="The two towers",
 	diff=DIFF.EASY,
 	map={
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
 		{0,0,1,1,0,0,0,0,0,1,1,0,0},
 		{0,1,1,1,1,0,0,0,1,1,1,1,0},	
@@ -414,6 +424,8 @@ LVL = {
 	title="The blob.",
 	diff=DIFF.EASY,
 	map={
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
 		{0,0,0,0,0,4,4,4,0,0,0,0,0},
 		{0,0,0,0,3,3,3,3,3,0,0,0,0},	
@@ -436,6 +448,8 @@ LVL = {
 	title="Harder to break.",
 	diff=DIFF.EASY,
 	map={
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,4,4,4,0,0,0,0,0,4,4,4,0},	
 		{0,4,6,4,0,0,0,0,0,4,6,4,0},
 		{0,4,4,4,0,0,0,0,0,4,4,4,0},
@@ -458,6 +472,8 @@ LVL = {
 	title="What!?",
 	diff=DIFF.EASY,
 	map={
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,5,0,0,0,0,0,0,0,0,0,0,0},	
 		{0,5,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
@@ -482,6 +498,8 @@ LVL = {
 	title="Provisional finish line!",
 	diff=DIFF.EASY,
 	map={
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
@@ -504,6 +522,8 @@ LVL = {
 	title="You shouldn't be here!",
 	diff=DIFF.EASY,
 	map={
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
@@ -581,7 +601,7 @@ function TitleTic()
 		Player.points = 0
 		Player.lives = 1
 		Player.hscore = pmem(1)
-		StageInit(6)
+		StageInit(starting_level)
 		music()	
 		SetMode(M.PLAY)
  	end	
@@ -882,7 +902,7 @@ function StageInit(level)
 
 	bricks = {}
 	balls = {}	
-	for i=1,15 do
+	for i=1,17 do
 		for j = 1,13 do			
 			local newbrick=brick:new(
 				wall.x0+1+j*14-14,
@@ -987,7 +1007,7 @@ function checkBrickBorder(br, dir)
 		if bricks[n-13].v == true then return true end
 
 	elseif dir == 4 then
-		if row == 15 then return false end
+		if row == 17 then return false end
 		if bricks[n+13].v == true then return true end
 	end
 
