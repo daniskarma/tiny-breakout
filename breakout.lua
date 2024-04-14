@@ -272,7 +272,7 @@ function pws:update()
 				end
 			elseif self[i].pw==5 then -- POWER reduce ball size
 				STAGE.ball_size_time = time()+30000
-				if balls[1].r < 4	then 
+				if balls[1].r > 0	then 
 					for i=1, #balls do
 						balls[i].r = balls[i].r - 1
 					end	
@@ -573,7 +573,7 @@ end
 
 
 function TIC()
-	TICF[Game.m]()
+	TICF[Game.m]()	
 	--DEBUG
 	rect(200-2,129-2,60,9,14)
 	PrintShadow("FPS: "..FPS:getValue(),200,129,12,nil,1,1)		
