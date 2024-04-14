@@ -239,18 +239,21 @@ function pws:update()
 					Player.lives=Player.lives+1
 				end
 			elseif self[i].pw==1 then -- POWER give two balls
-				if #balls < 7	then
-					for i=1,2 do 
-						local newball = ball:new(
-							balls[1].x+math.random(),
-							balls[1].y+math.random(),
-							balls[1].r,
-							balls[1].dx*((math.random(0, 1) == 0) and -1 or 1)*math.random(),
-							((math.random(0, 1) == 0) and -1 or 1),
-							11
-						)
-						table.insert(balls, newball)
-						
+				if #balls < 8	then
+					local rate = 1
+					if #balls == 1 then rate = 2 end
+					for iball=#balls,1,-1 do
+						for _=1,rate do 
+							local newball = ball:new(
+								balls[iball].x+math.random(),
+								balls[iball].y+math.random(),
+								balls[iball].r,
+								balls[iball].dx*((math.random(0, 1) == 0) and -1 or 1)*math.random(),
+								((math.random(0, 1) == 0) and -1 or 1),
+								11
+							)
+							table.insert(balls, newball)							
+						end
 					end
 				end
 			elseif self[i].pw==2 then -- POWER increase pad
@@ -1043,6 +1046,7 @@ function colBallBrick(ball, br)
 		sfx(0,"D-7")
 		br.v=false
 		local pwchance = math.random(0,13)
+		pwchance = 1
 		if pwchance == 0 then
 			pwchance = pwchance + math.random(0,1)
 		end	
