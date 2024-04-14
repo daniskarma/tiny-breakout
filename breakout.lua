@@ -550,6 +550,7 @@ Game={
 	m=M.BOOT,	
 }
 
+
 function SetMode(m)
 	if m == M.TITLE then
 		 music(0) 
