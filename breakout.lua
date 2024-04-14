@@ -238,18 +238,8 @@ function pws:update()
 				if Player.lives<6 then
 					Player.lives=Player.lives+1
 				end
-			elseif self[i].pw==1 then -- POWER increase pad
-				STAGE.pad_size_time = time()+30000
-				if pad.tw < 46	then 
-					pad.tw=pad.tw+8					
-				end	
-			elseif self[i].pw==2 then -- POWER decrease pad
-				STAGE.pad_size_time = time()+30000
-				if pad.tw > 14	then 
-					pad.tw=pad.tw-8					
-				end
-			elseif self[i].pw==3 then -- POWER give two balls
-				if #balls < 5	then
+			elseif self[i].pw==1 then -- POWER give two balls
+				if #balls < 7	then
 					for i=1,2 do 
 						local newball = ball:new(
 							balls[1].x+math.random(),
@@ -263,6 +253,16 @@ function pws:update()
 						
 					end
 				end
+			elseif self[i].pw==2 then -- POWER increase pad
+				STAGE.pad_size_time = time()+30000
+				if pad.tw < 46	then 
+					pad.tw=pad.tw+8					
+				end	
+			elseif self[i].pw==3 then -- POWER decrease pad
+				STAGE.pad_size_time = time()+30000
+				if pad.tw > 14	then 
+					pad.tw=pad.tw-8					
+				end			
 			elseif self[i].pw==4 then -- POWER increase ball size
 				STAGE.ball_size_time = time()+30000
 				if balls[1].r < 4	then 
@@ -313,14 +313,14 @@ LVL = {
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
 		{4,4,4,4,4,4,4,4,4,4,4,4,4},	
 		{3,3,3,3,3,3,3,3,3,3,3,3,3},
+		{3,3,3,3,3,3,3,3,3,3,3,3,3},	
 		{2,2,2,2,2,2,2,2,2,2,2,2,2},	
+		{2,2,2,2,2,2,2,2,2,2,2,2,2},
+		{1,1,1,1,1,1,1,1,1,1,1,1,1},	
 		{1,1,1,1,1,1,1,1,1,1,1,1,1},	
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{1,1,1,1,1,1,1,1,1,1,1,1,1},		
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},		
 		}
 	},
 	{
@@ -1033,21 +1033,26 @@ function colBallBrick(ball, br)
 		if checkBrickBorder(br, 4) then return false end	
 		ball.y = br.y+br.h+ball.r
 		ball.dy = math.abs(ball.dy)
-	end
-		
-
-	sfx(0,"D-7")
+	end	
 	Player.points = Player.points + 1	
 	if br.t > 1  and br.t < 5 then 
+		sfx(0,"D-7")
 		br.t = br.t - 1
 		br.c = brick_c[br.t]		
 	elseif br.t==1 then
+		sfx(0,"D-7")
 		br.v=false
-		local pwchance = math.random(0,13) + math.random(0,1)		
+		local pwchance = math.random(0,13)
+		if pwchance == 0 then
+			pwchance = pwchance + math.random(0,1)
+		end	
 		if pwchance < 6 then
 			powerup:new(br.x+br.w/2,br.y+br.h/2,pwchance)
 		end
-	elseif br.t==6 then
+	elseif br.t == 5 then
+		sfx(0)
+	elseif br.t == 6 then
+		sfx(16,"C-4",-1,3,6)
 		br.v=false
 		Player.points=Player.points + 4
 		STAGE.energy_bricks=STAGE.energy_bricks-1
@@ -1364,12 +1369,11 @@ end
 -- 004:adddddefbaeeee0fcbaeee0fbaeeee0fa000000fffffffffffffffffffffffff
 -- 005:0000dccd0000dccd0000dccd0000dccd0000dccd0000dccd0000dccd0000dccd
 -- 016:0055500005666600566c667066ccc670666c6670066667000077700000000000
--- 017:0055500005666600566666706ccccc7066666670066667000077700000000000
--- 018:00333000032222003222228022ccc28022222280022228000088800000000000
--- 019:0055500005666600566c66706666667066c6c670066667000077700000000000
+-- 017:0055500005666600566c66706666667066c6c670066667000077700000000000
+-- 018:0055500005666600566666706ccccc7066666670066667000077700000000000
+-- 019:00333000032222003222228022ccc28022222280022228000088800000000000
 -- 020:0055500005ccc6005ccccc706ccccc706ccccc7006ccc7000077700000000000
 -- 021:003330000322220032222280222c228022222280022228000088800000000000
--- 022:0055500005666600566c667066ccc670666c6670066667000077700000000000
 -- 049:0000000004444000044444400440444006600660066666000990099009909990
 -- 050:0000000000444400044444400440044006600660066666600999990009900990
 -- 051:0000000004444000044440040044000400660006006600060099000900990009
@@ -1400,10 +1404,11 @@ end
 -- 002:f0f0e0e0c0d0b0b0a0a08080707060504040502070109000b000d000d000d000c000901060204020603080309040a060b070c070d090e0b0e0c0f0e0310000000000
 -- 003:36e556c466b376a1a670c66fe65df63cf62bd61ab60e96348667769766c766e0f600f600f600f600f600f600f600f600f600f600f600f600f600f600975000000000
 -- 004:2000200020003000300030003000300030004000400040004000500050006000600070007000800090009000a000a000a001b001b002b002c002c000172000000000
--- 005:57017703a705c707d707f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f70000b000000000
+-- 005:57017703a705c707d707f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700500000000000
 -- 006:d000610031307180a160d140f110f100f100f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000207000000000
 -- 007:e708b70b770eb70147f7f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700300000000000
 -- 008:400040004000400040005000500150015001600160016001700170018001900190029002a002a002a003b003b003c003d004e004f004e004e004f005400000000000
+-- 016:e70b2794278747776757674777377726b7169715c714a704c703b702c70fd70fd70fe70fe70fe70ff70ff70ff70ef70ef70ef70ef70df70df70bf70b370000000000
 -- </SFX>
 
 -- <PATTERNS>
