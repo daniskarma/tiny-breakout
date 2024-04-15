@@ -34,25 +34,25 @@ controller={
 		pos={
 			x=10,
 			y=0,
-			r=13,
+			r=12,
 			a=0,
 		},
 		pressed=false,
-		color=3
+		color=2
 	},
 	left = {
 		type='b',
 		pos={
 			x=-9,
 			y=0,
-			r=13,
+			r=12,
 			a=180,
 		},
 		pressed=false,
-		color=3
+		color=2
 	},
 	pos = {
-		x=314,
+		x=214,
 		y=110	
 	}
 }
@@ -66,7 +66,7 @@ parts={}
 M={
 	BOOT=0,
 	TITLE=1,    -- title screen	
-	PLAY=3,	
+	PLAY=2,	
 	GAMEOVER=3,
 	GAMEWIN=4,	
 }
@@ -74,7 +74,7 @@ M={
 -- Difficulty
 DIFF={
 	EASY=1,
-	MEDIUM=1.3,
+	MEDIUM=1.2,
 	HARD=1.4,
 }
 
@@ -118,11 +118,11 @@ LVL = {
 		{0,0,0,0,0,0,6,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
 		{1,1,1,1,1,1,1,1,1,1,1,1,1},	
-		{3,3,3,3,3,3,3,3,3,3,3,3,3},			
+		{2,2,2,2,2,2,2,2,2,2,2,2,2},			
 		{1,1,1,1,1,1,1,1,1,1,1,1,1},	
-		{3,3,3,3,3,3,3,3,3,3,3,3,3},
+		{2,2,2,2,2,2,2,2,2,2,2,2,2},
 		{1,1,1,1,1,1,1,1,1,1,1,1,1},	
-		{3,3,3,3,3,3,3,3,3,3,3,3,3},			
+		{2,2,2,2,2,2,2,2,2,2,2,2,2},			
 		{1,1,1,1,1,1,1,1,1,1,1,1,1},	
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
@@ -130,7 +130,7 @@ LVL = {
 		}
 	},
 	{
-	n=3,
+	n=2,
 	title="Two eyes are looking.",
 	diff=DIFF.EASY,
 	map={
@@ -142,9 +142,9 @@ LVL = {
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
 		{0,1,1,1,1,1,0,1,1,1,1,1,0},
-		{0,1,3,3,3,1,0,1,3,3,3,1,0},	
-		{1,1,3,6,3,1,1,1,3,6,3,1,1},	
-		{0,1,3,3,3,1,0,1,3,3,3,1,0},	
+		{0,1,2,2,2,1,0,1,2,2,2,1,0},	
+		{1,1,2,6,2,1,1,1,2,6,2,1,1},	
+		{0,1,2,2,2,1,0,1,2,2,2,1,0},	
 		{0,1,1,1,1,1,0,1,1,1,1,1,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -168,8 +168,8 @@ LVL = {
 		{0,0,0,0,0,0,1,0,0,0,0,0,0},	
 		{0,0,0,0,0,4,1,4,0,0,0,0,0},	
 		{0,0,0,0,3,4,1,4,3,0,0,0,0},
-		{0,0,0,3,3,4,0,4,3,3,0,0,0},	
-		{0,0,1,3,3,4,6,4,3,3,1,0,0},
+		{0,0,0,2,3,4,0,4,3,2,0,0,0},	
+		{0,0,1,2,3,4,6,4,3,2,1,0,0},
 		{0,5,5,5,5,5,5,5,5,5,5,5,0},	
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
@@ -211,13 +211,13 @@ LVL = {
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
 		{0,0,0,0,0,4,4,4,0,0,0,0,0},
 		{0,0,0,0,3,3,3,3,3,0,0,0,0},	
-		{0,0,0,3,3,3,3,3,3,3,0,0,0},	
-		{0,0,3,3,3,3,1,3,3,3,3,0,0},
-		{0,4,3,3,3,1,1,1,3,3,3,4,0},	
-		{0,4,3,3,1,1,6,1,1,3,3,4,0},	
-		{0,4,3,3,3,1,1,1,3,3,3,4,0},
-		{0,0,3,3,3,3,1,3,3,3,3,0,0},	
-		{0,0,0,3,3,3,3,3,3,3,0,0,0},	
+		{0,0,0,3,3,2,2,2,3,3,0,0,0},	
+		{0,0,3,3,2,2,1,2,2,3,3,0,0},
+		{0,4,3,2,2,1,1,1,2,2,3,4,0},	
+		{0,4,3,2,1,1,6,1,1,2,3,4,0},	
+		{0,4,3,2,2,1,1,1,2,2,3,4,0},
+		{0,0,3,3,2,2,1,2,2,3,3,0,0},	
+		{0,0,0,3,3,2,2,2,3,3,0,0,0},	
 		{0,0,0,0,3,3,3,3,3,0,0,0,0},
 		{0,0,0,0,0,4,4,4,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
@@ -255,7 +255,7 @@ LVL = {
 	diff=DIFF.MEDIUM,
 	map={	
 		{0,0,6,0,0,0,6,0,0,0,6,0,0},	
-		{3,3,3,3,3,3,3,3,3,3,3,3,3},	
+		{2,2,2,2,2,2,2,2,2,2,2,2,2},	
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,3,3,3,0,0,3,0,0,3,3,3,0},
@@ -270,16 +270,15 @@ LVL = {
 		{0,0,3,0,0,0,3,0,0,3,3,3,0},	
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{3,3,3,3,3,3,3,3,3,3,3,3,3},		
+		{2,2,2,2,2,2,2,2,2,2,2,2,2},		
 		}
 	},
 	{
 	n=8,
 	title="80", -- too easy
 	diff=DIFF.MEDIUM,
-	map={	
-		
-		{2,2,2,2,2,2,2,2,2,2,2,2,2},	
+	map={
+		{4,4,4,4,4,4,4,4,4,4,4,4,4},	
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,3,3,3,3,3,0,3,3,3,3,3,0},	
 		{0,3,3,3,3,3,0,3,3,3,3,3,0},	
@@ -294,8 +293,8 @@ LVL = {
 		{0,3,3,3,3,3,0,3,3,3,3,3,0},	
 		{0,3,3,3,3,3,0,3,3,3,3,3,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{2,2,2,2,2,2,2,2,2,2,2,2,2},				
+		{4,4,4,4,4,4,4,4,4,4,4,4,4},	
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},			
 		}
 	},
 	{
@@ -351,27 +350,27 @@ LVL = {
 	title="What!?", -- weird collisions
 	diff=DIFF.HARD,
 	map={
-		{0,5,0,0,0,0,0,3,0,0,0,0,0},
-		{0,5,0,0,0,0,0,3,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,3,0,0,0,0,0},
-		{0,0,0,0,0,0,0,3,0,0,0,0,0},	
-		{0,5,0,0,0,0,0,3,0,0,0,0,0},	
-		{0,5,0,0,0,3,3,3,3,3,0,0,0},
-		{0,5,0,0,0,3,4,4,4,3,0,0,0},	
-		{0,5,3,3,3,3,4,6,4,3,3,3,3},	
-		{0,5,0,0,0,3,4,4,4,3,0,0,0},
-		{0,5,0,0,0,3,3,3,3,3,0,0,0},	
-		{0,5,0,0,0,0,0,3,0,0,0,0,0},	
-		{0,5,0,0,0,0,0,3,0,0,0,0,0},
-		{0,5,0,0,0,0,0,3,0,0,0,0,0},
-		{0,5,0,0,0,0,0,3,0,0,0,0,0},
-		{0,5,0,0,0,0,0,3,0,0,0,0,0},	
+		{0,5,0,0,0,0,0,2,0,0,0,0,0},
+		{0,5,0,0,0,0,0,2,0,0,0,0,0},	
+		{0,0,0,0,0,0,0,2,0,0,0,0,0},
+		{0,0,0,0,0,0,0,2,0,0,0,0,0},	
+		{0,5,0,0,0,0,0,2,0,0,0,0,0},	
+		{0,5,0,0,0,2,2,2,2,2,0,0,0},
+		{0,5,0,0,0,2,4,4,4,2,0,0,0},	
+		{0,5,2,2,2,2,4,6,4,2,2,2,2},	
+		{0,5,0,0,0,2,4,4,4,2,0,0,0},
+		{0,5,0,0,0,2,2,2,2,2,0,0,0},	
+		{0,5,0,0,0,0,0,2,0,0,0,0,0},	
+		{0,5,0,0,0,0,0,2,0,0,0,0,0},
+		{0,5,0,0,0,0,0,2,0,0,0,0,0},
+		{0,5,0,0,0,0,0,2,0,0,0,0,0},
+		{0,5,0,0,0,0,0,2,0,0,0,0,0},	
 		{0,5,5,5,5,5,5,5,5,5,5,5,5},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0}		
 		}
 	},
 	{
-	n=13, -- hard level, many ball stuck loops
+	n=12, -- hard level, many ball stuck loops
 	title="Last defence.",
 	diff=DIFF.HARD,
 	map={
@@ -389,7 +388,7 @@ LVL = {
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{4,4,4,4,4,4,4,4,4,4,4,4,4},	
 		{0,3,3,3,3,3,0,3,3,3,3,3,0},	
-		{0,0,3,3,3,0,0,0,3,3,3,0,0},
+		{0,0,2,2,2,0,0,0,2,2,2,0,0},
 		{0,0,0,1,0,0,0,0,0,1,0,0,0},		
 		{0,0,0,0,0,0,0,0,0,0,0,0,0}		
 		}
@@ -441,7 +440,7 @@ wall={
 		self.x0=x0
 		self.x1=x0 + 183
 		self.y0=y0
-		self.y1=y0+137		
+		self.y1=y0+127		
 		self.w =self.x1-self.x0+1
 		self.h =self.y1-self.y0+1		
 	end	
@@ -454,7 +453,7 @@ function ball:new(x,y,r,dx,dy,c)
 	self.__index=self	
 	newball.x =x
 	newball.y =y
-	newball.r =r -- 3
+	newball.r =r -- 2
 	newball.dx=dx
 	newball.dy=dy		
 	newball.c =c
@@ -479,18 +478,18 @@ pad={
 	draw=function(self)
 		spr(1, self.x-1, self.y, 0, 1, 0)
 		spr(1, self.x+self.w-7, self.y, 0, 1, 1)
-		rect(self.x+7,self.y,self.w-14,self.h,13)
+		rect(self.x+7,self.y,self.w-14,self.h,12)
 		line(self.x+4,self.y+self.h-1,self.x+self.w-5,self.y+self.h-1,11)		
 	end,
 	draw_dir=function(self, a)
 		local delay1 = (time()/100)%8
-		local delay3 = ((time()+400)/100)%8		
-		pix(self.x+(self.w/3)+(4*self.start_direction)+(delay1*self.start_direction),self.y-7-delay1,13)
-		pix(self.x+(self.w/3)+(4*self.start_direction)+(delay3*self.start_direction),self.y-7-delay3,13)					
+		local delay2 = ((time()+400)/100)%8		
+		pix(self.x+(self.w/2)+(4*self.start_direction)+(delay1*self.start_direction),self.y-7-delay1,12)
+		pix(self.x+(self.w/2)+(4*self.start_direction)+(delay2*self.start_direction),self.y-7-delay2,12)					
 	end
 }
 
-brick_c={{7,6,5},{8,9,10},{3,3,4},{1,3,3},{14,13,13}} --brick colors
+brick_c={{7,6,5},{8,9,10},{2,3,4},{1,2,3},{14,13,12}} --brick colors
 brick={}	
 function brick:new(x,y,t,id)
 	local newbrick = {}
@@ -516,11 +515,11 @@ function brick:draw()
 	if self.v then
 		if self.t < 6 then			
 			rect(self.x,self.y,self.w,self.h,self.c[3])
-			rect(self.x+1,self.y+1,self.w-3,self.h-3,self.c[3])
+			rect(self.x+1,self.y+1,self.w-2,self.h-2,self.c[2])
 			line(self.x+1,self.y+self.h-1,self.x+self.w-1,self.y+self.h-1,self.c[1])
 			line(self.x+self.w-1,self.y+1,self.x+self.w-1,self.y+self.h-1,self.c[1])
-			rect(self.x+self.w-1,self.y,1,1,self.c[3])
-			rect(self.x,self.y+self.h-1,1,1,self.c[3])	
+			rect(self.x+self.w-1,self.y,1,1,self.c[2])
+			rect(self.x,self.y+self.h-1,1,1,self.c[2])	
 		elseif self.t == 6 then
 			spr(3, self.x-1, self.y, 15)
 			spr(4, self.x+7, self.y, 15)		
@@ -528,7 +527,7 @@ function brick:draw()
 		
 	end
 	if self.gw>0 then
-		rect(self.x,self.y,self.w,self.h,13)			
+		rect(self.x,self.y,self.w,self.h,12)			
 		self.gw=self.gw-1
 	end
 end
@@ -566,7 +565,7 @@ function pws:update()
 			elseif self[i].pw==1 then -- POWER give two balls
 				if #balls < 8	then
 					local rate = 1
-					if #balls == 1 then rate = 3 end
+					if #balls == 1 then rate = 2 end
 					for iball=#balls,1,-1 do
 						for _=1,rate do 
 							local newball = ball:new(
@@ -581,7 +580,7 @@ function pws:update()
 						end
 					end
 				end
-			elseif self[i].pw==3 then -- POWER increase pad
+			elseif self[i].pw==2 then -- POWER increase pad
 				STAGE.pad_size_time = time()+30000
 				if pad.tw < 46	then 
 					pad.tw=pad.tw+8					
@@ -666,8 +665,8 @@ end
 function TIC()
 	TICF[Game.m]()	
 	--DEBUG
-	rect(300-3,139-3,60,9,14)
-	PrintShadow("FPS: "..FPS:getValue(),300,139,13,nil,1,1)		
+	rect(200-2,129-2,60,9,14)
+	PrintShadow("FPS: "..FPS:getValue(),200,129,12,nil,1,1)		
 	poke(0x3FFB,0)
 end
 
@@ -679,18 +678,18 @@ end
 
 function TitleTic()
 	cls()	
-	print("TINY",45,30,13,true,1, true)	
-	spr(48, 30, 30, 0, 3, 0, 0, 7 ,3)	
-	if (time()//500%3) == 0 then 
-		printc("START",130,100,4)
+	print("TINY",45,20,12,true,1, true)	
+	spr(48, 30, 30, 0, 3, 0, 0, 7 ,2)	
+	if (time()//500%2) == 0 then 
+		printc("START",120,100,4)
 	else
-		printc("START",130,100,3)
+		printc("START",120,100,3)
 	end
-	rectb(0,0,340,136,13)
+	rectb(0,0,240,136,12)
 
 	if input(BTN.ACTION) then
 		Player.points = 0
-		Player.lives = 3
+		Player.lives = 2
 		Player.hscore = pmem(1)
 		StageInit(starting_level)
 		music()	
@@ -701,18 +700,18 @@ end
 
 function GameOverTic()
 	cls()
-	printc("GAME OVER",131,41,14,true, 3)
-	printc("GAME OVER",130,40,13,true, 3)
+	printc("GAME OVER",121,41,14,true, 3)
+	printc("GAME OVER",120,40,12,true, 3)
 	gameEndUpdate()	
 end
 
 function GameWinTic()
 	cls()
-	printc("CONGRATULATIONS!",131,31,14,true, 3)
-	printc("CONGRATULATIONS!",130,30,13,true, 3)
+	printc("CONGRATULATIONS!",121,31,14,true, 2)
+	printc("CONGRATULATIONS!",120,30,12,true, 2)
 
-	printc("YOU WON",131,51,14,true, 3)
-	printc("YOU WON",130,50,13,true, 3)
+	printc("YOU WON",121,51,14,true, 2)
+	printc("YOU WON",120,50,12,true, 2)
 
 	gameEndUpdate()	
 end
@@ -721,25 +720,25 @@ function gameEndUpdate()
 	-- menuda cutrez esta funcion, en general.	
 
 	if Player.points > pmem(1) then		
-		if (time()//500%3) == 0 then 
-			printc("NEW HIGH SCORE!",130,95,4)
+		if (time()//500%2) == 0 then 
+			printc("NEW HIGH SCORE!",120,95,4)
 		else
-			printc("NEW HIGH SCORE!",130,95,3)
+			printc("NEW HIGH SCORE!",120,95,3)
 		end
 		Player.hscore = Player.points		
 	end
 
 	local padding = 6 - (string.len(tostring(Player.points)))
 	print("YOUR SCORE:"..string.rep(".", padding)..tostring(Player.points),70,75,4,true, 1)
-	print("YOUR SCORE:"..string.rep(".", padding),70,75,13,true, 1)
+	print("YOUR SCORE:"..string.rep(".", padding),70,75,12,true, 1)
 	local padding = 6 - (string.len(tostring(Player.hscore)))
-	print("HIGH SCORE:"..string.rep(".", padding)..tostring(Player.hscore),70,83,4,true, 1)
-	print("HIGH SCORE:"..string.rep(".", padding),70,83,13,true, 1)	
+	print("HIGH SCORE:"..string.rep(".", padding)..tostring(Player.hscore),70,82,4,true, 1)
+	print("HIGH SCORE:"..string.rep(".", padding),70,82,12,true, 1)	
 
-	if (time()//500%3) == 0 then 
-		printc("START",130,110,4)
+	if (time()//500%2) == 0 then 
+		printc("START",120,110,4)
 	else
-		printc("START",130,110,3)
+		printc("START",120,110,3)
 	end
 
 	if input(BTN.ACTION) then
@@ -748,7 +747,7 @@ function gameEndUpdate()
 		music()
 		SetMode(M.TITLE)
  	end	
-	rectb(0,0,340,136,13)
+	rectb(0,0,240,136,12)
 end
 
 
@@ -766,11 +765,11 @@ function PlayTic()
 		pad.tw = 30
 	end
 	if pad.tw < pad.w then 
-		pad.w=pad.w-3
+		pad.w=pad.w-2
 		pad.x=pad.x+1	
 	end
 	if pad.tw > pad.w then 
-		pad.w=pad.w+3
+		pad.w=pad.w+2
 		pad.x=pad.x-1			
 	end
 
@@ -812,7 +811,7 @@ function PlayTic()
 	for i=#balls, 1, -1 do
 		-- balls size
 		if STAGE.ball_size_time < time() then
-			balls[i].r = 3
+			balls[i].r = 2
 		end
 
 		-- ball launch	
@@ -853,7 +852,7 @@ function PlayTic()
 		
 		-- ball move with pad
 		if not is_launchball then
-			balls[i].x=pad.x+pad.w/3
+			balls[i].x=pad.x+pad.w/2
 			balls[i].y=pad.y-3		
 		end	
 				
@@ -913,10 +912,10 @@ function PlayTic()
 	line(wall.x0+1,wall.y1-1,wall.x1-1,wall.y1-1,00)
 
 	for i=wall.x0+1,wall.x1-1 do
-		if i%3 == 0 then
+		if i%2 == 0 then
 			pix(i,wall.y1-3,00)
 		else
-			pix(i,wall.y1-3,00)
+			pix(i,wall.y1-2,00)
 		end
 	end
 
@@ -948,39 +947,39 @@ function PlayTic()
 	-- stage load screen
 	if is_loaded then			
 		rect(wall.x0,wall.y0,wall.w,wall.h,00) -- play background	
-		printc("LEVEL: "..STAGE.n, wall.x0+(wall.x1-wall.x0)/3, 50, 13, true)
-		printc(LVL[STAGE.n].title, wall.x0+(wall.x1-wall.x0)/3, 60, 13, true)		
+		printc("LEVEL: "..STAGE.n, wall.x0+(wall.x1-wall.x0)/2, 50, 12, true)
+		printc(LVL[STAGE.n].title, wall.x0+(wall.x1-wall.x0)/2, 60, 12, true)		
 	end
 
 	DrawUI()
 
 	-- DEBUG
-	-- PrintShadow(" : "..tostring(math.abs(pad.dx) < pad.sp),195,15,13,nil,1,1)
-	--line(wall.x0+(wall.x1-wall.x0)/3, wall.y0, wall.x0+(wall.x1-wall.x0)/3, wall.y1,13)	
-	-- rect(ball.x,ball.y,1,1,3)
-	--rect(10,8,40,10,13)
-	-- print(checkBrickBorder(bricks[195], dir),13,10,3)
-	--print(bricks[3].x,13,18,3)
+	-- PrintShadow(" : "..tostring(math.abs(pad.dx) < pad.sp),195,15,12,nil,1,1)
+	--line(wall.x0+(wall.x1-wall.x0)/2, wall.y0, wall.x0+(wall.x1-wall.x0)/2, wall.y1,12)	
+	-- rect(ball.x,ball.y,1,1,2)
+	--rect(10,8,40,10,12)
+	-- print(checkBrickBorder(bricks[195], dir),12,10,2)
+	--print(bricks[2].x,12,18,2)
 	
 end
 
 
 function gameOver()
 	cls()
-	print("GAME OVER",90,30,4)
+	print("GAME OVER",90,20,4)
 	print("press A to start",70,50,4)
 	if input(BTN.ACTION) then
 		gameBOOT()
 	 	SetMode(M.PLAY)
 	end	
-	rectb(0,0,340,136,13)
+	rectb(0,0,240,136,12)
 end
 
 
 function StageInit(level)	
 	setStage(LVL[level].diff,LVL[level].n)	
 	wall:init(4,4)	
-	pad:init(50,130,30,4,0.4)
+	pad:init(50,120,30,4,0.4)
 	pws:clear()	
 
 	bricks = {}
@@ -1009,21 +1008,21 @@ end
 function PrepareBall()
 	pws:clear()
 	is_launchball=false
-	local newball = ball:new(pad.x+pad.w/3,pad.y-3,3,0,0,11)
+	local newball = ball:new(pad.x+pad.w/2,pad.y-3,2,0,0,11)
 	table.insert(balls, newball)
 end
 
 
 ---- PHYSICS
 function colCircRect(ball, box)
-	local box_cx=box.x+((box.w-1)/3)
-	local box_cy=box.y+((box.h-1)/3)
+	local box_cx=box.x+((box.w-1)/2)
+	local box_cy=box.y+((box.h-1)/2)
 	
 	local dist_x=box_cx-ball.x
 	local dist_y=box_cy-ball.y
 	
-	local maxdist_x = box.w/3
-	local maxdist_y = box.h/3
+	local maxdist_x = box.w/2
+	local maxdist_y = box.h/2
 
 	if math.abs(dist_x) > maxdist_x+(ball.r) or math.abs(dist_y) > maxdist_y+ball.r then return 0 end -- no col
 	if ball.dx == 0 and ball.dy > 0 then return 3 end -- col up
@@ -1033,8 +1032,8 @@ function colCircRect(ball, box)
 		if ball.x-ball.dx >= box.x then return 3 end -- col up
 		if ball.y-ball.dy >= box.y then return 1 end -- col left
 		local p1 = ball.dx/ball.dy
-		local p3 = (box.x-ball.x-ball.dx)/(box.y-ball.y-ball.dy)
-		if p1 >= p3 then return 3 -- col up
+		local p2 = (box.x-ball.x-ball.dx)/(box.y-ball.y-ball.dy)
+		if p1 >= p2 then return 3 -- col up
 		else return 1 -- col left
 		end
 	end
@@ -1042,28 +1041,28 @@ function colCircRect(ball, box)
 		if ball.x-ball.dx >= box.x then return 4 end -- col down
 		if ball.y-ball.dy <= box.y+box.h then return 1 end -- col left
 		local p1 = ball.dx/ball.dy
-		local p3 = (box.x-ball.x-ball.dx)/(box.y+box.h-ball.y-ball.dy)
-		if p1 >= p3 then return 4 -- col down
+		local p2 = (box.x-ball.x-ball.dx)/(box.y+box.h-ball.y-ball.dy)
+		if p1 >= p2 then return 4 -- col down
 		else return 1  -- col left
 		end
 	end
 	if ball.dx < 0 and ball.dy < 0 then -- down right
 		if ball.x-ball.dx <= box.x+box.w then return 4 end -- col down
-		if ball.y-ball.dy <= box.y+box.h then return 3 end -- col right
+		if ball.y-ball.dy <= box.y+box.h then return 2 end -- col right
 		local p1 = ball.dx/ball.dy
-		local p3 = (ball.x-ball.dx-box.x+box.w)/(ball.y-ball.dy-box.y+box.h)
-		if p1 >= p3 then return 4 -- col down
-		else return 3 -- col right
+		local p2 = (ball.x-ball.dx-box.x+box.w)/(ball.y-ball.dy-box.y+box.h)
+		if p1 >= p2 then return 4 -- col down
+		else return 2 -- col right
 		end
 	end
 
 	if ball.dx < 0 and ball.dy > 0 then -- up right
 		if ball.x-ball.dx <= box.x+box.w then return 3 end -- col up
-		if ball.y-ball.dy >= box.y then return 3 end -- col right
+		if ball.y-ball.dy >= box.y then return 2 end -- col right
 		local p1 = ball.dx/ball.dy
-		local p3 = (ball.x-ball.dx-box.x+box.w)/(ball.y-ball.dy-box.y)
-		if p1 >= p3 then return 3 -- col up
-		else return 3  -- col right
+		local p2 = (ball.x-ball.dx-box.x+box.w)/(ball.y-ball.dy-box.y)
+		if p1 >= p2 then return 3 -- col up
+		else return 2  -- col right
 		end
 	end
 
@@ -1072,16 +1071,16 @@ end
 
 -- returns true if theres a block in the place of the suppose collision
 function checkBrickBorder(br, dir)
-	col = br.id[3]
+	col = br.id[2]
 	row = br.id[1]
 	n = (row - 1) * 13 + col -- bricks[n]
 
-	-- dir: 1 left, 3 right, 3 up, 4 down
+	-- dir: 1 left, 2 right, 3 up, 4 down
 	if dir == 1 then
 		if col == 1 then return true end
 		if bricks[n-1].v == true then return true end
 
-	elseif dir == 3 then
+	elseif dir == 2 then
 		if col == 13 then return true end
 		if bricks[n+1].v == true then return true end
 
@@ -1104,8 +1103,8 @@ function colBallBrick(ball, br)
 		if checkBrickBorder(br, 1) then return false end
 		ball.x = br.x-ball.r
 		ball.dx = -math.abs(ball.dx)
-	elseif col == 3 then -- right
-		if checkBrickBorder(br, 3) then return false end	
+	elseif col == 2 then -- right
+		if checkBrickBorder(br, 2) then return false end	
 		ball.x = br.x+br.w+ball.r
 		ball.dx = math.abs(ball.dx)
 	elseif col == 3 then -- up
@@ -1130,7 +1129,7 @@ function colBallBrick(ball, br)
 			pwchance = pwchance + math.random(0,1)
 		end	
 		if pwchance < 6 then
-			powerup:new(br.x+br.w/3,br.y+br.h/3,pwchance)
+			powerup:new(br.x+br.w/2,br.y+br.h/2,pwchance)
 		end
 	elseif br.t == 5 then
 		sfx(0)
@@ -1148,9 +1147,9 @@ end
 function colBallPad(ball, pad)
 	local col = colCircRect(ball, pad)	
 	if col == 0 or col == 4 then return end
-	local pad_cx=pad.x+(pad.w/3)
-	local pad_cy=pad.y+(pad.h/3)
-	local dist_x=(pad_cx-ball.x)/(pad.w/3)
+	local pad_cx=pad.x+(pad.w/2)
+	local pad_cy=pad.y+(pad.h/2)
+	local dist_x=(pad_cx-ball.x)/(pad.w/2)
 	ball.dx=ball.dx-dist_x
 
 	if ball.y <= pad_cy then		
@@ -1169,55 +1168,55 @@ end
 
 function DrawUI()		
 	--playground bevel
-	line(wall.x0,wall.y1,wall.x1,wall.y1,13)
-	line(wall.x1,wall.y0,wall.x1,wall.y1,13)
+	line(wall.x0,wall.y1,wall.x1,wall.y1,12)
+	line(wall.x1,wall.y0,wall.x1,wall.y1,12)
 	line(wall.x0,wall.y0,wall.x1,wall.y0,14)
 	line(wall.x0,wall.y0,wall.x0,wall.y1,14)
 	pix(wall.x0,wall.y0, 15)
 	pix(wall.x0,wall.y1, 15)
 	pix(wall.x1,wall.y0, 15)
-	rect(0,wall.y1+1,340,136, 13) -- botton ui for hiding ball	
+	rect(0,wall.y1+1,240,136, 13) -- botton ui for hiding ball	
 	
 	-- margins
 	local left_margin = wall.x1+4
-	local right_margin = 340-4
+	local right_margin = 240-4
 
 	--info bevel
 	local info_top = 35
 	local info_botton = 80
 
 	rect(left_margin,info_top,right_margin-left_margin,info_botton-info_top, 15)
-	line(left_margin,info_botton,right_margin,info_botton,13)
-	line(right_margin,info_top,right_margin,info_botton,13)
+	line(left_margin,info_botton,right_margin,info_botton,12)
+	line(right_margin,info_top,right_margin,info_botton,12)
 	line(left_margin,info_top,right_margin,info_top,00)
 	line(left_margin,info_top,left_margin,info_botton,00)	
 	pix(left_margin,info_botton, 15)
 	pix(right_margin,info_top, 15)
 	
-	print("LIVES ",left_margin+3,info_top+3,13)
+	print("LIVES ",left_margin+3,info_top+3,12)
 	for i=0,Player.lives-1 do
-		circ(left_margin+3+3+i*7,info_top+13,3,4)
+		circ(left_margin+3+2+i*7,info_top+12,2,4)
 	end
-	print("TIME ",left_margin+3,info_top+17,13)
+	print("TIME ",left_margin+3,info_top+17,12)
 	local time_c = 4
-	print(math.floor(STAGE.time/60),left_margin+3,info_top+34,time_c)
+	print(math.floor(STAGE.time/60),left_margin+3,info_top+24,time_c)
 
-	print("POINTS ",left_margin+3,info_top+31,13)
+	print("POINTS ",left_margin+3,info_top+31,12)
 	print(Player.points,left_margin+3,info_top+38,4)
 
 	--top bevel
 	local info_top = 4
 	local info_botton = 30
 	rect(left_margin,info_top,right_margin-left_margin,info_botton-info_top, 15)
-	line(left_margin,info_botton,right_margin,info_botton,13)
-	line(right_margin,info_top,right_margin,info_botton,13)
+	line(left_margin,info_botton,right_margin,info_botton,12)
+	line(right_margin,info_top,right_margin,info_botton,12)
 	line(left_margin,info_top,right_margin,info_top,00)
 	line(left_margin,info_top,left_margin,info_botton,00)	
 	pix(left_margin,info_botton, 15)
 	pix(right_margin,info_top, 15)	
 
-	print("HIGH",left_margin+3,info_top+3,13)
-	print("SCORE",left_margin+3,info_top+9,13)
+	print("HIGH",left_margin+3,info_top+3,12)
+	print("SCORE",left_margin+3,info_top+9,12)
 	print(Player.hscore,left_margin+3,info_top+18,4)
 
 	-- controller label
@@ -1237,9 +1236,9 @@ function updatebutton(b,xo,yo)
 	local y1 = yo+14
 
 	if quiral > 0 then
-		x1 = x1 + (33*quiral)
+		x1 = x1 + (23*quiral)
 	else
-		x0 = x0 +(33*quiral)
+		x0 = x0 +(23*quiral)
 	end
 
 	if mp and mx>x0 and mx<x1 and my>y0 and my<y1 then
@@ -1257,9 +1256,9 @@ function drawbutton(b,xo,yo)
 	local y0 = yo-14
 	local y1 = yo+14	
 	if quiral > 0 then
-		x1 = x1 + (33*quiral)
+		x1 = x1 + (23*quiral)
 	else
-		x0 = x0 + (33*quiral)
+		x0 = x0 + (23*quiral)
 	end
 	local is_down = false
 	if is_left and input(BTN.LEFT) then
@@ -1268,8 +1267,8 @@ function drawbutton(b,xo,yo)
 		is_down = true
 	end
 	if b.pressed or is_down then
-		line(x0,y1,x1,y1,13)
-		line(x1,y0,x1,y1,13)
+		line(x0,y1,x1,y1,12)
+		line(x1,y0,x1,y1,12)
 		line(x0,y0,x1,y0,00)
 		line(x0,y0,x0,y1,00)	
 		pix(x0,y1, 15)
@@ -1279,8 +1278,8 @@ function drawbutton(b,xo,yo)
 	else
 		line(x0,y1,x1,y1,00)
 		line(x1,y0,x1,y1,00)
-		line(x0,y0,x1,y0,13)
-		line(x0,y0,x0,y1,13)	
+		line(x0,y0,x1,y0,12)
+		line(x0,y0,x0,y1,12)	
 		pix(x0,y1, 15)
 		pix(x1,y0, 15)
 		tric(b.pos.x+xo,b.pos.y+1+yo,b.pos.r, b.pos.a, 15)
@@ -1351,8 +1350,8 @@ end
 -- particle explosion
 
 function Explode(x, y)
-	for i=1,30 do
-		AddPart(x+math.random()*30,y+math.random()*4,1+1.5*math.random(-1,1),-1.5*math.random(-1,1),0.1,13,15+math.random()*3)
+	for i=1,20 do
+		AddPart(x+math.random()*20,y+math.random()*4,1+1.5*math.random(-1,1),-1.5*math.random(-1,1),0.1,12,15+math.random()*3)
 	end
 end
 
@@ -1405,9 +1404,9 @@ end
 -- Para centrar correctamente una fuente tiene que tener fixed=true
 function printc(...)
 	local firstArg = select(1, ...)
-    local secondArg = select(3, ...)
+    local secondArg = select(2, ...)
 	local scale = (select(6, ...)~=nil and select(6, ...) or 1)
-    local new_x = secondArg - (#firstArg / 3)*6*scale
+    local new_x = secondArg - (#firstArg / 2)*6*scale
     local args = {select(3, ...)}
     table.insert(args, 1, new_x)
     table.insert(args, 1, firstArg)
@@ -1424,19 +1423,19 @@ end
 -- TODO finish
 function tric(x,y,r,a,c)	
 	local t = getTriPoints(x,y,r,a) 
-	tri(t.x1,t.y1,t.x3,t.y3,t.x3,t.y3,c)
+	tri(t.x1,t.y1,t.x2,t.y2,t.x3,t.y3,c)
 end
 
 function getTriPoints(x,y,r,a)
 	local a1 = math.rad(a)
-	local a3 = math.rad(a+360/3)
-	local a3 = math.rad(a+3*360/3)
+	local a2 = math.rad(a+360/3)
+	local a3 = math.rad(a+2*360/3)
 	local triangle = {
 		x1 = x + math.cos(a1) * r,
-		x3 = x + math.cos(a3) * r,
+		x2 = x + math.cos(a2) * r,
 		x3 = x + math.cos(a3) * r,
 		y1 = y + math.sin(a1) * r,
-		y3 = y + math.sin(a3) * r,
+		y2 = y + math.sin(a2) * r,
 		y3 = y + math.sin(a3) * r,
 	}
 	return triangle
@@ -1446,59 +1445,59 @@ end
 
 
 -- <TILES>
--- 001:0033dccc0333dccc0333dccc0833dccc0088eccc000000000000000000000000
--- 003:cccd3300cccd3330cccd3330cccd3380ccce8800000000000000000000000000
+-- 001:0022dccc0222dccc0222dccc0822dccc0088eccc000000000000000000000000
+-- 002:cccd2200cccd2220cccd2220cccd2280ccce8800000000000000000000000000
 -- 003:fddddddafdeeeeabfdeeeabcfdeeeeabfe00000affffffffffffffffffffffff
 -- 004:adddddefbaeeee0fcbaeee0fbaeeee0fa000000fffffffffffffffffffffffff
 -- 005:0000dccd0000dccd0000dccd0000dccd0000dccd0000dccd0000dccd0000dccd
 -- 016:0055500005666600566c667066ccc670666c6670066667000077700000000000
 -- 017:0055500005666600566c66706666667066c6c670066667000077700000000000
 -- 018:0055500005666600566666706ccccc7066666670066667000077700000000000
--- 019:00333000033333003333338033ccc38033333380033338000088800000000000
--- 030:0055500005ccc6005ccccc706ccccc706ccccc7006ccc7000077700000000000
--- 031:003330000333330033333380333c338033333380033338000088800000000000
+-- 019:00333000032222003222228022ccc28022222280022228000088800000000000
+-- 020:0055500005ccc6005ccccc706ccccc706ccccc7006ccc7000077700000000000
+-- 021:003330000322220032222280222c228022222280022228000088800000000000
 -- 049:0000000004444000044444400440444006600660066666000990099009909990
 -- 050:0000000000444400044444400440044006600660066666600999990009900990
 -- 051:0000000004444000044440040044000400660006006600060099000900990009
--- 053:0000000044444004444440044404400460000006600000069000000999099009
+-- 052:0000000044444004444440044404400460000006600000069000000999099009
 -- 053:0000000040044000400440044044400466660006666600069999900090999000
 -- 054:0000000044444000444440004000000066000000666660000999900000099000
--- 065:0333333003333110011111100111100000000000000000000000000000000000
--- 066:0330033003300330011001100110011000000000000000000000000000000000
--- 067:0333300303333001011110010111100000000000000000000000000000000000
--- 068:3333300333333003111110011111100100000000000000000000000000000000
--- 069:3003300330033003100110011001100100000000000000000000000000000000
--- 070:3333300033331000111110001111000000000000000000000000000000000000
+-- 065:0222222002222110011111100111100000000000000000000000000000000000
+-- 066:0220022002200220011001100110011000000000000000000000000000000000
+-- 067:0222200202222001011110010111100000000000000000000000000000000000
+-- 068:2222200222222002111110011111100100000000000000000000000000000000
+-- 069:2002200220022002100110011001100100000000000000000000000000000000
+-- 070:2222200022221000111110001111000000000000000000000000000000000000
 -- </TILES>
 
 -- <WAVES>
 -- 000:00000000ffffffff00000000ffffffff
--- 001:0133456789abcdeffedcba9876543310
--- 003:0133456789abcdef0133456789abcdef
--- 003:0133456789aaaaaaaaaaaa9876543310
--- 004:000111133334556789aabccdeeeeffff
+-- 001:0123456789abcdeffedcba9876543210
+-- 002:0123456789abcdef0123456789abcdef
+-- 003:0123456789aaaaaaaaaaaa9876543210
+-- 004:000111122334556789aabccdeeeeffff
 -- 005:00000000000000000fffff0000000000
 -- 006:45566778899aabbccbbaa99887766554
 -- </WAVES>
 
 -- <SFX>
--- 000:4100510171019103a103c103d105e107f107f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f10041000010f000
--- 001:34a444a054937490748194709461c431c441e430f410f400f300f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000360000000000
--- 003:f0f0e0e0c0d0b0b0a0a08080707060504040503070109000b000d000d000d000c000901060304030603080309040a060b070c070d090e0b0e0c0f0e0310000000000
--- 003:36e556c466b376a1a670c66fe65df63cf63bd61ab60e96348667769766c766e0f600f600f600f600f600f600f600f600f600f600f600f600f600f600975000000000
--- 004:3000300030003000300030003000300030004000400040004000500050006000600070007000800090009000a000a000a001b001b003b003c003c000173000000000
+-- 000:4100510171019102a103c103d105e107f107f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f10041000010f000
+-- 001:34a444a054937490748194709461c431c441e420f410f400f200f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000360000000000
+-- 002:f0f0e0e0c0d0b0b0a0a08080707060504040502070109000b000d000d000d000c000901060204020603080309040a060b070c070d090e0b0e0c0f0e0310000000000
+-- 003:36e556c466b376a1a670c66fe65df63cf62bd61ab60e96348667769766c766e0f600f600f600f600f600f600f600f600f600f600f600f600f600f600975000000000
+-- 004:2000200020003000300030003000300030004000400040004000500050006000600070007000800090009000a000a000a001b001b002b002c002c000172000000000
 -- 005:57017703a705c707d707f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700500000000000
--- 006:d000610031307180a160d140f110f100f100f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000307000000000
+-- 006:d000610031307180a160d140f110f100f100f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000207000000000
 -- 007:e708b70b770eb70147f7f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700f700300000000000
--- 008:400040004000400040005000500150015001600160016001700170018001900190039003a003a003a003b003b003c003d004e004f004e004e004f005400000000000
--- 016:e70b3794378747776757674777377736b7169715c714a704c703b703c70fd70fd70fe70fe70fe70ff70ff70ff70ef70ef70ef70ef70df70df70bf70b370000000000
+-- 008:400040004000400040005000500150015001600160016001700170018001900190029002a002a002a003b003b003c003d004e004f004e004e004f005400000000000
+-- 016:e70b2794278747776757674777377726b7169715c714a704c703b702c70fd70fd70fe70fe70fe70ff70ff70ff70ef70ef70ef70ef70df70df70bf70b370000000000
 -- </SFX>
 
 -- <PATTERNS>
 -- 000:444146000040000000000000600046000000000000000000400046000000000000000000900046000000000000000000b00046000040000000000000000040000000000000000000400046000000600046000000400046000000600046000000400046000000000000000040900046000000000000000000600046000000000000000000c00046000000000000000000e00046000000000000000000a00046000000000000000000900046000000000040000000000040000000000040000000
 -- 001:400050000000000000000000900070000000000000000000400050000060400070000000900070000000000000000000400050000000000000000000900070000000000000000000400050000000400070000000900070000000000000000000400050000000000000000000900070000000000000000000400050000000400070000000900070000000000000000000400050000000000000000000900070000000000000000000400050000000400070000000900070000000000000000000
--- 003:43316a00000080006a00000080006a00000000000000000000006000000000000000000040006a00000080006a000000a0006a00006000006000006000006000000000000000000040006a00000080006a00000080006a00000000000000000000000000000000000000000040006a00000080006a000000a0006a00000000000000000000000000000000000000000040006a00000080006a00000080006a00000000000000000000000000000000000000000040006a00000080006a000000
--- 003:8bb188000000000000000000600088000000700088000000800088000000000000000000600088000000000080000000400088000000000000000000000080000000000000000000a39688000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+-- 002:43316a00000080006a00000080006a00000000000000000000006000000000000000000040006a00000080006a000000a0006a00006000006000006000006000000000000000000040006a00000080006a00000080006a00000000000000000000000000000000000000000040006a00000080006a000000a0006a00000000000000000000000000000000000000000040006a00000080006a00000080006a00000000000000000000000000000000000000000040006a00000080006a000000
+-- 003:8bb188000000000000000000600088000000700088000000800088000000000000000000600088000000000080000000400088000000000000000000000080000000000000000000a29688000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 -- </PATTERNS>
 
 -- <TRACKS>
@@ -1507,6 +1506,6 @@ end
 -- </TRACKS>
 
 -- <PALETTE>
--- 000:1a1c3c5d375db13e53ef7d57ffcd75a7f07038b76435717939366f3b5dc941a6f673eff7f4f4f494b0c3566c86333c57
+-- 000:1a1c2c5d275db13e53ef7d57ffcd75a7f07038b76425717929366f3b5dc941a6f673eff7f4f4f494b0c2566c86333c57
 -- </PALETTE>
 
