@@ -22,6 +22,9 @@
 	-- put time in levels
 	-- do something if ball keeps stuck in a loop (menu option to kill ball)
  
+
+function BOOT() 
+
 math.randomseed(tstamp())
 
 -- input constants
@@ -98,208 +101,8 @@ DEFAULT_STAGE={
 	pad_size_time=0,
 }
 STAGE={}
-function setStage(diff, level)
-	STAGE=DeepCopy(DEFAULT_STAGE)
-	STAGE.time=STAGE.time
-	STAGE.ball.maxdx=STAGE.ball.maxdx*diff
-	STAGE.ball.maxdy=STAGE.ball.maxdy*diff
-	STAGE.ball.startdx=STAGE.ball.startdx*diff
-	STAGE.ball.startdy=STAGE.ball.startdy*diff
-	STAGE.n=level
-	STAGE.won_time=30
-	STAGE.init_time=time()
-end
 
--- ELEMENTS
-wall={
-	init=function(self,x0,y0)
-		self.x0=x0
-		self.x1=x0 + 183
-		self.y0=y0
-		self.y1=y0+127		
-		self.w =self.x1-self.x0+1
-		self.h =self.y1-self.y0+1		
-	end	
-}
-
-ball={}
-function ball:new(x,y,r,dx,dy,c)
-	local newball= {}
-	setmetatable(newball, self)
-	self.__index=self	
-	newball.x =x
-	newball.y =y
-	newball.r =r -- 2
-	newball.dx=dx
-	newball.dy=dy		
-	newball.c =c
-	return newball
-end
-function ball:draw()			
-	circ(self.x,self.y,self.r,self.c)			
-end		
-
-pad={
-	init=function(self,x,y,w,sp,ac,c)
-		self.x =x
-		self.y =y
-		self.w =w --30
-		self.h =5
-		self.sp=sp
-		self.ac=ac --acceleration
-		self.dx=0
-		self.tw=w --target width			
-	end,
-	start_direction=1,	
-	draw=function(self)
-		spr(1, self.x-1, self.y, 0, 1, 0)
-		spr(1, self.x+self.w-7, self.y, 0, 1, 1)
-		rect(self.x+7,self.y,self.w-14,self.h,12)
-		line(self.x+4,self.y+self.h-1,self.x+self.w-5,self.y+self.h-1,11)		
-	end,
-	draw_dir=function(self, a)
-		local delay1 = (time()/100)%8
-		local delay2 = ((time()+400)/100)%8		
-		pix(self.x+(self.w/2)+(4*self.start_direction)+(delay1*self.start_direction),self.y-7-delay1,12)
-		pix(self.x+(self.w/2)+(4*self.start_direction)+(delay2*self.start_direction),self.y-7-delay2,12)					
-	end
-}
-
-brick_c={{7,6,5},{8,9,10},{2,3,4},{1,2,3},{14,13,12}} --brick colors
-brick={}	
-function brick:new(x,y,t,id)
-	local newbrick = {}
-	setmetatable(newbrick, self)
-	self.__index=self
-	newbrick.x=x
-	newbrick.y=y
-	newbrick.w=14
-	newbrick.h=5
-	newbrick.c=brick_c[t]		
-	newbrick.t=t
-	newbrick.gw=1
-	if newbrick.t > 0 then
-		newbrick.v=true
-	else
-		newbrick.v=false
-	end
-
-	newbrick.id=id
-	return newbrick		
-end
-function brick:draw()
-	if self.v then
-		if self.t < 6 then			
-			rect(self.x,self.y,self.w,self.h,self.c[3])
-			rect(self.x+1,self.y+1,self.w-2,self.h-2,self.c[2])
-			line(self.x+1,self.y+self.h-1,self.x+self.w-1,self.y+self.h-1,self.c[1])
-			line(self.x+self.w-1,self.y+1,self.x+self.w-1,self.y+self.h-1,self.c[1])
-			rect(self.x+self.w-1,self.y,1,1,self.c[2])
-			rect(self.x,self.y+self.h-1,1,1,self.c[2])	
-		elseif self.t == 6 then
-			spr(3, self.x-1, self.y, 15)
-			spr(4, self.x+7, self.y, 15)		
-		end	
-		
-	end
-	if self.gw>0 then
-		rect(self.x,self.y,self.w,self.h,12)			
-		self.gw=self.gw-1
-	end
-end
-
--- POWERUPS
-pws={} --powerups array
-powerup={}
-function powerup:new(x,y,pw)
-	local newpowerup = {}
-	setmetatable(newpowerup, self)
-	self.__index=self	
-	newpowerup.x =x
-	newpowerup.y =y
-	newpowerup.r =3		
-	newpowerup.dy=0.5
-	newpowerup.dx=0	
-	newpowerup.pw=pw
-	table.insert(pws,newpowerup)
-end
-	
-function powerup:draw()	
-	spr(16+self.pw,self.x-self.r,self.y-self.r,0)			
-end	
-
-function pws:update()
-	local to_remove = {}
-	for i=#self,1,-1 do
-		self[i].y=self[i].y+self[i].dy
-		if colCircRect(self[i], pad)>0 then
-			sfx(3, -1,-1,1)
-			if self[i].pw==0 then -- POWER five extra life
-				if Player.lives<6 then
-					Player.lives=Player.lives+1
-				end
-			elseif self[i].pw==1 then -- POWER give two balls
-				if #balls < 8	then
-					local rate = 1
-					if #balls == 1 then rate = 2 end
-					for iball=#balls,1,-1 do
-						for _=1,rate do 
-							local newball = ball:new(
-								balls[iball].x+math.random(),
-								balls[iball].y+math.random(),
-								balls[iball].r,
-								balls[iball].dx*((math.random(0, 1) == 0) and -1 or 1)*math.random(),
-								((math.random(0, 1) == 0) and -1 or 1),
-								11
-							)
-							table.insert(balls, newball)							
-						end
-					end
-				end
-			elseif self[i].pw==2 then -- POWER increase pad
-				STAGE.pad_size_time = time()+30000
-				if pad.tw < 46	then 
-					pad.tw=pad.tw+8					
-				end	
-			elseif self[i].pw==3 then -- POWER decrease pad
-				STAGE.pad_size_time = time()+30000
-				if pad.tw > 14	then 
-					pad.tw=pad.tw-8					
-				end			
-			elseif self[i].pw==4 then -- POWER increase ball size
-				STAGE.ball_size_time = time()+30000
-				if balls[1].r < 4	then 
-					for i=1, #balls do
-						balls[i].r = balls[i].r + 1
-					end	
-				end
-			elseif self[i].pw==5 then -- POWER reduce ball size
-				STAGE.ball_size_time = time()+30000
-				if balls[1].r > 0	then 
-					for i=1, #balls do
-						balls[i].r = balls[i].r - 1
-					end	
-				end		
-			end
-			table.insert(to_remove, i)
-		end	
-		if self[i].y > 140 then
-			table.insert(to_remove, i)
-		end
-	end
-	if next(to_remove) ~= nil then
-		for i = #to_remove, 1, -1 do
-			table.remove(pws, to_remove[i])
-		end
-	end
-end	
-
-function pws:clear()
-	for i=#self, 1, -1 do		
-		table.remove(pws, i)			
-	end
-end	
-local starting_level = 8
+starting_level = 8
 -- Levels
 LVL = {
 	{
@@ -551,17 +354,207 @@ Game={
 }
 
 
-function SetMode(m)
-	if m == M.TITLE then
-		 music(0) 
-	elseif m == M.GAMEWIN then
-		music(1)		
+TICF={
+	[M.BOOT]=Boot,
+	[M.TITLE]=TitleTic,	
+	[M.PLAY]=PlayTic,	
+	[M.GAMEOVER]=GameOverTic,
+	[M.GAMEWIN]=GameWinTic,	
+}
+
+-- ELEMENTS
+
+wall={
+	init=function(self,x0,y0)
+		self.x0=x0
+		self.x1=x0 + 183
+		self.y0=y0
+		self.y1=y0+127		
+		self.w =self.x1-self.x0+1
+		self.h =self.y1-self.y0+1		
+	end	
+}
+
+
+ball={}
+function ball:new(x,y,r,dx,dy,c)
+	local newball= {}
+	setmetatable(newball, self)
+	self.__index=self	
+	newball.x =x
+	newball.y =y
+	newball.r =r -- 2
+	newball.dx=dx
+	newball.dy=dy		
+	newball.c =c
+	return newball
+end
+function ball:draw()			
+	circ(self.x,self.y,self.r,self.c)			
+end		
+
+pad={
+	init=function(self,x,y,w,sp,ac,c)
+		self.x =x
+		self.y =y
+		self.w =w --30
+		self.h =5
+		self.sp=sp
+		self.ac=ac --acceleration
+		self.dx=0
+		self.tw=w --target width			
+	end,
+	start_direction=1,	
+	draw=function(self)
+		spr(1, self.x-1, self.y, 0, 1, 0)
+		spr(1, self.x+self.w-7, self.y, 0, 1, 1)
+		rect(self.x+7,self.y,self.w-14,self.h,12)
+		line(self.x+4,self.y+self.h-1,self.x+self.w-5,self.y+self.h-1,11)		
+	end,
+	draw_dir=function(self, a)
+		local delay1 = (time()/100)%8
+		local delay2 = ((time()+400)/100)%8		
+		pix(self.x+(self.w/2)+(4*self.start_direction)+(delay1*self.start_direction),self.y-7-delay1,12)
+		pix(self.x+(self.w/2)+(4*self.start_direction)+(delay2*self.start_direction),self.y-7-delay2,12)					
 	end
-	Game.m=m
+}
+
+brick_c={{7,6,5},{8,9,10},{2,3,4},{1,2,3},{14,13,12}} --brick colors
+brick={}	
+function brick:new(x,y,t,id)
+	local newbrick = {}
+	setmetatable(newbrick, self)
+	self.__index=self
+	newbrick.x=x
+	newbrick.y=y
+	newbrick.w=14
+	newbrick.h=5
+	newbrick.c=brick_c[t]		
+	newbrick.t=t
+	newbrick.gw=1
+	if newbrick.t > 0 then
+		newbrick.v=true
+	else
+		newbrick.v=false
+	end
+
+	newbrick.id=id
+	return newbrick		
+end
+function brick:draw()
+	if self.v then
+		if self.t < 6 then			
+			rect(self.x,self.y,self.w,self.h,self.c[3])
+			rect(self.x+1,self.y+1,self.w-2,self.h-2,self.c[2])
+			line(self.x+1,self.y+self.h-1,self.x+self.w-1,self.y+self.h-1,self.c[1])
+			line(self.x+self.w-1,self.y+1,self.x+self.w-1,self.y+self.h-1,self.c[1])
+			rect(self.x+self.w-1,self.y,1,1,self.c[2])
+			rect(self.x,self.y+self.h-1,1,1,self.c[2])	
+		elseif self.t == 6 then
+			spr(3, self.x-1, self.y, 15)
+			spr(4, self.x+7, self.y, 15)		
+		end	
+		
+	end
+	if self.gw>0 then
+		rect(self.x,self.y,self.w,self.h,12)			
+		self.gw=self.gw-1
+	end
 end
 
-local FPS={value=0,frames=0,lastTime=-1000} -- cuidado al moverlo
+-- POWERUPS
+pws={} --powerups array
+powerup={}
+function powerup:new(x,y,pw)
+	local newpowerup = {}
+	setmetatable(newpowerup, self)
+	self.__index=self	
+	newpowerup.x =x
+	newpowerup.y =y
+	newpowerup.r =3		
+	newpowerup.dy=0.5
+	newpowerup.dx=0	
+	newpowerup.pw=pw
+	table.insert(pws,newpowerup)
+end
+	
+function powerup:draw()	
+	spr(16+self.pw,self.x-self.r,self.y-self.r,0)			
+end	
 
+function pws:update()
+	local to_remove = {}
+	for i=#self,1,-1 do
+		self[i].y=self[i].y+self[i].dy
+		if colCircRect(self[i], pad)>0 then
+			sfx(3, -1,-1,1)
+			if self[i].pw==0 then -- POWER five extra life
+				if Player.lives<6 then
+					Player.lives=Player.lives+1
+				end
+			elseif self[i].pw==1 then -- POWER give two balls
+				if #balls < 8	then
+					local rate = 1
+					if #balls == 1 then rate = 2 end
+					for iball=#balls,1,-1 do
+						for _=1,rate do 
+							local newball = ball:new(
+								balls[iball].x+math.random(),
+								balls[iball].y+math.random(),
+								balls[iball].r,
+								balls[iball].dx*((math.random(0, 1) == 0) and -1 or 1)*math.random(),
+								((math.random(0, 1) == 0) and -1 or 1),
+								11
+							)
+							table.insert(balls, newball)							
+						end
+					end
+				end
+			elseif self[i].pw==2 then -- POWER increase pad
+				STAGE.pad_size_time = time()+30000
+				if pad.tw < 46	then 
+					pad.tw=pad.tw+8					
+				end	
+			elseif self[i].pw==3 then -- POWER decrease pad
+				STAGE.pad_size_time = time()+30000
+				if pad.tw > 14	then 
+					pad.tw=pad.tw-8					
+				end			
+			elseif self[i].pw==4 then -- POWER increase ball size
+				STAGE.ball_size_time = time()+30000
+				if balls[1].r < 4	then 
+					for i=1, #balls do
+						balls[i].r = balls[i].r + 1
+					end	
+				end
+			elseif self[i].pw==5 then -- POWER reduce ball size
+				STAGE.ball_size_time = time()+30000
+				if balls[1].r > 0	then 
+					for i=1, #balls do
+						balls[i].r = balls[i].r - 1
+					end	
+				end		
+			end
+			table.insert(to_remove, i)
+		end	
+		if self[i].y > 140 then
+			table.insert(to_remove, i)
+		end
+	end
+	if next(to_remove) ~= nil then
+		for i = #to_remove, 1, -1 do
+			table.remove(pws, to_remove[i])
+		end
+	end
+end	
+
+function pws:clear()
+	for i=#self, 1, -1 do		
+		table.remove(pws, i)			
+	end
+end	
+
+FPS={value=0,frames=0,lastTime=-1000} -- cuidado al moverlo
 function FPS:getValue()
   if (time()-self.lastTime <= 1000) then
     self.frames=self.frames+1
@@ -572,6 +565,31 @@ function FPS:getValue()
   end
   return self.value
 end
+
+end -- BOOT
+
+function setStage(diff, level)
+	STAGE=DeepCopy(DEFAULT_STAGE)
+	STAGE.time=STAGE.time
+	STAGE.ball.maxdx=STAGE.ball.maxdx*diff
+	STAGE.ball.maxdy=STAGE.ball.maxdy*diff
+	STAGE.ball.startdx=STAGE.ball.startdx*diff
+	STAGE.ball.startdy=STAGE.ball.startdy*diff
+	STAGE.n=level
+	STAGE.won_time=30
+	STAGE.init_time=time()
+end
+
+function SetMode(m)
+	if m == M.TITLE then
+		 music(0) 
+	elseif m == M.GAMEWIN then
+		music(1)		
+	end
+	Game.m=m
+end
+
+
 
 
 function TIC()
@@ -887,14 +905,6 @@ function gameOver()
 	rectb(0,0,240,136,12)
 end
 
-
-TICF={
-	[M.BOOT]=Boot,
-	[M.TITLE]=TitleTic,	
-	[M.PLAY]=PlayTic,	
-	[M.GAMEOVER]=GameOverTic,
-	[M.GAMEWIN]=GameWinTic,	
-}
 
 function StageInit(level)	
 	setStage(LVL[level].diff,LVL[level].n)	
