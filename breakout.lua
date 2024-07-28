@@ -32,7 +32,7 @@ controller={
 	right = {
 		type='b',
 		pos={
-			x=10,
+			x=90,
 			y=0,
 			r=12,
 			a=0,
@@ -43,7 +43,7 @@ controller={
 	left = {
 		type='b',
 		pos={
-			x=-9,
+			x=-90,
 			y=0,
 			r=12,
 			a=180,
@@ -52,7 +52,7 @@ controller={
 		color=2
 	},
 	pos = {
-		x=214,
+		x=120,
 		y=110	
 	}
 }
@@ -439,7 +439,7 @@ TICF={
 wall={
 	init=function(self,x0,y0)
 		self.x0=x0
-		self.x1=x0 + 183
+		self.x1=x0 + 170
 		self.y0=y0
 		self.y1=y0+127		
 		self.w =self.x1-self.x0+1
@@ -492,7 +492,7 @@ pad={
 	end
 }
 
-brick_c={{7,6,5},{8,9,10},{2,3,4},{1,2,3},{14,13,12}} --brick colors
+brick_c={{7,6,5},{8,9,10},{2,3,4},{1,2,3},{14,13,12},{0,14,13}} --brick colors
 brick={}	
 function brick:new(x,y,t,id)
 	local newbrick = {}
@@ -500,7 +500,7 @@ function brick:new(x,y,t,id)
 	self.__index=self
 	newbrick.x=x
 	newbrick.y=y
-	newbrick.w=14
+	newbrick.w=13
 	newbrick.h=5
 	newbrick.c=brick_c[t]		
 	newbrick.t=t
@@ -524,8 +524,14 @@ function brick:draw()
 			rect(self.x+self.w-1,self.y,1,1,self.c[2])
 			rect(self.x,self.y+self.h-1,1,1,self.c[2])	
 		elseif self.t == 6 then
-			spr(3, self.x-1, self.y, 15)
-			spr(4, self.x+7, self.y, 15)		
+			rect(self.x,self.y,self.w,self.h,self.c[3])
+			rect(self.x+1,self.y+1,self.w-2,self.h-2,self.c[2])
+			line(self.x+1,self.y+self.h-1,self.x+self.w-1,self.y+self.h-1,self.c[1])
+			line(self.x+self.w-1,self.y+1,self.x+self.w-1,self.y+self.h-1,self.c[1])
+			rect(self.x+self.w-1,self.y,1,1,self.c[2])
+			rect(self.x,self.y+self.h-1,1,1,self.c[2])					
+			spr(6,self.x+4,self.y,0)
+			
 		end	
 		
 	end
@@ -670,7 +676,7 @@ function TIC()
 	--DEBUG
 	--rect(200-2,129-2,60,9,14)
 	--PrintShadow("FPS: "..FPS:getValue(),200,129,12,nil,1,1)		
-	poke(0x3FFB,0)
+	-- poke(0x3FFB,0)
 end
 
 
@@ -692,7 +698,7 @@ function TitleTic()
 
 	if input(BTN.ACTION) then
 		Player.points = 0
-		Player.lives = 2
+		Player.lives = 6
 		Player.hscore = pmem(1)
 		StageInit(starting_level)
 		music()	
@@ -981,7 +987,7 @@ end
 
 function StageInit(level)	
 	setStage(LVL[level].diff,LVL[level].n)	
-	wall:init(4,4)	
+	wall:init(34,4)	
 	pad:init(50,120,30,4,0.4)
 	pws:clear()	
 
@@ -990,7 +996,7 @@ function StageInit(level)
 	for i=1,17 do
 		for j = 1,13 do			
 			local newbrick=brick:new(
-				wall.x0+1+j*14-14,
+				wall.x0+1+j*13-13,
 				wall.y0+1+i*5-5,
 				LVL[level].map[i][j],
 				{i,j})
@@ -1185,6 +1191,16 @@ end
 ---- UI
 -- Draw
 
+function draw_bevel(left,right,top,botton)
+	rect(left,top,right-left,botton-top, 15)
+	line(left,botton,right,botton,12)
+	line(right,top,right,botton,12)
+	line(left,top,right,top,00)
+	line(left,top,left,botton,00)	
+	pix(left,botton, 15)
+	pix(right,top, 15)
+end
+
 function DrawUI()		
 	--playground bevel
 	line(wall.x0,wall.y1,wall.x1,wall.y1,12)
@@ -1196,52 +1212,42 @@ function DrawUI()
 	pix(wall.x1,wall.y0, 15)
 	rect(0,wall.y1+1,240,136, 13) -- botton ui for hiding ball	
 	
-	-- margins
-	local left_margin = wall.x1+4
-	local right_margin = 240-4
+	local info_y0 = 4
+	local info_y1 = 50
 
-	--info bevel
-	local info_top = 35
-	local info_botton = 80
+	-- info left	
+	local left_x0 = 1
+	local left_x1 = wall.x0-2
 
-	rect(left_margin,info_top,right_margin-left_margin,info_botton-info_top, 15)
-	line(left_margin,info_botton,right_margin,info_botton,12)
-	line(right_margin,info_top,right_margin,info_botton,12)
-	line(left_margin,info_top,right_margin,info_top,00)
-	line(left_margin,info_top,left_margin,info_botton,00)	
-	pix(left_margin,info_botton, 15)
-	pix(right_margin,info_top, 15)
+	draw_bevel(left_x0,left_x1,info_y0,info_y1)
 	
-	print("LIVES ",left_margin+3,info_top+3,12)
+	
+	print("LIVES ",left_x0+2,info_y0+3,12)
 	for i=0,Player.lives-1 do
-		circ(left_margin+3+2+i*7,info_top+12,2,4)
+		circ(left_x0+3+1+i*7-(i//3)*21,info_y0+12+(i//3)*7,2,4)
 	end
-	print("TIME ",left_margin+3,info_top+17,12)
+	
+	print("TIME ",left_x0+2,info_y0+28,12)
 	local time_c = 4
-	print(math.floor(STAGE.time/60),left_margin+3,info_top+24,time_c)
+	print(math.floor(STAGE.time/60),left_x0+3,info_y0+35,time_c)
 
-	print("POINTS ",left_margin+3,info_top+31,12)
-	print(Player.points,left_margin+3,info_top+38,4)
+	-- info right
+	local right_x0 = wall.x1+2
+	local right_x1 = 240-2
 
-	--top bevel
-	local info_top = 4
-	local info_botton = 30
-	rect(left_margin,info_top,right_margin-left_margin,info_botton-info_top, 15)
-	line(left_margin,info_botton,right_margin,info_botton,12)
-	line(right_margin,info_top,right_margin,info_botton,12)
-	line(left_margin,info_top,right_margin,info_top,00)
-	line(left_margin,info_top,left_margin,info_botton,00)	
-	pix(left_margin,info_botton, 15)
-	pix(right_margin,info_top, 15)	
+	draw_bevel(right_x0,right_x1,info_y0,info_y1)
 
-	print("HIGH",left_margin+3,info_top+3,12)
-	print("SCORE",left_margin+3,info_top+9,12)
-	print(Player.hscore,left_margin+3,info_top+18,4)
+	print("HIGH",right_x0+2,info_y0+3,12)
+	print("SCORE",right_x0+2,info_y0+9,12)
+	print(Player.hscore,right_x0+2,info_y0+16,4)
+
+	print("SCORE ",right_x0+2,info_y0+28,12)
+	print(Player.points,right_x0+2,info_y0+35,4)
 
 	-- controller label
-	print("<-move->",left_margin+3,87,14)
+	-- print("<-move->",left_margin+3,87,14)
 
-	drawcontroller(controller,x,y)
+	drawcontroller(controller)
 end
 
 
@@ -1292,8 +1298,8 @@ function drawbutton(b,xo,yo)
 		line(x0,y0,x0,y1,00)	
 		pix(x0,y1, 15)
 		pix(x1,y0, 15)
-		tric(b.pos.x+xo,b.pos.y+1+yo,b.pos.r, b.pos.a, 15)
-		tric(b.pos.x+xo,b.pos.y+1+yo,b.pos.r, b.pos.a,b.color)
+		tric(xo,1+yo,b.pos.r, b.pos.a, 15)
+		tric(xo,1+yo,b.pos.r, b.pos.a,b.color)
 	else
 		line(x0,y1,x1,y1,00)
 		line(x1,y0,x1,y1,00)
@@ -1301,8 +1307,8 @@ function drawbutton(b,xo,yo)
 		line(x0,y0,x0,y1,12)	
 		pix(x0,y1, 15)
 		pix(x1,y0, 15)
-		tric(b.pos.x+xo,b.pos.y+1+yo,b.pos.r, b.pos.a, 15)
-		tric(b.pos.x+xo,b.pos.y+yo,b.pos.r, b.pos.a,b.color)	
+		tric(xo+sign(b.pos.x)*b.pos.r-sign(b.pos.x),1+yo,b.pos.r, b.pos.a, 15)
+		tric(xo+sign(b.pos.x)*b.pos.r-sign(b.pos.x),yo,b.pos.r, b.pos.a,b.color)	
 	end	
 	line(xo,y0,xo,y1,15)
 end
@@ -1322,7 +1328,7 @@ function drawcontroller(con)
 	local yo = controller.pos.y
 	for k,v in pairs(controller) do
 		if v.type == 'b' then
-			drawbutton(v,xo,yo)			
+			drawbutton(v,v.pos.x+xo,v.pos.y+yo)			
 		end
 	end
 end
@@ -1401,9 +1407,6 @@ function input(option)
 end
 
 
-
-
-
 -- util
 
 function DeepCopy(t)
@@ -1439,6 +1442,11 @@ function PrintShadow(message,x,y,color,gap,size,smallmode)
 	print(message,x,y-1,color,gap,size,smallmode)
 end
 
+function sign(v)
+	return v>0 and 1 or
+		v<0 and -1 or 0
+end
+
 -- TODO finish
 function tric(x,y,r,a,c)	
 	local t = getTriPoints(x,y,r,a) 
@@ -1469,6 +1477,7 @@ end
 -- 003:fddddddafdeeeeabfdeeeabcfdeeeeabfe00000affffffffffffffffffffffff
 -- 004:adddddefbaeeee0fcbaeee0fbaeeee0fa000000fffffffffffffffffffffffff
 -- 005:0000dccd0000dccd0000dccd0000dccd0000dccd0000dccd0000dccd0000dccd
+-- 006:00a000000aba0000abcba0000aba000000a00000000000000000000000000000
 -- 016:0055500005666600566c667066ccc670666c6670066667000077700000000000
 -- 017:0055500005666600566c66706666667066c6c670066667000077700000000000
 -- 018:0055500005666600566666706ccccc7066666670066667000077700000000000
