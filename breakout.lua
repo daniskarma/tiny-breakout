@@ -75,7 +75,7 @@ DEFAULT_STAGE={
 	n=0,		
 	time=255*60, --current stage time 
 	ball={
-		maxdx=1.5,
+		maxdx=1.3,
 		maxdy=1,
 		startdx=1,
 		startdy=1,
@@ -86,7 +86,12 @@ DEFAULT_STAGE={
 	pad_size_time=0,
 	hit_time_zero=false,
 	micro_points=0,
-	diff=1
+	diff=1,
+	bonus=1,
+	bonus_time=0,
+	confusion=1,
+	confusion_time=0,
+	barrier_time=0
 }
 STAGE={}
 
@@ -140,8 +145,10 @@ LVL = {
 	{
 	title="Sectors of my mind",
 	map={
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{3,6,3,6,3,6,3,6,3,6,3,6,3},
-		{3,3,3,3,3,3,3,3,3,3,3,3,3},
 		{3,3,3,3,3,3,3,3,3,3,3,3,3},
 		{2,2,2,2,2,2,2,2,2,2,2,2,2},
 		{2,2,2,2,2,2,2,2,2,2,2,2,2},	
@@ -151,10 +158,8 @@ LVL = {
 		{1,0,1,0,1,0,1,0,1,0,1,0,1},
 		{0,1,0,1,0,1,0,1,0,1,0,1,0},
 		{1,0,1,0,1,0,1,0,1,0,1,0,1},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0}		
 		}
@@ -293,6 +298,7 @@ LVL = {
 	},
 	{
 	title="Rainbow inside me",
+	-- TODO try other type of rainbow, es un poco feo a la vista este
 	map={	
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,6,0,6,0,6,0,6,0,6,0,6,0},	
@@ -308,7 +314,7 @@ LVL = {
 		{4,3,2,1,2,3,4,3,2,1,2,3,4},
 		{3,2,1,2,3,4,3,2,1,2,3,4,3},	
 		{2,1,2,3,4,3,2,1,2,3,4,3,2},
-		{1,2,3,4,3,2,1,2,3,4,3,2,1},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},				
 		}
@@ -402,7 +408,7 @@ LVL = {
 		}
 	},
 	{
-	title="My old big ROM", -- weird collisions
+	title="My old big ROM", 
 	map={
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -517,7 +523,7 @@ end
 function ball:draw()			
 	circ(self.x,self.y,self.r,self.c)			
 end		
-
+ -- paddle
 pad={
 	init=function(self,x,y,w,sp,ac,c)
 		self.x =x
@@ -534,7 +540,17 @@ pad={
 		spr(1, self.x-1, self.y, 0, 1, 0)
 		spr(1, self.x+self.w-7, self.y, 0, 1, 1)
 		rect(self.x+7,self.y,self.w-14,self.h,12)
-		line(self.x+4,self.y+self.h-1,self.x+self.w-5,self.y+self.h-1,11)		
+		line(self.x+4,self.y+self.h-1,self.x+self.w-5,self.y+self.h-1,11)	
+		if STAGE.confusion == -1 then
+			local center = self.x+self.w/2
+			local left = self.x+4
+			local right = self.x+self.w-4
+			local _y = self.y+self.h-1
+			local h_lenght = (right-left)/2
+			local time_left = 1-((STAGE.confusion_time-time())/20000)
+			line(left+h_lenght*time_left,_y,center,_y,1)
+			line(center,_y,right-h_lenght*time_left,_y,1)
+		end		
 	end,
 	draw_dir=function(self, a)
 		local delay1 = (time()/100)%8
@@ -623,7 +639,7 @@ function pws:update()
 				if Player.lives < 8 then
 					Player.lives = Player.lives + 1
 				else
-					Player.points = Player.points + 50
+					Player.points = Player.points + 50 * STAGE.bonus	
 				end
 			elseif self[i].pw==1 then -- POWER give two balls
 				if #balls < 8	then
@@ -667,7 +683,18 @@ function pws:update()
 						balls[i].r = balls[i].r - 1
 					end	
 				end		
+			elseif self[i].pw==6 then -- POWER give time
+				STAGE.time = STAGE.time + 10 * 60
+			elseif self[i].pw==7 then -- POWER reduce time
+				STAGE.time = STAGE.time - 10 * 60
+			elseif self[i].pw==8 then -- POWER double bonus score
+				STAGE.bonus_time = time()+30000				
+			elseif self[i].pw==9 then -- POWER confuse player inverting directions
+				STAGE.confusion_time = time()+20000	
+			elseif self[i].pw==10 then -- POWER botton barrier
+				STAGE.barrier_time = time()+30000					
 			end
+			-- TODO make times globla variables
 			table.insert(to_remove, i)
 		end	
 		if self[i].y > 140 then
@@ -705,7 +732,7 @@ function setStage(level)
 	STAGE=DeepCopy(DEFAULT_STAGE)
 	STAGE.diff=1+0.5*((level-1)/#LVL)
 	STAGE.time=((level >= 8) and 255 or 127) *60
-	STAGE.ball.maxdx=STAGE.ball.maxdx*STAGE.diff
+	STAGE.ball.maxdx=STAGE.ball.maxdx*(1+STAGE.diff/2)
 	STAGE.ball.maxdy=STAGE.ball.maxdy*STAGE.diff
 	STAGE.ball.startdx=STAGE.ball.startdx*STAGE.diff
 	STAGE.ball.startdy=STAGE.ball.startdy*STAGE.diff
@@ -716,18 +743,16 @@ end
 
 function SetMode(m)
 	if m == M.TITLE then
-		 music(0) 
+		--music(0) 
 	elseif m == M.GAMEWIN then
-		music(2)	
+		--music(2)	
 	elseif m == M.GAMEOVER then
-		music(3)	
+		--music(3)	
 	elseif m == M.PLAY then
-		music(1)		
+		-- music(1)		
 	end
 	Game.m=m
 end
-
-
 
 
 function TIC()
@@ -860,7 +885,7 @@ function PlayTic()
 	if math.abs(pad.dx)<0.01 then
 		pad.dx=0
 	end -- kill speed
-	pad.x=pad.x+pad.dx --move paddle
+	pad.x=pad.x+pad.dx*STAGE.confusion --move paddle
 	pad.x=math.floor(pad.x+0.5)--smooth movement
 		
 	-- collision paddle walls
@@ -878,6 +903,13 @@ function PlayTic()
 		-- balls size
 		if STAGE.ball_size_time < time() then
 			balls[i].r = 2
+		end
+
+		-- balls color
+		if STAGE.bonus_time < time() then
+			balls[i].c = 11
+		else
+			balls[i].c = 4
 		end
 
 		-- ball launch	
@@ -915,6 +947,15 @@ function PlayTic()
 			balls[i].dy=math.abs(balls[i].dy)
 			sfx(48)
 		end	
+
+		-- barrier
+		if STAGE.barrier_time > time() then
+			if balls[i].y>wall.y1-9-balls[i].r then -- up
+				balls[i].y = wall.y1-9-balls[i].r+1
+				balls[i].dy=-math.abs(balls[i].dy)
+				sfx(48)
+			end	
+		end
 		
 		-- ball move with pad
 		if not is_launchball then
@@ -953,12 +994,24 @@ function PlayTic()
 
 	if STAGE.time < 0 then
 		STAGE.micro_points = STAGE.micro_points + 1 * STAGE.diff
-		if STAGE.micro_points >= 300 then
+		if STAGE.micro_points >= 60 then
 			Player.points = Player.points - 1
 			STAGE.micro_points = 0
 		end
 		STAGE.time = 0
 	end	
+
+	if STAGE.bonus_time < time() then
+		STAGE.bonus = 1
+	else
+		STAGE.bonus = 2
+	end
+
+	if STAGE.confusion_time < time() then
+		STAGE.confusion = 1
+	else
+		STAGE.confusion = -1
+	end
 	
 
 	-- LEVEL WIN	
@@ -977,6 +1030,10 @@ function PlayTic()
 	if #balls < 1 then
 		Player.lives = Player.lives - 1	
 		Player.points = Player.points - 50
+		STAGE.confusion_time = 0
+		STAGE.bonus_time = 0
+		STAGE.pad_size_time = 0
+		STAGE.barrier_time = 0
 		if Player.lives < 0 then 
 			sfx(49)
 			SetMode(M.GAMEOVER) 
@@ -994,6 +1051,16 @@ function PlayTic()
 	rect(wall.x0,wall.y0,wall.w,wall.h,15) -- play background	
 	--shadow botton	
 	line(wall.x0+1,wall.y1-1,wall.x1-1,wall.y1-1,00)
+
+	-- barrier
+	if STAGE.barrier_time > time() then
+		if STAGE.barrier_time > time() + 3000 then
+			line(wall.x0+1,wall.y1-8,wall.x1-1,wall.y1-8,11)
+		else
+			line(wall.x0+1,wall.y1-8,wall.x1-1,wall.y1-8,((time()//300)%2==0) and 11 or 15)			
+		end
+	end
+
 
 	for i=wall.x0+1,wall.x1-1 do
 		if i%2 == 0 then
@@ -1067,7 +1134,7 @@ end
 function StageInit(level)	
 	setStage(level)	
 	wall:init(34,4)	
-	pad:init(50,120,30,4,0.4)
+	pad:init(50,118,30,4,0.4)
 	pws:clear()	
 
 	bricks = {}
@@ -1208,18 +1275,20 @@ function colBallBrick(ball, br)
 		sfx(48,"D-7")
 		br.t = br.t - 1
 		br.c = brick_c[br.t]	
-		Player.points = Player.points + 1		
+		Player.points = Player.points + 1 * STAGE.bonus		
 	elseif br.t==1 then
 		sfx(48,"D-7")
 		br.v=false
 		local pwchance = math.random(0,14)
-		if pwchance == 0 then
-			pwchance = pwchance + math.random(0,1)
-		end	
-		if pwchance < 6 then
+		if pwchance == 0 then			
+			pwchance = (math.random(0, 1) == 0) and pwchance or 20
+		elseif pwchance == 8 or pwchance == 9 or pwchance == 10 then	
+			pwchance = (math.random(0, 2) == 0) and pwchance or 20
+		end			
+		if pwchance < 11 then
 			powerup:new(br.x+br.w/2,br.y+br.h/2,pwchance)
 		end
-		Player.points = Player.points + 1	
+		Player.points = Player.points + 1 * STAGE.bonus		
 	elseif br.t == 5 then
 		sfx(48)
 		ball.stuck_c = ball.stuck_c + 1
@@ -1232,7 +1301,7 @@ function colBallBrick(ball, br)
 	elseif br.t == 6 then
 		sfx(52,"C-4",-1,3,6)
 		br.v=false
-		Player.points=Player.points + 5
+		Player.points=Player.points + 5 * STAGE.bonus
 		STAGE.energy_bricks=STAGE.energy_bricks-1
 		Explode(br.x,br.y)
 		br.gw=6			
@@ -1559,6 +1628,11 @@ end
 -- 019:00333000032222003222228022ccc28022222280022228000088800000000000
 -- 020:0055500005ccc6005ccccc706ccccc706ccccc7006ccc7000077700000000000
 -- 021:003330000322220032222280222c228022222280022228000088800000000000
+-- 022:0055500005ccc60056ccc670666c667066ccc67006ccc7000077700000000000
+-- 023:0033300003ccc20032ccc280222c228022ccc28002ccc8000088800000000000
+-- 024:0044400004ccc3004333c32033ccc32033c3332003ccc2000022200000000000
+-- 025:00999000091cc10091c11c80111c1c801c111c8001ccc8000088800000000000
+-- 026:00bbb0000baaaa00baaaaa90ccccccc0aaaaaa900aaaa9000099900000000000
 -- 049:0000000004444000044444400440444006600660066666000990099009909990
 -- 050:0000000000444400044444400440044006600660066666600999990009900990
 -- 051:0000000004444000044440040044000400660006006600060099000900990009
