@@ -11,11 +11,14 @@
 -- TODO
 	-- para publicar cambiar saveid
 	-- normalizar nombres (snake_case, upper, CamelCase...)
+	-- añadir continue
+	-- añadir true ending
+	-- check error outof bound en poweroups al coger varios o coger y terminar la bola al final
 
  
 
 function BOOT() 
-
+starting_level = 1 -- debug
 math.randomseed(tstamp())
 
 -- input constants
@@ -75,7 +78,7 @@ DEFAULT_STAGE={
 	n=0,		
 	time=255*60, --current stage time 
 	ball={
-		maxdx=1.3,
+		maxdx=1.2,
 		maxdy=1,
 		startdx=1,
 		startdy=1,
@@ -91,11 +94,12 @@ DEFAULT_STAGE={
 	bonus_time=0,
 	confusion=1,
 	confusion_time=0,
+	barrier=false,
 	barrier_time=0
 }
 STAGE={}
 
-starting_level = 1
+
 -- Levels
 LVL = {
 	{
@@ -302,35 +306,54 @@ LVL = {
 	map={	
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,6,0,6,0,6,0,6,0,6,0,6,0},	
-		{1,2,3,4,3,2,1,2,3,4,3,2,1},
-		{2,3,4,3,2,1,2,3,4,3,2,1,2},	
-		{3,4,3,2,1,2,3,4,3,2,1,2,3},
-		{4,3,2,1,2,3,4,3,2,1,2,3,4},
-		{3,2,1,2,3,4,3,2,1,2,3,4,3},	
-		{2,1,2,3,4,3,2,1,2,3,4,3,2},
-		{1,2,3,4,3,2,1,2,3,4,3,2,1},
-		{2,3,4,3,2,1,2,3,4,3,2,1,2},	
-		{3,4,3,2,1,2,3,4,3,2,1,2,3},
-		{4,3,2,1,2,3,4,3,2,1,2,3,4},
-		{3,2,1,2,3,4,3,2,1,2,3,4,3},	
-		{2,1,2,3,4,3,2,1,2,3,4,3,2},
+		{1,2,3,4,1,2,3,4,1,2,3,4,1},
+		{2,3,4,1,2,3,4,1,2,3,4,1,2},	
+		{3,4,1,2,3,4,1,2,3,4,1,2,3},
+		{4,1,2,3,4,1,2,3,4,1,2,3,4},
+		{1,2,3,4,1,2,3,4,1,2,3,4,1},
+		{2,3,4,1,2,3,4,1,2,3,4,1,2},	
+		{3,4,1,2,3,4,1,2,3,4,1,2,3},
+		{4,1,2,3,4,1,2,3,4,1,2,3,4},	
+		{1,2,3,4,1,2,3,4,1,2,3,4,1},
+		{2,3,4,1,2,3,4,1,2,3,4,1,2},	
+		{3,4,1,2,3,4,1,2,3,4,1,2,3},
+		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},				
 		}
+	-- map={	
+	-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},
+	-- 	{0,6,0,6,0,6,0,6,0,6,0,6,0},	
+	-- 	{1,2,3,4,3,2,1,2,3,4,3,2,1},
+	-- 	{2,3,4,3,2,1,2,3,4,3,2,1,2},	
+	-- 	{3,4,3,2,1,2,3,4,3,2,1,2,3},
+	-- 	{4,3,2,1,2,3,4,3,2,1,2,3,4},
+	-- 	{3,2,1,2,3,4,3,2,1,2,3,4,3},	
+	-- 	{2,1,2,3,4,3,2,1,2,3,4,3,2},
+	-- 	{1,2,3,4,3,2,1,2,3,4,3,2,1},
+	-- 	{2,3,4,3,2,1,2,3,4,3,2,1,2},	
+	-- 	{3,4,3,2,1,2,3,4,3,2,1,2,3},
+	-- 	{4,3,2,1,2,3,4,3,2,1,2,3,4},
+	-- 	{3,2,1,2,3,4,3,2,1,2,3,4,3},	
+	-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},
+	-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},
+	-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},
+	-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},				
+	-- 	}
 	},
 	{
-	title="My clock is made out of glass",
+	title="Primitive clock",
 	map={	
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{3,3,3,3,3,3,3,3,3,3,3,3,3},
-		{0,3,3,3,3,3,3,3,3,3,3,3,0},
+		{0,3,6,3,3,3,6,3,3,3,6,3,0},
 		{0,0,3,3,3,3,3,3,3,3,3,0,0},
-		{0,0,0,3,3,6,3,6,3,3,0,0,0},
+		{0,0,0,3,3,3,3,3,3,3,0,0,0},
 		{0,0,0,0,3,3,3,3,3,0,0,0,0},
-		{0,0,0,0,0,3,6,3,0,0,0,0,0},
-		{0,0,0,0,0,0,3,0,0,0,0,0,0},
+		{0,0,0,0,0,3,3,3,0,0,0,0,0},
+		{0,0,0,0,0,0,6,0,0,0,0,0,0},
 		{0,0,0,0,0,3,3,3,0,0,0,0,0},
 		{0,0,0,0,3,3,3,3,3,0,0,0,0},
 		{0,0,0,3,3,3,3,3,3,3,0,0,0},	
@@ -345,21 +368,21 @@ LVL = {
 	title="The Chaos Machine",
 	map={		
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,5,4,5,0,0,0,0,0,5,4,5,0},	
+		{0,4,4,4,0,0,0,0,0,4,4,4,0},	
 		{0,4,6,4,0,0,0,0,0,4,6,4,0},
-		{0,5,4,5,0,0,0,0,0,5,4,5,0},
+		{0,4,4,4,0,0,0,0,0,4,4,4,0},
 		{0,0,0,0,0,5,4,5,0,0,0,0,0},	
 		{0,0,0,0,0,4,6,4,0,0,0,0,0},	
 		{0,0,0,0,0,5,4,5,0,0,0,0,0},
-		{0,5,4,5,0,0,0,0,0,5,4,5,0},	
+		{0,4,4,4,0,0,0,0,0,4,4,4,0},	
 		{0,4,6,4,0,0,0,0,0,4,6,4,0},
-		{0,5,4,5,0,0,0,0,0,5,4,5,0},	
-		{0,0,0,0,0,5,4,5,0,0,0,0,0},	
+		{0,4,4,4,0,0,0,0,0,4,4,4,0},	
+		{0,0,0,0,0,4,4,4,0,0,0,0,0},	
 		{0,0,0,0,0,4,6,4,0,0,0,0,0},
-		{0,0,0,0,0,5,4,5,0,0,0,0,0},
-		{0,5,4,5,0,0,0,0,0,5,4,5,0},	
+		{0,0,0,0,0,4,4,4,0,0,0,0,0},
+		{0,4,4,4,0,0,0,0,0,4,4,4,0},	
 		{0,4,6,4,0,0,0,0,0,4,6,4,0},
-		{0,5,4,5,0,0,0,0,0,5,4,5,0},
+		{0,4,4,4,0,0,0,0,0,4,4,4,0},
 		{0,0,0,0,0,0,0,0,0,0,0,0,0},		
 		}
 	},
@@ -547,7 +570,7 @@ pad={
 			local right = self.x+self.w-4
 			local _y = self.y+self.h-1
 			local h_lenght = (right-left)/2
-			local time_left = 1-((STAGE.confusion_time-time())/20000)
+			local time_left = 1-(STAGE.confusion_time/(10*60))
 			line(left+h_lenght*time_left,_y,center,_y,1)
 			line(center,_y,right-h_lenght*time_left,_y,1)
 		end		
@@ -688,11 +711,11 @@ function pws:update()
 			elseif self[i].pw==7 then -- POWER reduce time
 				STAGE.time = STAGE.time - 10 * 60
 			elseif self[i].pw==8 then -- POWER double bonus score
-				STAGE.bonus_time = time()+30000				
+				STAGE.bonus_time = 20*60			
 			elseif self[i].pw==9 then -- POWER confuse player inverting directions
-				STAGE.confusion_time = time()+20000	
+				STAGE.confusion_time = 10*60	
 			elseif self[i].pw==10 then -- POWER botton barrier
-				STAGE.barrier_time = time()+30000					
+				STAGE.barrier_time = 15*60					
 			end
 			-- TODO make times globla variables
 			table.insert(to_remove, i)
@@ -703,7 +726,7 @@ function pws:update()
 	end
 	if next(to_remove) ~= nil then
 		for i = #to_remove, 1, -1 do
-			table.remove(pws, to_remove[i])
+			table.remove(pws, to_remove[i]) -- TODO aqui al coger muchos power up seguidos me ha dado un error outofbounds
 		end
 	end
 end	
@@ -906,10 +929,10 @@ function PlayTic()
 		end
 
 		-- balls color
-		if STAGE.bonus_time < time() then
-			balls[i].c = 11
-		else
+		if STAGE.bonus_time > 0 then
 			balls[i].c = 4
+		else
+			balls[i].c = 11
 		end
 
 		-- ball launch	
@@ -949,7 +972,7 @@ function PlayTic()
 		end	
 
 		-- barrier
-		if STAGE.barrier_time > time() then
+		if STAGE.barrier then
 			if balls[i].y>wall.y1-9-balls[i].r then -- up
 				balls[i].y = wall.y1-9-balls[i].r+1
 				balls[i].dy=-math.abs(balls[i].dy)
@@ -1001,16 +1024,25 @@ function PlayTic()
 		STAGE.time = 0
 	end	
 
-	if STAGE.bonus_time < time() then
-		STAGE.bonus = 1
-	else
+	if STAGE.bonus_time > 0 then
 		STAGE.bonus = 2
+		STAGE.bonus_time = STAGE.bonus_time - 1
+	else
+		STAGE.bonus = 1
 	end
 
-	if STAGE.confusion_time < time() then
-		STAGE.confusion = 1
-	else
+	if STAGE.confusion_time > 0 then
 		STAGE.confusion = -1
+		STAGE.confusion_time = STAGE.confusion_time - 1
+	else
+		STAGE.confusion = 1
+	end
+
+	if STAGE.barrier_time > 0 then
+		STAGE.barrier = true
+		STAGE.barrier_time = STAGE.barrier_time - 1
+	else
+		STAGE.barrier = false
 	end
 	
 
@@ -1053,8 +1085,8 @@ function PlayTic()
 	line(wall.x0+1,wall.y1-1,wall.x1-1,wall.y1-1,00)
 
 	-- barrier
-	if STAGE.barrier_time > time() then
-		if STAGE.barrier_time > time() + 3000 then
+	if STAGE.barrier then
+		if STAGE.barrier_time > 0 + (3 * 60) then
 			line(wall.x0+1,wall.y1-8,wall.x1-1,wall.y1-8,11)
 		else
 			line(wall.x0+1,wall.y1-8,wall.x1-1,wall.y1-8,((time()//300)%2==0) and 11 or 15)			
