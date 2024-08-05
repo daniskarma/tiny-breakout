@@ -770,6 +770,10 @@ function SetMode(m)
 	elseif m == M.GAMEWIN then
 		--music(2)	
 	elseif m == M.GAMEOVER then
+		continue={
+			level=STAGE.n,
+			is_yes=false
+		}
 		--music(3)	
 	elseif m == M.PLAY then
 		-- music(1)		
@@ -814,10 +818,48 @@ function TitleTic()
 end
 
 function GameOverTic()
+	-- update
+	if input(BTN.RIGHT) then
+		continue.is_yes = true
+ 	end	
+	if input(BTN.LEFT) then
+		continue.is_yes = false
+ 	end	
+
+	if input(BTN.ACTION) then
+		if continue.is_yes then			
+			Player.points = 0
+			Player.lives = 3
+			StageInit(continue.level)
+			SetMode(M.PLAY)
+
+		else
+			pmem(1, Player.hscore)
+			StageInit(1)
+			SetMode(M.TITLE)
+		end
+ 	end	
+
+	-- draw
 	cls()
-	printc("GAME OVER",121,41,14,true, 3)
-	printc("GAME OVER",120,40,12,true, 3)
-	gameEndUpdate()	
+	printc("GAME OVER",121,21,14,true, 3)
+	printc("GAME OVER",120,20,12,true, 3)
+	printc("CONTINUE?",121,91,14,true, 2)
+	printc("CONTINUE?",120,90,12,true, 2)
+	gameEndShowScore()	
+
+	if not continue.is_yes then
+		printc("NO", 120-20, 115, ((time()//500%2) == 0) and 4 or 3)
+	else
+		printc("NO", 120-20, 115, 12)
+	end
+	if  continue.is_yes then
+		printc("YES", 120+20, 115, ((time()//500%2) == 0) and 4 or 3)		
+	else
+		printc("YES", 120+20, 115, 12)
+	end
+
+	rectb(0,0,240,136,12)
 end
 
 function GameWinTic()
@@ -827,28 +869,6 @@ function GameWinTic()
 
 	printc("YOU WON",121,51,14,true, 2)
 	printc("YOU WON",120,50,12,true, 2)
-
-	gameEndUpdate()	
-end
-
-function gameEndUpdate()
-	-- menuda cutrez esta funcion, en general.	
-
-	if Player.points > pmem(1) then		
-		if (time()//500%2) == 0 then 
-			printc("NEW HIGH SCORE!",120,95,4)
-		else
-			printc("NEW HIGH SCORE!",120,95,3)
-		end
-		Player.hscore = Player.points		
-	end
-
-	local padding = 6 - (string.len(tostring(Player.points)))
-	print("YOUR SCORE:"..string.rep(".", padding)..tostring(Player.points),70,75,4,true, 1)
-	print("YOUR SCORE:"..string.rep(".", padding),70,75,12,true, 1)
-	local padding = 6 - (string.len(tostring(Player.hscore)))
-	print("HIGH SCORE:"..string.rep(".", padding)..tostring(Player.hscore),70,82,4,true, 1)
-	print("HIGH SCORE:"..string.rep(".", padding),70,82,12,true, 1)	
 
 	if (time()//500%2) == 0 then 
 		printc("START",120,110,4)
@@ -861,7 +881,29 @@ function gameEndUpdate()
 		StageInit(1)
 		SetMode(M.TITLE)
  	end	
+	gameEndShowScore()	
 	rectb(0,0,240,136,12)
+end
+
+function gameEndShowScore()
+
+	if Player.points > pmem(1) then	
+	--if true then	-- debug
+		if (time()//500%2) == 0 then 
+			printc("NEW HIGH SCORE!",120,50,4)
+		else
+			printc("NEW HIGH SCORE!",120,50,3)
+		end
+		Player.hscore = Player.points		
+	end
+	-- parece un poco descentrado
+	local padding = 6 - (string.len(tostring(Player.points)))
+	print("YOUR SCORE:"..string.rep(".", padding)..tostring(Player.points),70,65,4,true, 1)
+	print("YOUR SCORE:"..string.rep(".", padding),70,65,12,true, 1)
+	local padding = 6 - (string.len(tostring(Player.hscore)))
+	print("HIGH SCORE:"..string.rep(".", padding)..tostring(Player.hscore),70,72,4,true, 1)
+	print("HIGH SCORE:"..string.rep(".", padding),70,72,12,true, 1)	
+	
 end
 
 
@@ -1061,7 +1103,7 @@ function PlayTic()
 	-- GAMEOVER
 	if #balls < 1 then
 		Player.lives = Player.lives - 1	
-		Player.points = Player.points - 50
+		Player.points = Player.points - 20
 		STAGE.confusion_time = 0
 		STAGE.bonus_time = 0
 		STAGE.pad_size_time = 0
@@ -1333,7 +1375,7 @@ function colBallBrick(ball, br)
 	elseif br.t == 6 then
 		sfx(52,"C-4",-1,3,6)
 		br.v=false
-		Player.points=Player.points + 5 * STAGE.bonus
+		Player.points=Player.points + 50 * STAGE.bonus
 		STAGE.energy_bricks=STAGE.energy_bricks-1
 		Explode(br.x,br.y)
 		br.gw=6			
