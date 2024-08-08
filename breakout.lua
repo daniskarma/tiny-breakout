@@ -5,6 +5,7 @@
 -- license: MIT License
 -- version: 0.1
 -- script:  lua
+-- menu: TOGGLE	ARROWS
 
 
 
@@ -14,7 +15,8 @@
 	-- añadir true ending
 	-- check error outof bound en poweroups al coger varios o coger y terminar la bola al final
 
- 
+
+
 function BOOT() 
 	starting_level = 1 -- debug
 	math.randomseed(tstamp())
@@ -54,8 +56,10 @@ function BOOT()
 		},
 		pos = {
 			x=120,
-			y=90	
-		}
+			y=90,
+			show=false,
+			show_lock=false,
+		}	
 	}
 	muse={
 		is_delayed=false,
@@ -89,7 +93,7 @@ function BOOT()
 	-- Stage
 	DEFAULT_STAGE={
 		n=0,		
-		time=255*60, --current stage time 
+		time=256*60, --current stage time 
 		ball={
 			maxdx=1.2,
 			maxdy=1,
@@ -653,7 +657,7 @@ function BOOT()
 		for i=#self,1,-1 do
 			self[i].y=self[i].y+self[i].dy
 			if colCircRect(self[i], pad)>0 then
-				sfx(51, -1, -1, 1)
+				sfx(53, "D-5", 15, 1, 10)
 				if self[i].pw == 0 then -- POWER five extra life
 					if Player.lives < 8 then
 						Player.lives = Player.lives + 1
@@ -703,7 +707,7 @@ function BOOT()
 						end	
 					end		
 				elseif self[i].pw==6 then -- POWER give time
-					STAGE.time = STAGE.time + 10 * 60
+					STAGE.time = STAGE.time + 16 * 60
 				elseif self[i].pw==7 then -- POWER reduce time
 					STAGE.time = STAGE.time - 10 * 60
 				elseif self[i].pw==8 then -- POWER double bonus score
@@ -745,13 +749,23 @@ function BOOT()
 	return self.value
 	end
 
+	GameMenu={TOGGLE_ARROWS}
 end -- BOOT
 
+function TOGGLE_ARROWS()
+	controller.pos.show = not controller.pos.show
+	controller.pos.show_lock = true
+end
+
+function MENU(i)
+	GameMenu[i+1]()
+end
+ 
 
 function setStage(level)
 	STAGE=DeepCopy(DEFAULT_STAGE)
 	STAGE.diff=1+0.5*((level-1)/#LVL)
-	STAGE.time=((level >= 8) and 255 or 127) *60
+	STAGE.time=((level >= 8) and 256 or 128) *60
 	STAGE.ball.maxdx=STAGE.ball.maxdx*(1+STAGE.diff/2)
 	STAGE.ball.maxdy=STAGE.ball.maxdy*STAGE.diff
 	STAGE.ball.startdx=STAGE.ball.startdx*STAGE.diff
@@ -801,20 +815,28 @@ function IntroTic()
 	if not intro.played then
 		intro.start_time=time()
 		intro.end_time=time()+intro.time
-
+		
 	end	
 	intro.played = true	
-
-	for i=1,3 do	
-		local introbrick=brick:new(34+40*i,85,6,0)		
-		introbrick.gw = 0
-		introbrick:draw()
+	
+	local time_step = (intro.end_time - intro.start_time)/15
+	
+	if time() >= intro.start_time + time_step*1 then
+		printc("You are trapped inside a computer",120,30,12)
 	end
-
-	printc("You are trapped inside a computer",120,30,12)
-	printc("You need to scape!",120,50,12)
-	printc("Destroy the Power Cores to get out!",120,70,12)
-
+	if time() >= intro.start_time + time_step*5 then
+		printc("You need to scape!",120,50,12)
+	end
+	if time() >= intro.start_time + time_step*9 then
+		printc("Destroy the Power Cores to get out!",120,70,12)
+		for i=1,3 do	
+			local introbrick=brick:new(34+40*i,85,6,0)		
+			introbrick.gw = 0
+			introbrick:draw()
+		end
+		
+	end
+	
 	if time() >= intro.end_time or input(BTN.ACTION) then	
 		intro.title_delay=time()+30*1000
 		SetMode(M.TITLE)
@@ -877,10 +899,6 @@ function GameOverTic()
 		end
  	end	
 
-	-- TODO add small delay after selection como en won_time
-	-- hare un objeto como payload y un temporizador, cuando se acabe el temporizador finalizamos la escena 
-	-- con el stage init y setmode del payload. Añadimos algun modo para que no se pueda seleccionar una opcion tras otra
-	-- draw
 	cls()
 	printc("GAME OVER",121,21,14,true, 3)
 	printc("GAME OVER",120,20,12,true, 3)
@@ -1508,8 +1526,9 @@ function DrawUI()
 	print("SCORE ",right_x0+2,info_y0+28,12)
 	print(Player.points,right_x0+2,info_y0+35,4)
 	
-
-	drawcontroller(controller)
+	if controller.pos.show then
+		drawcontroller(controller)
+	end
 end
 
 
@@ -1593,6 +1612,9 @@ function drawmuse()
 	if muse.charge > 0 then
 		circb(mx, my, radius, 12)
 		circ(mx, my, radius*muse.charge/muse.max_charge, 12)
+		if not controller.pos.show_lock then
+			controller.pos.show=true
+		end
 	end
 
 end
@@ -1798,8 +1820,9 @@ end
 -- 048:4100510171019102a103c103d105e107f107f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f100f10041000010f000
 -- 049:34a444a054937490748194709461c431c441e420f410f400f200f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000360000000000
 -- 050:f0f0e0e0c0d0b0b0a0a08080707060504040502070109000b000d000d000d000c000901060204020603080309040a060b070c070d090e0b0e0c0f0e0210000000000
--- 051:36e556c466b376a1a670c66fe65df63cf62bd61ab60e96348667769766c766e0f600f600f600f600f600f600f600f600f600f600f600f600f600f600975000000000
+-- 051:96a476936672c64fe61df60bd61bd63eb652a673b675c666d646e626e610f600f600f600f600f600f600f600f600f600f600f600f600f600f600f600915000000000
 -- 052:e70b2794278747776757674777377726b7169715c714a704c703b702c70fd70fd70fe70fe70fe70ff70ff70ff70ef70ef70ef70ef70df70df70bf70b370000000000
+-- 053:c0007380b100e000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000e80000000000
 -- </SFX>
 
 -- <PATTERNS>
