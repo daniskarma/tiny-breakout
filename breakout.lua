@@ -11,745 +11,742 @@
 -- TODO
 	-- para publicar cambiar saveid
 	-- normalizar nombres (snake_case, upper, CamelCase...)
-	-- añadir continue
 	-- añadir true ending
 	-- check error outof bound en poweroups al coger varios o coger y terminar la bola al final
 
  
-
 function BOOT() 
-starting_level = 1 -- debug
-math.randomseed(tstamp())
+	starting_level = 1 -- debug
+	math.randomseed(tstamp())
 
--- input constants
-controller={	
-	right = {
-		type='b',
-		pos={
-			x=85,
-			y=0,
-			r=35,
-			a=0,
-		},
-		pressed=false,
-		color=2
-	},
-	left = {
-		type='b',
-		pos={
-			x=-85,
-			y=0,
-			r=35,
-			a=180,
-		},
-		pressed=false,
-		color=2
-	},
-	pos = {
-		x=120,
-		y=90	
+	-- intro variables
+	intro={
+		time=5*1000,
+		start_time=0,
+		end_time=0,
+		played = false,
+		title_delay = 0
 	}
-}
 
-BTN={ACTION="ACTION", LEFT="LEFT", RIGHT="RIGHT"}
+	-- input constants
+	controller={	
+		right = {
+			type='b',
+			pos={
+				x=85,
+				y=0,
+				r=35,
+				a=0,
+			},
+			pressed=false,
+			color=2
+		},
+		left = {
+			type='b',
+			pos={
+				x=-85,
+				y=0,
+				r=35,
+				a=180,
+			},
+			pressed=false,
+			color=2
+		},
+		pos = {
+			x=120,
+			y=90	
+		}
+	}
+	muse={
+		is_delayed=false,
+		max_charge = 20,
+		charge=0
+	}
 
---particle array
-parts={}
+	BTN={ACTION="ACTION", LEFT="LEFT", RIGHT="RIGHT"}
 
--- modes
-M={
-	BOOT=0,
-	TITLE=1,    -- title screen	
-	PLAY=2,	
-	GAMEOVER=3,
-	GAMEWIN=4,	
-}
+	--particle array
+	parts={}
 
-
--- Player
-Player={
-	lives=0,
-	points=0,
-	hscore = 0,
-}
-
--- Stage
-DEFAULT_STAGE={
-	n=0,		
-	time=255*60, --current stage time 
-	ball={
-		maxdx=1.2,
-		maxdy=1,
-		startdx=1,
-		startdy=1,
-	},
-	won_time=60,
-	energy_bricks=0,
-	ball_size_time=0,
-	pad_size_time=0,
-	hit_time_zero=false,
-	micro_points=0,
-	diff=1,
-	bonus=1,
-	bonus_time=0,
-	confusion=1,
-	confusion_time=0,
-	barrier=false,
-	barrier_time=0
-}
-STAGE={}
-
-
--- Levels
-LVL = {
-	{
-	title="How did you get here?",
-	map={
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,6,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{1,1,1,1,1,1,1,1,1,1,1,1,1},	
-		{2,2,2,2,2,2,2,2,2,2,2,2,2},			
-		{1,1,1,1,1,1,1,1,1,1,1,1,1},	
-		{2,2,2,2,2,2,2,2,2,2,2,2,2},
-		{1,1,1,1,1,1,1,1,1,1,1,1,1},	
-		{2,2,2,2,2,2,2,2,2,2,2,2,2},			
-		{1,1,1,1,1,1,1,1,1,1,1,1,1},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},		
-		}
-	},
-	{
-	title="Two eyes are looking",
-	map={
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,1,1,1,1,1,0,1,1,1,1,1,0},
-		{0,1,2,2,2,1,0,1,2,2,2,1,0},	
-		{1,1,2,6,2,1,1,1,2,6,2,1,1},	
-		{0,1,2,2,2,1,0,1,2,2,2,1,0},	
-		{0,1,1,1,1,1,0,1,1,1,1,1,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},		
-		}
-	},
-	{
-	title="Sectors of my mind",
-	map={
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{3,6,3,6,3,6,3,6,3,6,3,6,3},
-		{3,3,3,3,3,3,3,3,3,3,3,3,3},
-		{2,2,2,2,2,2,2,2,2,2,2,2,2},
-		{2,2,2,2,2,2,2,2,2,2,2,2,2},	
-		{1,1,1,1,1,1,1,1,1,1,1,1,1},
-		{1,1,1,1,1,1,1,1,1,1,1,1,1},
-		{0,1,0,1,0,1,0,1,0,1,0,1,0},
-		{1,0,1,0,1,0,1,0,1,0,1,0,1},
-		{0,1,0,1,0,1,0,1,0,1,0,1,0},
-		{1,0,1,0,1,0,1,0,1,0,1,0,1},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0}		
-		}
-	},
-	{
-	title="Piramid",
-	map={
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,1,0,0,0,0,0,0},	
-		{0,0,0,0,0,4,1,4,0,0,0,0,0},	
-		{0,0,0,0,3,4,1,4,3,0,0,0,0},
-		{0,0,0,2,3,4,0,4,3,2,0,0,0},	
-		{0,0,1,2,3,4,6,4,3,2,1,0,0},
-		{0,5,5,5,5,5,5,5,5,5,5,5,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0}		
-		}
-	},
-	{
-	title="Stairway to me",
-	map={
-		{0,0,0,0,0,0,0,0,0,0,0,0,6},
-		{1,1,4,4,4,4,4,4,4,4,4,4,4},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{4,4,4,4,4,4,4,4,4,4,4,1,1},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{1,1,4,4,4,4,4,4,4,4,4,4,4},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{4,4,4,4,4,4,4,4,4,4,4,1,1},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{1,1,4,4,4,4,4,4,4,4,4,4,4},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{4,4,4,4,4,4,4,4,4,4,4,1,1}				
-		}
-	},	
-	{
-	title="The blob",
-	map={
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,4,4,4,0,0,0,0,0},
-		{0,0,0,0,3,3,3,3,3,0,0,0,0},	
-		{0,0,0,3,3,2,2,2,3,3,0,0,0},	
-		{0,0,3,3,2,2,1,2,2,3,3,0,0},
-		{0,4,3,2,2,1,1,1,2,2,3,4,0},	
-		{0,4,3,2,1,1,6,1,1,2,3,4,0},	
-		{0,4,3,2,2,1,1,1,2,2,3,4,0},
-		{0,0,3,3,2,2,1,2,2,3,3,0,0},	
-		{0,0,0,3,3,2,2,2,3,3,0,0,0},	
-		{0,0,0,0,3,3,3,3,3,0,0,0,0},
-		{0,0,0,0,0,4,4,4,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0}		
-		}
-	},
-	{
-	title="My RAM is in balance", 
-	map={
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,1,1,0,0,0,0,0,1,1,0,0},
-		{0,1,1,1,1,0,0,0,1,1,1,1,0},	
-		{0,1,1,1,1,0,0,0,1,1,1,1,0},	
-		{0,1,6,6,1,0,0,0,1,6,6,1,0},
-		{0,2,2,2,2,0,0,0,2,2,2,2,0},	
-		{0,2,2,2,2,0,0,0,2,2,2,2,0},
-		{0,2,2,2,2,0,0,0,2,2,2,2,0},
-		{0,2,6,6,2,0,0,0,2,6,6,2,0},	
-		{0,3,3,3,3,0,0,0,3,3,3,3,0},	
-		{0,3,3,3,3,0,0,0,3,3,3,3,0},
-		{0,3,3,3,3,0,0,0,3,3,3,3,0},
-		{0,3,6,6,3,0,0,0,3,6,6,3,0},	
-		{0,5,5,5,5,0,0,0,5,5,5,5,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0}		
-		}
-	},	
-	{
-	title="TIC", 
-	map={	
-		{0,0,6,0,0,0,6,0,0,0,6,0,0},	
-		{2,2,2,2,2,2,2,2,2,2,2,2,2},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,3,3,3,0,0,3,0,0,3,3,3,0},
-		{0,3,3,3,0,0,3,0,0,3,3,3,0},	
-		{0,0,3,0,0,0,3,0,0,3,0,0,0},	
-		{0,0,3,0,0,0,3,0,0,3,0,0,0},	
-		{0,0,3,0,0,0,3,0,0,3,0,0,0},
-		{0,0,3,0,0,0,3,0,0,3,0,0,0},	
-		{0,0,3,0,0,0,3,0,0,3,0,0,0},	
-		{0,0,3,0,0,0,3,0,0,3,0,0,0},
-		{0,0,3,0,0,0,3,0,0,3,3,3,0},
-		{0,0,3,0,0,0,3,0,0,3,3,3,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{2,2,2,2,2,2,2,2,2,2,2,2,2},		
-		}
-	},
-	{
-	title="80",
-	map={
-		{4,4,4,4,4,4,4,4,4,4,4,4,4},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,5,3,3,3,3,0,5,3,3,3,5,0},	
-		{0,3,3,6,3,3,0,3,3,6,3,3,0},	
-		{0,3,0,0,0,3,0,3,0,0,0,3,0},
-		{0,3,0,0,0,3,0,3,0,0,0,3,0},	
-		{0,3,3,3,3,3,0,3,0,0,0,3,0},	
-		{0,3,3,3,3,3,0,3,0,0,0,3,0},	
-		{0,3,0,0,0,3,0,3,0,0,0,3,0},	
-		{0,3,0,0,0,3,0,3,0,0,0,3,0},	
-		{0,3,0,0,0,3,0,3,0,0,0,3,0},			
-		{0,3,3,6,3,3,0,3,3,6,3,3,0},	
-		{0,5,3,3,3,5,0,5,3,3,3,5,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{4,4,4,4,4,4,4,4,4,4,4,4,4},						
-		}
-	},
-	{
-	title="Rainbow inside me",
-	-- TODO try other type of rainbow, es un poco feo a la vista este
-	map={	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,6,0,6,0,6,0,6,0,6,0,6,0},	
-		{1,2,3,4,1,2,3,4,1,2,3,4,1},
-		{2,3,4,1,2,3,4,1,2,3,4,1,2},	
-		{3,4,1,2,3,4,1,2,3,4,1,2,3},
-		{4,1,2,3,4,1,2,3,4,1,2,3,4},
-		{1,2,3,4,1,2,3,4,1,2,3,4,1},
-		{2,3,4,1,2,3,4,1,2,3,4,1,2},	
-		{3,4,1,2,3,4,1,2,3,4,1,2,3},
-		{4,1,2,3,4,1,2,3,4,1,2,3,4},	
-		{1,2,3,4,1,2,3,4,1,2,3,4,1},
-		{2,3,4,1,2,3,4,1,2,3,4,1,2},	
-		{3,4,1,2,3,4,1,2,3,4,1,2,3},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},				
-		}
-	-- map={	
-	-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},
-	-- 	{0,6,0,6,0,6,0,6,0,6,0,6,0},	
-	-- 	{1,2,3,4,3,2,1,2,3,4,3,2,1},
-	-- 	{2,3,4,3,2,1,2,3,4,3,2,1,2},	
-	-- 	{3,4,3,2,1,2,3,4,3,2,1,2,3},
-	-- 	{4,3,2,1,2,3,4,3,2,1,2,3,4},
-	-- 	{3,2,1,2,3,4,3,2,1,2,3,4,3},	
-	-- 	{2,1,2,3,4,3,2,1,2,3,4,3,2},
-	-- 	{1,2,3,4,3,2,1,2,3,4,3,2,1},
-	-- 	{2,3,4,3,2,1,2,3,4,3,2,1,2},	
-	-- 	{3,4,3,2,1,2,3,4,3,2,1,2,3},
-	-- 	{4,3,2,1,2,3,4,3,2,1,2,3,4},
-	-- 	{3,2,1,2,3,4,3,2,1,2,3,4,3},	
-	-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},
-	-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},
-	-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},
-	-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},				
-	-- 	}
-	},
-	{
-	title="Primitive clock",
-	map={	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{3,3,3,3,3,3,3,3,3,3,3,3,3},
-		{0,3,6,3,3,3,6,3,3,3,6,3,0},
-		{0,0,3,3,3,3,3,3,3,3,3,0,0},
-		{0,0,0,3,3,3,3,3,3,3,0,0,0},
-		{0,0,0,0,3,3,3,3,3,0,0,0,0},
-		{0,0,0,0,0,3,3,3,0,0,0,0,0},
-		{0,0,0,0,0,0,6,0,0,0,0,0,0},
-		{0,0,0,0,0,3,3,3,0,0,0,0,0},
-		{0,0,0,0,3,3,3,3,3,0,0,0,0},
-		{0,0,0,3,3,3,3,3,3,3,0,0,0},	
-		{0,0,3,3,3,3,3,3,3,3,3,0,0},
-		{0,3,6,3,3,3,6,3,3,3,6,3,0},
-		{3,3,3,3,3,3,3,3,3,3,3,3,3},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},				
-		}
-	},
-	{
-	title="The Chaos Machine",
-	map={		
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,4,4,4,0,0,0,0,0,4,4,4,0},	
-		{0,4,6,4,0,0,0,0,0,4,6,4,0},
-		{0,4,4,4,0,0,0,0,0,4,4,4,0},
-		{0,0,0,0,0,5,4,5,0,0,0,0,0},	
-		{0,0,0,0,0,4,6,4,0,0,0,0,0},	
-		{0,0,0,0,0,5,4,5,0,0,0,0,0},
-		{0,4,4,4,0,0,0,0,0,4,4,4,0},	
-		{0,4,6,4,0,0,0,0,0,4,6,4,0},
-		{0,4,4,4,0,0,0,0,0,4,4,4,0},	
-		{0,0,0,0,0,4,4,4,0,0,0,0,0},	
-		{0,0,0,0,0,4,6,4,0,0,0,0,0},
-		{0,0,0,0,0,4,4,4,0,0,0,0,0},
-		{0,4,4,4,0,0,0,0,0,4,4,4,0},	
-		{0,4,6,4,0,0,0,0,0,4,6,4,0},
-		{0,4,4,4,0,0,0,0,0,4,4,4,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},		
-		}
-	},
-	{
-	title="Don't you love me?", -- too long
-	map={
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,4,4,0,0,0,4,4,0,0,0},	
-		{0,0,4,4,4,0,0,0,4,4,4,0,0},
-		{0,0,4,4,4,4,0,4,4,4,4,0,0},	
-		{0,0,4,4,4,4,4,4,4,4,4,0,0},	
-		{0,0,4,4,4,4,4,4,4,4,4,0,0},
-		{0,0,4,4,4,4,4,4,4,4,4,0,0},	
-		{0,0,0,4,4,4,4,4,4,4,0,0,0},	
-		{0,0,0,4,4,4,6,4,4,4,0,0,0},
-		{0,0,0,0,4,4,4,4,4,0,0,0,0},	
-		{0,0,0,0,4,4,4,4,4,0,0,0,0},	
-		{0,0,0,0,4,4,4,4,4,0,0,0,0},
-		{0,0,0,0,0,4,4,4,0,0,0,0,0},
-		{0,0,0,0,0,4,4,4,0,0,0,0,0},	
-		{0,0,0,0,0,0,4,0,0,0,0,0,0},
-		{0,0,0,0,0,0,4,0,0,0,0,0,0},	
-		}
-	},
-	{
-	title="Firewall", -- weird collisions
-	map={
-		{0,5,0,0,0,0,0,2,0,0,0,0,0},
-		{0,5,0,0,0,0,0,2,0,0,0,0,0},	
-		{0,2,0,0,0,0,0,2,0,0,0,0,0},
-		{0,2,0,0,0,0,0,2,0,0,0,0,0},	
-		{0,5,0,0,0,0,0,2,0,0,0,0,0},	
-		{0,5,0,0,0,2,2,2,2,2,0,0,0},
-		{0,5,0,0,0,2,4,4,4,2,0,0,0},	
-		{0,5,2,2,2,2,4,6,4,2,2,2,2},	
-		{0,5,0,0,0,2,4,4,4,2,0,0,0},
-		{0,5,0,0,0,2,2,2,2,2,0,0,0},	
-		{0,5,0,0,0,0,0,2,0,0,0,0,0},	
-		{0,5,0,0,0,0,0,2,0,0,0,0,0},
-		{0,5,0,0,0,0,0,2,0,0,0,0,0},
-		{0,5,0,0,0,0,0,2,0,0,0,0,0},
-		{0,5,0,0,0,0,0,2,0,0,0,0,0},	
-		{0,5,5,5,5,5,5,5,5,5,5,5,5},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0}		
-		}
-	},
-	{
-	title="My old big ROM", 
-	map={
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,4,4,4,4,4,4,4,4,4,4,4,0},
-		{0,4,4,4,4,4,4,4,4,4,4,4,0},
-		{0,4,4,3,3,3,3,3,3,3,4,4,0},
-		{0,4,4,3,2,2,2,2,2,3,4,4,0},
-		{0,4,4,3,2,1,1,1,2,3,4,4,0},
-		{0,4,4,3,2,1,6,1,2,3,4,4,0},
-		{0,4,4,3,2,1,1,1,2,3,4,4,0},
-		{0,4,4,3,2,2,2,2,2,3,4,4,0},
-		{0,4,4,3,3,3,3,3,3,3,4,4,0},
-		{0,4,4,4,4,4,4,4,4,4,4,4,0},
-		{0,4,4,4,4,4,4,4,4,4,4,4,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},		
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		}
-	},
-	{
-	title="Last defence",
-	map={	
-		{0,5,6,5,0,5,6,5,0,5,6,5,0},
-		{0,4,4,4,0,4,4,4,0,4,4,4,0},	
-		{0,0,5,0,0,0,5,0,0,0,5,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-		{0,0,0,0,0,5,4,5,0,0,0,0,0},
-		{0,0,0,0,0,5,6,5,0,0,0,0,0},	
-		{0,0,0,0,0,5,5,5,0,0,0,0,0},	
-		{0,5,4,5,0,0,0,0,0,5,4,5,0},
-		{0,5,6,5,0,0,0,0,0,5,6,5,0},	
-		{0,5,5,5,0,0,0,0,0,5,5,5,0},	
-		{0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{1,1,1,1,1,1,1,1,1,1,1,1,1},	
-		{3,3,3,3,3,3,3,3,3,3,3,3,3},	
-		{0,1,1,1,1,0,0,1,1,1,1,1,0},
-		{0,0,3,3,3,0,0,0,3,3,3,0,0},		
-		{0,0,0,4,0,0,0,0,0,4,0,0,0}		
-		}
-	},
-	-- {
-
-	-- title="You shouldn't be here!",
-	-- map={
-	-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},
-	-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},
-	-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-	-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},
-	-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-	-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-	-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},
-	-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-	-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-	-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},
-	-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-	-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-	-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},
-	-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},
-	-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-	-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},
-	-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
-	-- 	}
-	-- },
-}
-
--- game state
-Game={
-	-- mode
-	m=M.BOOT,	
-}
+	-- modes
+	M={
+		BOOT=0,
+		INTRO=2, 
+		TITLE=1,    -- title screen	  
+		PLAY=3,	
+		GAMEOVER=4,
+		GAMEWIN=5,	
+	}
 
 
-TICF={
-	[M.BOOT]=Boot,
-	[M.TITLE]=TitleTic,	
-	[M.PLAY]=PlayTic,	
-	[M.GAMEOVER]=GameOverTic,
-	[M.GAMEWIN]=GameWinTic,	
-}
+	-- Player
+	Player={
+		lives=0,
+		points=0,
+		hscore = 0,
+	}
 
--- ELEMENTS
-wall={
-	init=function(self,x0,y0)
-		self.x0=x0
-		self.x1=x0 + 170
-		self.y0=y0
-		self.y1=y0+127		
-		self.w =self.x1-self.x0+1
-		self.h =self.y1-self.y0+1		
-	end	
-}
+	-- Stage
+	DEFAULT_STAGE={
+		n=0,		
+		time=255*60, --current stage time 
+		ball={
+			maxdx=1.2,
+			maxdy=1,
+			startdx=1,
+			startdy=1,
+		},
+		won_time=60,
+		energy_bricks=0,
+		ball_size_time=0,
+		pad_size_time=0,
+		hit_time_zero=false,
+		micro_points=0,
+		diff=1,
+		bonus=1,
+		bonus_time=0,
+		confusion=1,
+		confusion_time=0,
+		barrier=false,
+		barrier_time=0
+	}
+	STAGE={}
 
-ball={}
-function ball:new(x,y,r,dx,dy,c)
-	local newball= {}
-	setmetatable(newball, self)
-	self.__index=self	
-	newball.x =x
-	newball.y =y
-	newball.r =r -- 2
-	newball.dx=dx
-	newball.dy=dy		
-	newball.c =c
-	newball.stuck_c = 0
-	newball.stuck_t = 0
-	return newball
-end
-function ball:draw()			
-	circ(self.x,self.y,self.r,self.c)			
-end		
- -- paddle
-pad={
-	init=function(self,x,y,w,sp,ac,c)
-		self.x =x
-		self.y =y
-		self.w =w --30
-		self.h =5
-		self.sp=sp
-		self.ac=ac --acceleration
-		self.dx=0
-		self.tw=w --target width			
-	end,
-	start_direction=1,	
-	draw=function(self)
-		spr(1, self.x-1, self.y, 0, 1, 0)
-		spr(1, self.x+self.w-7, self.y, 0, 1, 1)
-		rect(self.x+7,self.y,self.w-14,self.h,12)
-		line(self.x+4,self.y+self.h-1,self.x+self.w-5,self.y+self.h-1,11)	
-		if STAGE.confusion == -1 then
-			local center = self.x+self.w/2
-			local left = self.x+4
-			local right = self.x+self.w-4
-			local _y = self.y+self.h-1
-			local h_lenght = (right-left)/2
-			local time_left = 1-(STAGE.confusion_time/(10*60))
-			line(left+h_lenght*time_left,_y,center,_y,1)
-			line(center,_y,right-h_lenght*time_left,_y,1)
-		end		
-	end,
-	draw_dir=function(self, a)
-		local delay1 = (time()/100)%8
-		local delay2 = ((time()+400)/100)%8		
-		pix(self.x+(self.w/2)+(4*self.start_direction)+(delay1*self.start_direction),self.y-7-delay1,12)
-		pix(self.x+(self.w/2)+(4*self.start_direction)+(delay2*self.start_direction),self.y-7-delay2,12)					
-	end
-}
 
-brick_c={{7,6,5},{8,9,10},{2,3,4},{1,2,3},{14,13,12},{0,14,13}} --brick colors
-brick={}	
-function brick:new(x,y,t,id)
-	local newbrick = {}
-	setmetatable(newbrick, self)
-	self.__index=self
-	newbrick.x=x
-	newbrick.y=y
-	newbrick.w=13
-	newbrick.h=5
-	newbrick.c=brick_c[t]		
-	newbrick.t=t
-	newbrick.gw=1
-	if newbrick.t > 0 then
-		newbrick.v=true
-	else
-		newbrick.v=false
-	end
-
-	newbrick.id=id
-	return newbrick		
-end
-function brick:draw()
-	if self.v then
-		if self.t < 6 then			
-			rect(self.x,self.y,self.w,self.h,self.c[3])
-			rect(self.x+1,self.y+1,self.w-2,self.h-2,self.c[2])
-			line(self.x+1,self.y+self.h-1,self.x+self.w-1,self.y+self.h-1,self.c[1])
-			line(self.x+self.w-1,self.y+1,self.x+self.w-1,self.y+self.h-1,self.c[1])
-			rect(self.x+self.w-1,self.y,1,1,self.c[2])
-			rect(self.x,self.y+self.h-1,1,1,self.c[2])	
-		elseif self.t == 6 then
-			rect(self.x,self.y,self.w,self.h,self.c[3])
-			rect(self.x+1,self.y+1,self.w-2,self.h-2,self.c[2])
-			line(self.x+1,self.y+self.h-1,self.x+self.w-1,self.y+self.h-1,self.c[1])
-			line(self.x+self.w-1,self.y+1,self.x+self.w-1,self.y+self.h-1,self.c[1])
-			rect(self.x+self.w-1,self.y,1,1,self.c[2])
-			rect(self.x,self.y+self.h-1,1,1,self.c[2])					
-			spr(6,self.x+4,self.y,0)
-			
-		end	
+	-- Levels
+	LVL = {
+		{
+		title="How did you get here?",
+		map={
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+			{0,0,0,0,0,0,6,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+			{1,1,1,1,1,1,1,1,1,1,1,1,1},	
+			{2,2,2,2,2,2,2,2,2,2,2,2,2},			
+			{1,1,1,1,1,1,1,1,1,1,1,1,1},	
+			{2,2,2,2,2,2,2,2,2,2,2,2,2},
+			{1,1,1,1,1,1,1,1,1,1,1,1,1},	
+			{2,2,2,2,2,2,2,2,2,2,2,2,2},			
+			{1,1,1,1,1,1,1,1,1,1,1,1,1},	
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},		
+			}
+		},
+		{
+		title="Two eyes are looking",
+		map={
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+			{0,1,1,1,1,1,0,1,1,1,1,1,0},
+			{0,1,2,2,2,1,0,1,2,2,2,1,0},	
+			{1,1,2,6,2,1,1,1,2,6,2,1,1},	
+			{0,1,2,2,2,1,0,1,2,2,2,1,0},	
+			{0,1,1,1,1,1,0,1,1,1,1,1,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},		
+			}
+		},
+		{
+		title="Sectors of my mind",
+		map={
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{3,6,3,6,3,6,3,6,3,6,3,6,3},
+			{3,3,3,3,3,3,3,3,3,3,3,3,3},
+			{2,2,2,2,2,2,2,2,2,2,2,2,2},
+			{2,2,2,2,2,2,2,2,2,2,2,2,2},	
+			{1,1,1,1,1,1,1,1,1,1,1,1,1},
+			{1,1,1,1,1,1,1,1,1,1,1,1,1},
+			{0,1,0,1,0,1,0,1,0,1,0,1,0},
+			{1,0,1,0,1,0,1,0,1,0,1,0,1},
+			{0,1,0,1,0,1,0,1,0,1,0,1,0},
+			{1,0,1,0,1,0,1,0,1,0,1,0,1},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0}		
+			}
+		},
+		{
+		title="Piramid",
+		map={
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,1,0,0,0,0,0,0},	
+			{0,0,0,0,0,4,1,4,0,0,0,0,0},	
+			{0,0,0,0,3,4,1,4,3,0,0,0,0},
+			{0,0,0,2,3,4,0,4,3,2,0,0,0},	
+			{0,0,1,2,3,4,6,4,3,2,1,0,0},
+			{0,5,5,5,5,5,5,5,5,5,5,5,0},	
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0}		
+			}
+		},
+		{
+		title="Stairway to me",
+		map={
+			{0,0,0,0,0,0,0,0,0,0,0,0,6},
+			{1,1,4,4,4,4,4,4,4,4,4,4,4},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+			{4,4,4,4,4,4,4,4,4,4,4,1,1},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{1,1,4,4,4,4,4,4,4,4,4,4,4},	
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+			{4,4,4,4,4,4,4,4,4,4,4,1,1},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{1,1,4,4,4,4,4,4,4,4,4,4,4},	
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{4,4,4,4,4,4,4,4,4,4,4,1,1}				
+			}
+		},	
+		{
+		title="The blob",
+		map={
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+			{0,0,0,0,0,4,4,4,0,0,0,0,0},
+			{0,0,0,0,3,3,3,3,3,0,0,0,0},	
+			{0,0,0,3,3,2,2,2,3,3,0,0,0},	
+			{0,0,3,3,2,2,1,2,2,3,3,0,0},
+			{0,4,3,2,2,1,1,1,2,2,3,4,0},	
+			{0,4,3,2,1,1,6,1,1,2,3,4,0},	
+			{0,4,3,2,2,1,1,1,2,2,3,4,0},
+			{0,0,3,3,2,2,1,2,2,3,3,0,0},	
+			{0,0,0,3,3,2,2,2,3,3,0,0,0},	
+			{0,0,0,0,3,3,3,3,3,0,0,0,0},
+			{0,0,0,0,0,4,4,4,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0}		
+			}
+		},
+		{
+		title="My RAM is in balance", 
+		map={
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+			{0,0,1,1,0,0,0,0,0,1,1,0,0},
+			{0,1,1,1,1,0,0,0,1,1,1,1,0},	
+			{0,1,1,1,1,0,0,0,1,1,1,1,0},	
+			{0,1,6,6,1,0,0,0,1,6,6,1,0},
+			{0,2,2,2,2,0,0,0,2,2,2,2,0},	
+			{0,2,2,2,2,0,0,0,2,2,2,2,0},
+			{0,2,2,2,2,0,0,0,2,2,2,2,0},
+			{0,2,6,6,2,0,0,0,2,6,6,2,0},	
+			{0,3,3,3,3,0,0,0,3,3,3,3,0},	
+			{0,3,3,3,3,0,0,0,3,3,3,3,0},
+			{0,3,3,3,3,0,0,0,3,3,3,3,0},
+			{0,3,6,6,3,0,0,0,3,6,6,3,0},	
+			{0,5,5,5,5,0,0,0,5,5,5,5,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0}		
+			}
+		},	
+		{
+		title="TIC", 
+		map={	
+			{0,0,6,0,0,0,6,0,0,0,6,0,0},	
+			{2,2,2,2,2,2,2,2,2,2,2,2,2},	
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,3,3,3,0,0,3,0,0,3,3,3,0},
+			{0,3,3,3,0,0,3,0,0,3,3,3,0},	
+			{0,0,3,0,0,0,3,0,0,3,0,0,0},	
+			{0,0,3,0,0,0,3,0,0,3,0,0,0},	
+			{0,0,3,0,0,0,3,0,0,3,0,0,0},
+			{0,0,3,0,0,0,3,0,0,3,0,0,0},	
+			{0,0,3,0,0,0,3,0,0,3,0,0,0},	
+			{0,0,3,0,0,0,3,0,0,3,0,0,0},
+			{0,0,3,0,0,0,3,0,0,3,3,3,0},
+			{0,0,3,0,0,0,3,0,0,3,3,3,0},	
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+			{2,2,2,2,2,2,2,2,2,2,2,2,2},		
+			}
+		},
+		{
+		title="80",
+		map={
+			{4,4,4,4,4,4,4,4,4,4,4,4,4},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,5,3,3,3,3,0,5,3,3,3,5,0},	
+			{0,3,3,6,3,3,0,3,3,6,3,3,0},	
+			{0,3,0,0,0,3,0,3,0,0,0,3,0},
+			{0,3,0,0,0,3,0,3,0,0,0,3,0},	
+			{0,3,3,3,3,3,0,3,0,0,0,3,0},	
+			{0,3,3,3,3,3,0,3,0,0,0,3,0},	
+			{0,3,0,0,0,3,0,3,0,0,0,3,0},	
+			{0,3,0,0,0,3,0,3,0,0,0,3,0},	
+			{0,3,0,0,0,3,0,3,0,0,0,3,0},			
+			{0,3,3,6,3,3,0,3,3,6,3,3,0},	
+			{0,5,3,3,3,5,0,5,3,3,3,5,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{4,4,4,4,4,4,4,4,4,4,4,4,4},						
+			}
+		},
+		{
+		title="Rainbow inside me",
+		-- TODO try other type of rainbow, es un poco feo a la vista este
+		map={	
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,6,0,6,0,6,0,6,0,6,0,6,0},	
+			{1,2,3,4,1,2,3,4,1,2,3,4,1},
+			{2,3,4,1,2,3,4,1,2,3,4,1,2},	
+			{3,4,1,2,3,4,1,2,3,4,1,2,3},
+			{4,1,2,3,4,1,2,3,4,1,2,3,4},
+			{1,2,3,4,1,2,3,4,1,2,3,4,1},
+			{2,3,4,1,2,3,4,1,2,3,4,1,2},	
+			{3,4,1,2,3,4,1,2,3,4,1,2,3},
+			{4,1,2,3,4,1,2,3,4,1,2,3,4},	
+			{1,2,3,4,1,2,3,4,1,2,3,4,1},
+			{2,3,4,1,2,3,4,1,2,3,4,1,2},	
+			{3,4,1,2,3,4,1,2,3,4,1,2,3},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},				
+			}
+		},
+		{
+		title="Primitive clock",
+		map={	
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{3,3,3,3,3,3,3,3,3,3,3,3,3},
+			{0,3,6,3,3,3,6,3,3,3,6,3,0},
+			{0,0,3,3,3,3,3,3,3,3,3,0,0},
+			{0,0,0,3,3,3,3,3,3,3,0,0,0},
+			{0,0,0,0,3,3,3,3,3,0,0,0,0},
+			{0,0,0,0,0,3,3,3,0,0,0,0,0},
+			{0,0,0,0,0,0,6,0,0,0,0,0,0},
+			{0,0,0,0,0,3,3,3,0,0,0,0,0},
+			{0,0,0,0,3,3,3,3,3,0,0,0,0},
+			{0,0,0,3,3,3,3,3,3,3,0,0,0},	
+			{0,0,3,3,3,3,3,3,3,3,3,0,0},
+			{0,3,6,3,3,3,6,3,3,3,6,3,0},
+			{3,3,3,3,3,3,3,3,3,3,3,3,3},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},				
+			}
+		},
+		{
+		title="The Chaos Machine",
+		map={		
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,4,4,4,0,0,0,0,0,4,4,4,0},	
+			{0,4,6,4,0,0,0,0,0,4,6,4,0},
+			{0,4,4,4,0,0,0,0,0,4,4,4,0},
+			{0,0,0,0,0,5,4,5,0,0,0,0,0},	
+			{0,0,0,0,0,4,6,4,0,0,0,0,0},	
+			{0,0,0,0,0,5,4,5,0,0,0,0,0},
+			{0,4,4,4,0,0,0,0,0,4,4,4,0},	
+			{0,4,6,4,0,0,0,0,0,4,6,4,0},
+			{0,4,4,4,0,0,0,0,0,4,4,4,0},	
+			{0,0,0,0,0,5,4,5,0,0,0,0,0},	
+			{0,0,0,0,0,4,6,4,0,0,0,0,0},
+			{0,0,0,0,0,5,4,5,0,0,0,0,0},
+			{0,4,4,4,0,0,0,0,0,4,4,4,0},	
+			{0,4,6,4,0,0,0,0,0,4,6,4,0},
+			{0,4,4,4,0,0,0,0,0,4,4,4,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},		
+			}
+		},
+		{
+		title="Don't you love me?", -- too long
+		map={
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,4,4,0,0,0,4,4,0,0,0},	
+			{0,0,4,4,4,0,0,0,4,4,4,0,0},
+			{0,0,4,4,4,4,0,4,4,4,4,0,0},	
+			{0,0,4,4,4,4,4,4,4,4,4,0,0},	
+			{0,0,4,4,4,4,4,4,4,4,4,0,0},
+			{0,0,4,4,4,4,4,4,4,4,4,0,0},	
+			{0,0,0,4,4,4,4,4,4,4,0,0,0},	
+			{0,0,0,4,4,4,6,4,4,4,0,0,0},
+			{0,0,0,0,4,4,4,4,4,0,0,0,0},	
+			{0,0,0,0,4,4,4,4,4,0,0,0,0},	
+			{0,0,0,0,4,4,4,4,4,0,0,0,0},
+			{0,0,0,0,0,4,4,4,0,0,0,0,0},
+			{0,0,0,0,0,4,4,4,0,0,0,0,0},	
+			{0,0,0,0,0,0,4,0,0,0,0,0,0},
+			{0,0,0,0,0,0,4,0,0,0,0,0,0},	
+			}
+		},
+		{
+		title="Firewall", -- weird collisions
+		map={
+			{0,5,0,0,0,0,0,2,0,0,0,0,0},
+			{0,5,0,0,0,0,0,2,0,0,0,0,0},	
+			{0,2,0,0,0,0,0,2,0,0,0,0,0},
+			{0,2,0,0,0,0,0,2,0,0,0,0,0},	
+			{0,5,0,0,0,0,0,2,0,0,0,0,0},	
+			{0,5,0,0,0,2,2,2,2,2,0,0,0},
+			{0,5,0,0,0,2,4,4,4,2,0,0,0},	
+			{0,5,2,2,2,2,4,6,4,2,2,2,2},	
+			{0,5,0,0,0,2,4,4,4,2,0,0,0},
+			{0,5,0,0,0,2,2,2,2,2,0,0,0},	
+			{0,5,0,0,0,0,0,2,0,0,0,0,0},	
+			{0,5,0,0,0,0,0,2,0,0,0,0,0},
+			{0,5,0,0,0,0,0,2,0,0,0,0,0},
+			{0,5,0,0,0,0,0,2,0,0,0,0,0},
+			{0,5,0,0,0,0,0,2,0,0,0,0,0},	
+			{0,5,5,5,5,5,5,5,5,5,5,5,5},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0}		
+			}
+		},
+		{
+		title="My old big ROM", 
+		map={
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,4,4,4,4,4,4,4,4,4,4,4,0},
+			{0,4,4,4,4,4,4,4,4,4,4,4,0},
+			{0,4,4,3,3,3,3,3,3,3,4,4,0},
+			{0,4,4,3,2,2,2,2,2,3,4,4,0},
+			{0,4,4,3,2,1,1,1,2,3,4,4,0},
+			{0,4,4,3,2,1,6,1,2,3,4,4,0},
+			{0,4,4,3,2,1,1,1,2,3,4,4,0},
+			{0,4,4,3,2,2,2,2,2,3,4,4,0},
+			{0,4,4,3,3,3,3,3,3,3,4,4,0},
+			{0,4,4,4,4,4,4,4,4,4,4,4,0},
+			{0,4,4,4,4,4,4,4,4,4,4,4,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},		
+			{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+			}
+		},
+		{
+		title="Last defence",
+		map={
+			{0,5,5,5,0,5,5,5,0,5,5,5,0},	
+			{0,5,5,5,0,5,6,5,0,5,5,5,0},	
+			{0,5,5,5,0,4,4,4,0,5,5,5,0},		
+			{0,5,5,5,0,1,4,1,0,5,5,5,0},	
+			{0,5,6,5,0,1,4,1,0,5,6,5,0},	
+			{0,4,4,4,0,1,4,1,0,4,4,4,0},	
+			{0,1,4,1,0,1,4,1,0,1,4,1,0},
+			{0,1,4,1,0,1,4,1,0,1,4,1,0},	
+			{0,1,4,1,0,4,4,4,0,1,4,1,0},
+			{0,1,4,1,0,5,6,5,0,1,4,1,0},	
+			{0,1,4,1,0,5,5,5,0,1,4,1,0},	
+			{0,4,4,4,0,4,5,4,0,4,4,4,0},
+			{0,5,6,5,0,4,4,4,0,5,6,5,0},	
+			{0,5,5,5,0,0,4,0,0,5,5,5,0},	
+			{0,4,5,4,0,0,0,0,0,4,5,4,0},
+			{0,4,4,4,0,0,0,0,0,4,4,4,0},
+			{0,0,4,0,0,0,0,0,0,0,4,0,0},	
 		
-	end
-	if self.gw>0 then
-		rect(self.x,self.y,self.w,self.h,12)			
-		self.gw=self.gw-1
-	end
-end
+			}
+		},
+		-- {
 
--- POWERUPS
-pws={} --powerups array
-powerup={}
-function powerup:new(x,y,pw)
-	local newpowerup = {}
-	setmetatable(newpowerup, self)
-	self.__index=self	
-	newpowerup.x =x
-	newpowerup.y =y
-	newpowerup.r =3		
-	newpowerup.dy=0.5
-	newpowerup.dx=0	
-	newpowerup.pw=pw
-	table.insert(pws,newpowerup)
-end
-	
-function powerup:draw()	
-	spr(16+self.pw,self.x-self.r,self.y-self.r,0)			
-end	
+		-- title="You shouldn't be here!",
+		-- map={
+		-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},
+		-- 	{0,0,0,0,0,0,0,0,0,0,0,0,0},	
+		-- 	}
+		-- },
+	}
 
-function pws:update()
-	local to_remove = {}
-	for i=#self,1,-1 do
-		self[i].y=self[i].y+self[i].dy
-		if colCircRect(self[i], pad)>0 then
-			sfx(51, -1, -1, 1)
-			if self[i].pw == 0 then -- POWER five extra life
-				if Player.lives < 8 then
-					Player.lives = Player.lives + 1
-				else
-					Player.points = Player.points + 50 * STAGE.bonus	
-				end
-			elseif self[i].pw==1 then -- POWER give two balls
-				if #balls < 8	then
-					local rate = 1
-					if #balls == 1 then rate = 2 end
-					for iball=#balls,1,-1 do
-						for _=1,rate do 
-							local newball = ball:new(
-								balls[iball].x+math.random(),
-								balls[iball].y+math.random(),
-								balls[iball].r,
-								balls[iball].dx*((math.random(0, 1) == 0) and -1 or 1)*math.random(),
-								((math.random(0, 1) == 0) and -1 or 1),
-								11
-							)
-							table.insert(balls, newball)							
+	-- game state
+	Game={
+		-- mode
+		m=M.BOOT,	
+	}
+
+
+	TICF={
+		[M.BOOT]=Boot,
+		[M.INTRO]=IntroTic,		
+		[M.TITLE]=TitleTic,	
+		[M.PLAY]=PlayTic,	
+		[M.GAMEOVER]=GameOverTic,
+		[M.GAMEWIN]=GameWinTic,	
+	}
+
+	-- ELEMENTS
+	wall={
+		init=function(self,x0,y0)
+			self.x0=x0
+			self.x1=x0 + 170
+			self.y0=y0
+			self.y1=y0+127		
+			self.w =self.x1-self.x0+1
+			self.h =self.y1-self.y0+1		
+		end	
+	}
+
+	ball={}
+	function ball:new(x,y,r,dx,dy,c)
+		local newball= {}
+		setmetatable(newball, self)
+		self.__index=self	
+		newball.x =x
+		newball.y =y
+		newball.r =r -- 2
+		newball.dx=dx
+		newball.dy=dy		
+		newball.c =c
+		newball.stuck_c = 0
+		newball.stuck_t = 0
+		return newball
+	end
+	function ball:draw()			
+		circ(self.x,self.y,self.r,self.c)			
+	end		
+	-- paddle
+	pad={
+		init=function(self,x,y,w,sp,ac,c)
+			self.x =x
+			self.y =y
+			self.w =w --30
+			self.h =5
+			self.sp=sp
+			self.ac=ac --acceleration
+			self.dx=0
+			self.tw=w --target width			
+		end,
+		start_direction=1,	
+		draw=function(self)
+			spr(1, self.x-1, self.y, 0, 1, 0)
+			spr(1, self.x+self.w-7, self.y, 0, 1, 1)
+			rect(self.x+7,self.y,self.w-14,self.h,12)
+			line(self.x+4,self.y+self.h-1,self.x+self.w-5,self.y+self.h-1,11)	
+			if STAGE.confusion == -1 then
+				local center = self.x+self.w/2
+				local left = self.x+4
+				local right = self.x+self.w-4
+				local _y = self.y+self.h-1
+				local h_lenght = (right-left)/2
+				local time_left = 1-(STAGE.confusion_time/(10*60))
+				line(left+h_lenght*time_left,_y,center,_y,1)
+				line(center,_y,right-h_lenght*time_left,_y,1)
+			end		
+		end,
+		draw_dir=function(self, a)
+			local delay1 = (time()/100)%8
+			local delay2 = ((time()+400)/100)%8		
+			pix(self.x+(self.w/2)+(4*self.start_direction)+(delay1*self.start_direction),self.y-7-delay1,12)
+			pix(self.x+(self.w/2)+(4*self.start_direction)+(delay2*self.start_direction),self.y-7-delay2,12)					
+		end
+	}
+
+	brick_c={{7,6,5},{8,9,10},{2,3,4},{1,2,3},{14,13,12},{0,14,13}} --brick colors
+	brick={}	
+	function brick:new(x,y,t,id)
+		local newbrick = {}
+		setmetatable(newbrick, self)
+		self.__index=self
+		newbrick.x=x
+		newbrick.y=y
+		newbrick.w=13
+		newbrick.h=5
+		newbrick.c=brick_c[t]		
+		newbrick.t=t
+		newbrick.gw=1
+		if newbrick.t > 0 then
+			newbrick.v=true
+		else
+			newbrick.v=false
+		end
+
+		newbrick.id=id
+		return newbrick		
+	end
+	function brick:draw()
+		if self.v then
+			if self.t < 6 then			
+				rect(self.x,self.y,self.w,self.h,self.c[3])
+				rect(self.x+1,self.y+1,self.w-2,self.h-2,self.c[2])
+				line(self.x+1,self.y+self.h-1,self.x+self.w-1,self.y+self.h-1,self.c[1])
+				line(self.x+self.w-1,self.y+1,self.x+self.w-1,self.y+self.h-1,self.c[1])
+				rect(self.x+self.w-1,self.y,1,1,self.c[2])
+				rect(self.x,self.y+self.h-1,1,1,self.c[2])	
+			elseif self.t == 6 then
+				rect(self.x,self.y,self.w,self.h,self.c[3])
+				rect(self.x+1,self.y+1,self.w-2,self.h-2,self.c[2])
+				line(self.x+1,self.y+self.h-1,self.x+self.w-1,self.y+self.h-1,self.c[1])
+				line(self.x+self.w-1,self.y+1,self.x+self.w-1,self.y+self.h-1,self.c[1])
+				rect(self.x+self.w-1,self.y,1,1,self.c[2])
+				rect(self.x,self.y+self.h-1,1,1,self.c[2])					
+				spr(6,self.x+4,self.y,0)
+				
+			end	
+			
+		end
+		if self.gw>0 then
+			rect(self.x,self.y,self.w,self.h,12)			
+			self.gw=self.gw-1
+		end
+	end
+
+	-- POWERUPS
+	pws={} --powerups array
+	powerup={}
+	function powerup:new(x,y,pw)
+		local newpowerup = {}
+		setmetatable(newpowerup, self)
+		self.__index=self	
+		newpowerup.x =x
+		newpowerup.y =y
+		newpowerup.r =3		
+		newpowerup.dy=0.5
+		newpowerup.dx=0	
+		newpowerup.pw=pw
+		table.insert(pws,newpowerup)
+	end
+		
+	function powerup:draw()	
+		spr(16+self.pw,self.x-self.r,self.y-self.r,0)			
+	end	
+
+	function pws:update()
+		local to_remove = {}
+		for i=#self,1,-1 do
+			self[i].y=self[i].y+self[i].dy
+			if colCircRect(self[i], pad)>0 then
+				sfx(51, -1, -1, 1)
+				if self[i].pw == 0 then -- POWER five extra life
+					if Player.lives < 8 then
+						Player.lives = Player.lives + 1
+					else
+						Player.points = Player.points + 50 * STAGE.bonus	
+					end
+				elseif self[i].pw==1 then -- POWER give two balls
+					if #balls < 8	then
+						local rate = 1
+						if #balls == 1 then rate = 2 end
+						for iball=#balls,1,-1 do
+							for _=1,rate do 
+								local newball = ball:new(
+									balls[iball].x+math.random(),
+									balls[iball].y+math.random(),
+									balls[iball].r,
+									balls[iball].dx*((math.random(0, 1) == 0) and -1 or 1)*math.random(),
+									((math.random(0, 1) == 0) and -1 or 1),
+									11
+								)
+								table.insert(balls, newball)							
+							end
 						end
 					end
-				end
-			elseif self[i].pw==2 then -- POWER increase pad
-				STAGE.pad_size_time = time()+45000
-				if pad.tw < 46	then 
-					pad.tw=pad.tw+8					
-				end	
-			elseif self[i].pw==3 then -- POWER decrease pad
-				STAGE.pad_size_time = time()+45000
-				if pad.tw > 14	then 
-					pad.tw=pad.tw-8					
-				end			
-			elseif self[i].pw==4 then -- POWER increase ball size
-				STAGE.ball_size_time = time()+45000
-				if balls[1].r < 4	then 
-					for i=1, #balls do
-						balls[i].r = balls[i].r + 1
+				elseif self[i].pw==2 then -- POWER increase pad
+					STAGE.pad_size_time = time()+45000
+					if pad.tw < 46	then 
+						pad.tw=pad.tw+8					
 					end	
+				elseif self[i].pw==3 then -- POWER decrease pad
+					STAGE.pad_size_time = time()+45000
+					if pad.tw > 14	then 
+						pad.tw=pad.tw-8					
+					end			
+				elseif self[i].pw==4 then -- POWER increase ball size
+					STAGE.ball_size_time = time()+45000
+					if balls[1].r < 4	then 
+						for i=1, #balls do
+							balls[i].r = balls[i].r + 1
+						end	
+					end
+				elseif self[i].pw==5 then -- POWER reduce ball size
+					STAGE.ball_size_time = time()+45000
+					if balls[1].r > 0	then 
+						for i=1, #balls do
+							balls[i].r = balls[i].r - 1
+						end	
+					end		
+				elseif self[i].pw==6 then -- POWER give time
+					STAGE.time = STAGE.time + 10 * 60
+				elseif self[i].pw==7 then -- POWER reduce time
+					STAGE.time = STAGE.time - 10 * 60
+				elseif self[i].pw==8 then -- POWER double bonus score
+					STAGE.bonus_time = 20*60			
+				elseif self[i].pw==9 then -- POWER confuse player inverting directions
+					STAGE.confusion_time = 10*60	
+				elseif self[i].pw==10 then -- POWER botton barrier
+					STAGE.barrier_time = STAGE.barrier_time + 17*60					
 				end
-			elseif self[i].pw==5 then -- POWER reduce ball size
-				STAGE.ball_size_time = time()+45000
-				if balls[1].r > 0	then 
-					for i=1, #balls do
-						balls[i].r = balls[i].r - 1
-					end	
-				end		
-			elseif self[i].pw==6 then -- POWER give time
-				STAGE.time = STAGE.time + 10 * 60
-			elseif self[i].pw==7 then -- POWER reduce time
-				STAGE.time = STAGE.time - 10 * 60
-			elseif self[i].pw==8 then -- POWER double bonus score
-				STAGE.bonus_time = 20*60			
-			elseif self[i].pw==9 then -- POWER confuse player inverting directions
-				STAGE.confusion_time = 10*60	
-			elseif self[i].pw==10 then -- POWER botton barrier
-				STAGE.barrier_time = 15*60					
+				-- TODO make times globla variables
+				table.insert(to_remove, i)
+			end	
+			if self[i].y > 140 then
+				table.insert(to_remove, i)
 			end
-			-- TODO make times globla variables
-			table.insert(to_remove, i)
-		end	
-		if self[i].y > 140 then
-			table.insert(to_remove, i)
 		end
-	end
-	if next(to_remove) ~= nil then
-		for i = #to_remove, 1, -1 do
-			table.remove(pws, to_remove[i]) -- TODO aqui al coger muchos power up seguidos me ha dado un error outofbounds
+		if next(to_remove) ~= nil then
+			for i = #to_remove, 1, -1 do
+				table.remove(pws, to_remove[i]) -- TODO aqui al coger muchos power up seguidos me ha dado un error outofbounds
+			end
 		end
-	end
-end	
+	end	
 
-function pws:clear()
-	for i=#self, 1, -1 do		
-		table.remove(pws, i)			
-	end
-end	
+	function pws:clear()
+		for i=#self, 1, -1 do		
+			table.remove(pws, i)			
+		end
+	end	
 
-FPS={value=0,frames=0,lastTime=-1000} -- cuidado al moverlo
-function FPS:getValue()
-  if (time()-self.lastTime <= 1000) then
-    self.frames=self.frames+1
-  else 
-    self.value=self.frames
-    self.frames=0
-    self.lastTime=time()
-  end
-  return self.value
-end
+	FPS={value=0,frames=0,lastTime=-1000} -- cuidado al moverlo
+	function FPS:getValue()
+	if (time()-self.lastTime <= 1000) then
+		self.frames=self.frames+1
+	else 
+		self.value=self.frames
+		self.frames=0
+		self.lastTime=time()
+	end
+	return self.value
+	end
 
 end -- BOOT
+
 
 function setStage(level)
 	STAGE=DeepCopy(DEFAULT_STAGE)
@@ -772,7 +769,8 @@ function SetMode(m)
 	elseif m == M.GAMEOVER then
 		continue={
 			level=STAGE.n,
-			is_yes=false
+			is_yes=false,
+			yes_time=30,		
 		}
 		--music(3)	
 	elseif m == M.PLAY then
@@ -786,20 +784,53 @@ function TIC()
 	TICF[Game.m]()	
 	--DEBUG
 	--rect(200-2,129-2,60,9,14)
-	--PrintShadow("FPS: "..FPS:getValue(),200,129,12,nil,1,1)		
-	poke(0x3FFB,0)
+	--PrintShadow("FPS: "..FPS:getValue(),200,129,12,nil,1,1)	
+	drawmuse()	
+ 	poke(0x3FFB,0) --cursor
 end
 
 
 function Boot()
 	--poke(0x7FC3F,1,1) -- disable cursor	
-	SetMode(M.TITLE)
+	SetMode(M.INTRO)
+end
+
+function IntroTic()
+	-- TODO elaborar mejor intro
+	cls()	
+	if not intro.played then
+		intro.start_time=time()
+		intro.end_time=time()+intro.time
+
+	end	
+	intro.played = true	
+
+	for i=1,3 do	
+		local introbrick=brick:new(34+40*i,85,6,0)		
+		introbrick.gw = 0
+		introbrick:draw()
+	end
+
+	printc("You are trapped inside a computer",120,30,12)
+	printc("You need to scape!",120,50,12)
+	printc("Destroy the Power Cores to get out!",120,70,12)
+
+	if time() >= intro.end_time or input(BTN.ACTION) then	
+		intro.title_delay=time()+30*1000
+		SetMode(M.TITLE)
+	end
+
 end
 
 function TitleTic()
+	if not intro.played or time()>intro.title_delay then
+		intro.played=false
+		SetMode(M.INTRO)
+	end
+
 	cls()	
 	print("TINY",45,20,12,true,1, true)	
-	spr(48, 30, 30, 0, 3, 0, 0, 7 ,2)	
+	spr(48, 30, 30, 0, 3, 0, 0, 7 ,2) -- BRICKS
 	if (time()//500%2) == 0 then 
 		printc("START",120,100,4)
 	else
@@ -825,14 +856,20 @@ function GameOverTic()
 	if input(BTN.LEFT) then
 		continue.is_yes = false
  	end	
-
+	local mx,my,mp=mouse()	
+	if muse.charge>0 then
+		if mx > 120 then
+			continue.is_yes = true
+		elseif mx <= 120 then
+			continue.is_yes = false
+		end
+	end
 	if input(BTN.ACTION) then
 		if continue.is_yes then			
 			Player.points = 0
 			Player.lives = 3
 			StageInit(continue.level)
 			SetMode(M.PLAY)
-
 		else
 			pmem(1, Player.hscore)
 			StageInit(1)
@@ -840,6 +877,9 @@ function GameOverTic()
 		end
  	end	
 
+	-- TODO add small delay after selection como en won_time
+	-- hare un objeto como payload y un temporizador, cuando se acabe el temporizador finalizamos la escena 
+	-- con el stage init y setmode del payload. Añadimos algun modo para que no se pueda seleccionar una opcion tras otra
 	-- draw
 	cls()
 	printc("GAME OVER",121,21,14,true, 3)
@@ -864,11 +904,9 @@ end
 
 function GameWinTic()
 	cls()
-	printc("CONGRATULATIONS!",121,31,14,true, 2)
-	printc("CONGRATULATIONS!",120,30,12,true, 2)
+	printc("YOU WON?",121,26,14,true, 2)
+	printc("YOU WON?",120,25,12,true, 2)
 
-	printc("YOU WON",121,51,14,true, 2)
-	printc("YOU WON",120,50,12,true, 2)
 
 	if (time()//500%2) == 0 then 
 		printc("START",120,110,4)
@@ -1047,7 +1085,6 @@ function PlayTic()
 	-- TIME
 	if is_launchball and STAGE.energy_bricks > 0 then
 		STAGE.time=STAGE.time-(1*STAGE.diff)
-		-- TODO - fix difficulty formula
 	end	
 
 	if STAGE.time == 0 then
@@ -1470,7 +1507,6 @@ function DrawUI()
 
 	print("SCORE ",right_x0+2,info_y0+28,12)
 	print(Player.points,right_x0+2,info_y0+35,4)
-
 	
 
 	drawcontroller(controller)
@@ -1551,6 +1587,16 @@ function drawcontroller(con)
 	end
 end
 
+function drawmuse()
+	local mx,my,mp=mouse()
+	local radius = 10
+	if muse.charge > 0 then
+		circb(mx, my, radius, 12)
+		circ(mx, my, radius*muse.charge/muse.max_charge, 12)
+	end
+
+end
+
 ---- EFFECTS
 -- particles
 
@@ -1604,6 +1650,7 @@ function input(option)
 	if option == BTN.ACTION then
 		local mx,my,mp=mouse()
 		local is_mouse = false
+		local do_action = false
 		if mp then
 			if wall.x0 ~= nil then
 				if mx > wall.x0 and mx < wall.x1 and my > wall.y0 and my < wall.y1 then
@@ -1613,7 +1660,16 @@ function input(option)
 				is_mouse = true
 			end
 		end
-		return btnp(4) or is_mouse
+		if is_mouse then
+			muse.charge = muse.charge + 1
+		else
+			muse.charge = 0
+		end
+		if muse.charge > muse.max_charge then
+			muse.charge = 0
+			do_action = true
+		end
+		return btnp(4) or do_action
 	elseif option == BTN.RIGHT then
 		return peek(0xFF80)==8 or controller.right.pressed == true
 	elseif option == BTN.LEFT then
